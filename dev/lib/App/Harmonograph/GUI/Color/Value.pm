@@ -2,8 +2,8 @@ use v5.12;
 
 # check, convert and measure color values
 
-package Chart::Property::DataType::Color::Value;
-our $VERSION = '2.402.0';
+package App::Harmonograph::GUI::Color::Value;
+our $VERSION = '1.0';
 use Carp;
 use Exporter 'import';
 our @EXPORT_OK = qw/check_rgb check_hsl trim_rgb trim_hsl 
@@ -163,103 +163,3 @@ sub round {
 
 
 1;
-
-__END__
-
-=pod
-
-=head1 NAME
-
-Chart::Property::DataType::Color::Value - check, convert and measure color values
-
-=head1 SYNOPSIS 
-
-    use Chart::Property::DataType::Color::Value;         # import nothing
-    use Chart::Property::DataType::Color::Value ':all';  # import all routines
-    
-    check_rgb( 256, 10, 12 ); # throws error 255 is the limit
-    my @hsl = hsl_from_rgb( 20, 50, 70 ); # convert from RGB to HSL space
-
-
-=head1 DESCRIPTION
-
-A set of helper routines to handle RGB and HSL values: bound checks, 
-conversion, measurement. Most subs expect three numerical values, 
-or sometimes two triplet. This module is supposed to be used by
-Chart::Property::DataType::Color and not directly.
-
-
-=head1 ROUTINES
-
-=head2 check_rgb
-
-Carp error message if RGB value triplet is not valid (or out of value range).
-
-=head2 check_hsl
-
-Carp error message if HSL value triplet is not valid (or out of value range).
-
-=head2 trim_rgb
-
-Change RGB triplet to the nearest valid values.
-
-=head2 trim_hsl
-
-Change HSL triplet to the nearest valid values.
-
-=head2 hsl_from_rgb
-
-Converting an rgb value triplet into the corresponding hsl 
-
-Red, Green and Blue are integer in 0 .. 255.
-Hue is an integer between 0 .. 359 (hue) 
-and saturation and lightness are 0 .. 100 (percentage).
-A hue of 360 and 0 (degree in a cylindrical coordinate system) is
-considered to be the same, this modul deals only with the ladder.
-
-=head2 rgb_from_hsl
-
-Converting an hsl value triplet into the corresponding rgb 
-(see rgb_from_name and hsl_from_name). Please not that back and forth
-conversion can lead to drifting results due to rounding.
-
-    my @rgb = rgb_from_hsl( 0, 90, 50 );
-    my @rgb = rgb_from_hsl( [0, 90, 50] ); # works too
-    # for real (none integer results), any none zero value works as second arg 
-    my @rgb = rgb_from_hsl( [0, 90, 50], 'real');
-
-=head2 hex_from_rgb
-
-Converts red green blue triplet into format: '#RRGGBB'.
-
-=head2 rgb_from_hex
-
-Converts '#RRGGBB' or '#RGB' hex values into regular RGB triple of 0..255.
-
-=head2 distance_rgb
-
-Distance in (linear) rgb color space between two coordinates.
-
-
-    my $d = distance_rgb([1,1,1], [2,2,2]);  # approx 1.7
-
-
-=head2 distance_hsl
-
-Distance in (cylindrical) hsl color space between two coordinates.
-
-    my $d = distance_rgb([1,1,1], [356, 3, 2]); # approx 6
-
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2022 Herbert Breunung.
-
-This program is free software; you can redistribute it and/or modify it 
-under same terms as Perl itself.
-
-=head1 AUTHOR
-
-Herbert Breunung, <lichtkind@cpan.org>
-
-=cut

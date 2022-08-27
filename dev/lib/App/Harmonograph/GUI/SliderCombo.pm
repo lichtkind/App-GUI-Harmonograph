@@ -3,36 +3,42 @@ use warnings;
 use Wx;
 
 package App::Harmonograph::GUI::SliderCombo;
-my $VERSION = 0.01;
+my $VERSION = 0.1;
 use base qw/Wx::Panel/;
 
 sub new {
-    my ( $class, $parent, $label, $help, $min, $max, $init_value, $delta ) = @_;
+    my ( $class, $parent, $slider_size, $label, $help, $min, $max, $init_value, $delta ) = @_;
     return unless defined $max;
 
     my $self = $class->SUPER::new( $parent, -1, [-1,-1], [-1, -1] );
-    my $lbl  = Wx::StaticText->new($self, -1, $label, [-1, -1], [-1, 15], &Wx::wxALIGN_LEFT);
-    $lbl->SetToolTip( $help );
+    my $lbl  = Wx::StaticText->new($self, -1, $label, [-1, -1], [-1, 15] );
     $self->{'min'} = $min;
     $self->{'max'} = $max;
+    $self->{'name'} = $label;
     $self->{'value'} = $init_value // $min;
     $self->{'delta'} = $delta // 1;
   
-    $self->{'txt'}      = Wx::TextCtrl->new( $self, -1, $init_value, [-1,-1], [35 + 4 * int(log $max),-1], &Wx::wxTE_RIGHT);
+    $self->{'txt'}      = Wx::TextCtrl->new( $self, -1, $init_value, [-1,-1], [26 + 4 * int(log $max),-1], &Wx::wxTE_RIGHT);
     $self->{'btn'}{'-'} = Wx::Button->new( $self, -1, '-', [-1,-1],[30, 30] );
     $self->{'btn'}{'+'} = Wx::Button->new( $self, -1, '+', [-1,-1],[30, 30] );
 
-    $self->{'slider'} = Wx::Slider->new( $self, -1, $init_value, $min, $max, [-1, -1], [200, -1],
+    $self->{'slider'} = Wx::Slider->new( $self, -1, $init_value, $min, $max, [-1, -1], [$slider_size, -1],
                                                 &Wx::wxSL_HORIZONTAL | &Wx::wxSL_BOTTOM );
+
+    $lbl->SetToolTip( $help );
+    $self->{'txt'}->SetToolTip( $help );
+    $self->{'slider'}->SetToolTip( $help );
+    $self->{'btn'}{'-'}->SetToolTip( "decrease by ".$self->{'delta'} );
+    $self->{'btn'}{'+'}->SetToolTip( "increase by ".$self->{'delta'} );
     
-    my $main_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $main_sizer->Add( $lbl,  0, &Wx::wxALL| &Wx::wxALIGN_CENTER_VERTICAL, 14);
-    $main_sizer->Add( $self->{'txt'}, 0, &Wx::wxGROW | &Wx::wxTOP | &Wx::wxBOTTOM | &Wx::wxALIGN_CENTER_VERTICAL, 5);
-    $main_sizer->Add( $self->{'btn'}{'-'}, 0, &Wx::wxGROW | &Wx::wxTOP | &Wx::wxBOTTOM | &Wx::wxALIGN_CENTER_VERTICAL, 5);
-    $main_sizer->Add( $self->{'btn'}{'+'}, 0, &Wx::wxGROW | &Wx::wxTOP | &Wx::wxBOTTOM | &Wx::wxALIGN_CENTER_VERTICAL, 5);
-    $main_sizer->Add( $self->{'slider'}, 0, &Wx::wxGROW | &Wx::wxALL| &Wx::wxALIGN_CENTER_VERTICAL, 7);
-    $main_sizer->Add( 0,     1, &Wx::wxEXPAND|&Wx::wxGROW);
-    $self->SetSizer($main_sizer);    
+    my $sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $sizer->Add( $lbl,  0, &Wx::wxALL| &Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxALIGN_LEFT, 12);
+    $sizer->Add( $self->{'txt'}, 0, &Wx::wxGROW | &Wx::wxTOP | &Wx::wxBOTTOM | &Wx::wxALIGN_CENTER_VERTICAL, 5);
+    $sizer->Add( $self->{'btn'}{'-'}, 0, &Wx::wxGROW | &Wx::wxTOP | &Wx::wxBOTTOM | &Wx::wxALIGN_CENTER_VERTICAL, 5);
+    $sizer->Add( $self->{'btn'}{'+'}, 0, &Wx::wxGROW | &Wx::wxTOP | &Wx::wxBOTTOM | &Wx::wxALIGN_CENTER_VERTICAL, 5);
+    $sizer->Add( $self->{'slider'}, 0, &Wx::wxGROW | &Wx::wxALL| &Wx::wxALIGN_CENTER_VERTICAL, 8);
+    $sizer->Add( 0,     1, &Wx::wxEXPAND|&Wx::wxGROW);
+    $self->SetSizer($sizer);
     
     Wx::Event::EVT_TEXT( $self, $self->{'txt'}, sub {
         my ($self, $cmd) = @_;
@@ -66,23 +72,33 @@ sub new {
         $self->SetValue( $cmd->GetInt );
     });
 
+    $self->{'callback'} = sub { };
     return $self;
 }
 
+sub GetValue { $_[0]->{'value'} }
+    
 sub SetValue { 
-    my ( $self, $value) = @_;
+    my ( $self, $value, $passive) = @_;
     $value = $self->{'min'} if $value < $self->{'min'};
     $value = $self->{'max'} if $value > $self->{'max'};
+    return if $self->{'value'} == $value;
     $self->{'value'} = $value;
+
+    $self->{'btn'}{'-'}->Enable( $value != $self->{'min'} );
+    $self->{'btn'}{'+'}->Enable( $value != $self->{'max'} );
     $self->{'txt'}->SetValue( $value ) unless $value == $self->{'txt'}->GetValue;
     $self->{'slider'}->SetValue( $value ) unless $value == $self->{'slider'}->GetValue;
+    $self->{'callback'}->( $value ) unless defined $passive;
 }
 
-sub GetValue { $_[0]->{'value'} }
+sub SetCallBack {    my ( $self, $code) = @_;
+    $self->{'callback'} = $code if ref $code eq 'CODE';
+}
+
 
 1;
 
 __END__
 
-    $self->{'spin'}  = Wx::SpinCtrl->new( $self, -1, $init_value, [-1, -1], [130, -1], 
-                                                &Wx::wxSP_VERTICAL | &Wx::wxSP_ARROW_KEYS, $min, $max, $init_value );
+$self->{'spin'}  = Wx::SpinCtrl->new( $self, -1, $init_value, [-1, -1], [130, -1], &Wx::wxSP_VERTICAL | &Wx::wxSP_ARROW_KEYS, $min, $max, $init_value );
