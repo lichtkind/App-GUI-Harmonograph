@@ -2,7 +2,7 @@ use v5.12;
 
 # check, convert and measure color values
 
-package App::Harmonograph::GUI::Color::Value;
+package App::Harmonograph::Color::Value;
 our $VERSION = '1.0';
 use Carp;
 use Exporter 'import';

@@ -11,7 +11,7 @@ sub new {
     return unless defined $max;
 
     my $self = $class->SUPER::new( $parent, -1, [-1,-1], [-1, -1] );
-    my $lbl  = Wx::StaticText->new($self, -1, $label, [-1, -1], [-1, 15] );
+    my $lbl  = Wx::StaticText->new($self, -1, $label);
     $self->{'min'} = $min;
     $self->{'max'} = $max;
     $self->{'name'} = $label;

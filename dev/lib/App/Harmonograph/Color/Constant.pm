@@ -2,10 +2,14 @@ use v5.12;
 
 # named colors from X11, HTML (SVG) standard and Pantone report
 
-package App::Harmonograph::GUI::Color::Constant;
+package App::Harmonograph::Color::Constant;
 our $VERSION = '1.0';
 use Carp;
-use App::Harmonograph::GUI::Color::Value ':all';
+use App::Harmonograph::Color::Value ':all';
+
+use Exporter 'import';
+our @EXPORT_OK = qw/rgb_from_name hsl_from_name name_from_rgb name_from_hsl/;
+our %EXPORT_TAGS = (all => [@EXPORT_OK]);
 
 our %rgbhsl_from_name = (                                       # 2.6 MB
 # http://en.wikipedia.org/wiki/Web_colors#X11_color_names
