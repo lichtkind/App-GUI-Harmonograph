@@ -10,7 +10,7 @@ sub new {
     my ( $class, $parent, $slider_size, $label, $help, $min, $max, $init_value, $delta ) = @_;
     return unless defined $max;
 
-    my $self = $class->SUPER::new( $parent, -1, [-1,-1], [-1, -1] );
+    my $self = $class->SUPER::new( $parent, -1);
     my $lbl  = Wx::StaticText->new($self, -1, $label);
     $self->{'min'} = $min;
     $self->{'max'} = $max;

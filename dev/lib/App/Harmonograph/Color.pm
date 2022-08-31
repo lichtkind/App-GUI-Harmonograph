@@ -55,7 +55,7 @@ sub _rgb_from_name_or_hex {
     my $arg = shift;
     my $i = index( $arg, ':');
     if (substr($arg, 0, 1) eq '#'){                  # resolve #RRGGBB -> ($r, $g, $b)
-        return Chart::Property::DataType::Color::Value::rgb_from_hex( $arg );
+        return rgb_from_hex( $arg );
     } elsif ($i > -1 ){                              # resolve pallet:name -> ($r, $g, $b)
         my $pallet_name = substr $arg,   0, $i-1;
         my $color_name = substr $arg, $i+1;
@@ -158,7 +158,7 @@ sub add {
     $rgb[1] += delete $named_arg{'g'} // 0;
     $rgb[2] += delete $named_arg{'b'} // 0;
     return new( __PACKAGE__, trim_rgb( @rgb ) ) unless %named_arg;
-    my @hsl = Chart::Property::DataType::Color::Value::_hsl_from_rgb( @rgb ); # withound rounding
+    my @hsl = App::Harmonograph::Color::Value::_hsl_from_rgb( @rgb ); # withound rounding
     $hsl[0] += delete $named_arg{'h'} // 0;
     $hsl[1] += delete $named_arg{'s'} // 0;
     $hsl[2] += delete $named_arg{'l'} // 0;
