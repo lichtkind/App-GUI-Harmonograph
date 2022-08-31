@@ -3,7 +3,6 @@ use warnings;
 use Wx;
 use utf8;
 
-# circular color flow
 # Dyn end check
 # X Y sync
 # additional pendulum ?
@@ -32,28 +31,34 @@ sub OnInit {
     $frame->{'btn'}{'new'}   = Wx::Button->new( $frame, -1, '&New',    [-1,-1],[$btnw, $btnh] );
     $frame->{'btn'}{'open'}  = Wx::Button->new( $frame, -1, '&Open',   [-1,-1],[$btnw, $btnh] );
     $frame->{'btn'}{'write'} = Wx::Button->new( $frame, -1, '&Write',  [-1,-1],[$btnw, $btnh] );
+    $frame->{'btn'}{'write_next'} = Wx::Button->new( $frame, -1, '&Next',  [-1,-1],[$btnw, $btnh] );
     $frame->{'btn'}{'draw'}  = Wx::Button->new( $frame, -1, '&Draw',   [-1,-1],[$btnw, $btnh] );
     $frame->{'btn'}{'save'}  = Wx::Button->new( $frame, -1, '&Save',   [-1,-1],[$btnw, $btnh] );
+    $frame->{'btn'}{'save_next'}  = Wx::Button->new( $frame, -1, 'Ne&xt',   [-1,-1],[$btnw, $btnh] );
     #$frame->{'btn'}{'exit'}  = Wx::Button->new( $frame, -1, '&Exit',   [-1,-1],[$btnw, $btnh] );
     #$frame->{'btn'}{'tips'}  = Wx::ToggleButton->new($frame,-1,'&Tips',[-1,-1],[$btnw, $btnh] );
+    $frame->{'txt'}{'setting_base'} = Wx::TextCtrl->new($frame,-1, '',[-1,-1],[220, -1] );
+    $frame->{'txt'}{'image_base'} = Wx::TextCtrl->new($frame,-1, '',[-1,-1],[220, -1] );
 
     $frame->{'btn'}{'new'} ->SetToolTip('put all settings to default');
     $frame->{'btn'}{'open'}->SetToolTip('load image settings from a text file');
     $frame->{'btn'}{'write'}->SetToolTip('save image settings into text file');
+    $frame->{'btn'}{'write_next'}->SetToolTip('save current image settings into text file with name seen in text field with number added');
     $frame->{'btn'}{'draw'}->SetToolTip('redraw the harmonographic image');
     $frame->{'btn'}{'save'}->SetToolTip('save image into SVG file');
+    $frame->{'btn'}{'save_next'}->SetToolTip('save current image into SVG file with name seen in text field with number added');
     #$frame->{'btn'}{'exit'}->SetToolTip('close the application');
 
     $frame->{'pendulum'}{'x'}  = App::Harmonograph::GUI::Part::Pendulum->new( $frame, 'x','pendulum in x direction (left to right)', 1, 30);
     $frame->{'pendulum'}{'y'}  = App::Harmonograph::GUI::Part::Pendulum->new( $frame, 'y','pendulum in y direction (left to right)', 1, 30);
     $frame->{'pendulum'}{'z'}  = App::Harmonograph::GUI::Part::Pendulum->new( $frame, 'z','circular pendulum in z direction',        0, 30);
     
-    $frame->{'color'}{'start'}  = App::Harmonograph::GUI::Part::Color->new( $frame, 'start', { r => 20, g => 20, b => 110 } );
-    $frame->{'color'}{'end'} = App::Harmonograph::GUI::Part::Color->new( $frame, 'end',  { r => 110, g => 20, b => 20 } );
-    
+    $frame->{'color'}{'start'} = App::Harmonograph::GUI::Part::Color->new( $frame, 'start', { red => 20, green => 20, blue => 110 } );
+    $frame->{'color'}{'end'}   = App::Harmonograph::GUI::Part::Color->new( $frame, 'end',  { red => 110, green => 20, blue => 20 } );
+
     $frame->{'color_flow'} = App::Harmonograph::GUI::Part::ColorFlow->new( $frame );
     $frame->{'line'} = App::Harmonograph::GUI::Part::PenLine->new( $frame );
-    
+
     $frame->{'board'}    = App::Harmonograph::GUI::Part::Board->new($frame, 600, 600);
 
     # Wx::Event::EVT_LEFT_DOWN( $frame->{'board'}, sub {  });
@@ -127,16 +132,28 @@ sub OnInit {
     });
     Wx::Event::EVT_BUTTON( $frame, $frame->{'btn'}{'exit'},  sub { $frame->Close; } );
 
-    my $cmd_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-    $cmd_sizer->Add( 5, 0, &Wx::wxEXPAND);
-    $cmd_sizer->Add( $frame->{'btn'}{$_}, 0, &Wx::wxGROW|&Wx::wxALL, 10 ) for qw/new open write save draw /; # exit 
-    $cmd_sizer->Insert( 4, 40, 0 );
-   # $cmd_sizer->Insert( 6, 40 );
-    $cmd_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
+    my $cmd1_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
+    $cmd1_sizer->Add( 5, 0, &Wx::wxEXPAND);
+    $cmd1_sizer->Add( $frame->{'btn'}{'new'}, 0, &Wx::wxGROW|&Wx::wxALL, 10 );
+    $cmd1_sizer->Add( $frame->{'btn'}{'open'}, 0, &Wx::wxGROW|&Wx::wxALL, 10 );
+    $cmd1_sizer->Add( $frame->{'btn'}{'write'}, 0, &Wx::wxGROW|&Wx::wxALL, 10 );
+    $cmd1_sizer->Add( $frame->{'btn'}{'write_next'}, 0, &Wx::wxGROW|&Wx::wxALL, 10 );
+    $cmd1_sizer->Add( $frame->{'txt'}{'setting_base'}, 0, &Wx::wxGROW|&Wx::wxALL|&Wx::wxALIGN_CENTER_HORIZONTAL, 10 );
+    $cmd1_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
+    
+    my $cmd2_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
+    $cmd2_sizer->Add( 5, 0, &Wx::wxEXPAND);
+    $cmd2_sizer->Add( $frame->{'btn'}{'save'}, 0, &Wx::wxGROW|&Wx::wxALL, 10 );
+    $cmd2_sizer->Add( $frame->{'btn'}{'save_next'}, 0, &Wx::wxGROW|&Wx::wxALL, 10 );
+    $cmd2_sizer->Add( $frame->{'txt'}{'image_base'}, 0, &Wx::wxGROW|&Wx::wxALL|&Wx::wxALIGN_CENTER_HORIZONTAL, 10 );
+    $cmd2_sizer->Add( $frame->{'btn'}{'draw'}, 0, &Wx::wxGROW|&Wx::wxALL, 10 );
+    $cmd2_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
+    
 
     my $board_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $board_sizer->Add( $frame->{'board'}, 0, &Wx::wxGROW|&Wx::wxALL, 10);
-    $board_sizer->Add( $cmd_sizer,        0, &Wx::wxEXPAND, 0);
+    $board_sizer->Add( $cmd1_sizer,        0, &Wx::wxEXPAND, 0);
+    $board_sizer->Add( $cmd2_sizer,        0, &Wx::wxEXPAND, 0);
     $board_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $s_attr = &Wx::wxALIGN_LEFT|&Wx::wxEXPAND|&Wx::wxGROW|&Wx::wxTOP;

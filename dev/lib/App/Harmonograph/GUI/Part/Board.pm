@@ -43,18 +43,19 @@ sub osc {
     $dc->SetBackground( $bgb );
     $dc->Clear();
 
-    my $start_color = Wx::Colour->new( $self->{'data'}{'start_color'}{'r'}, 
-                                       $self->{'data'}{'start_color'}{'g'}, 
-                                       $self->{'data'}{'start_color'}{'b'} );
+    my $start_color = Wx::Colour->new( $self->{'data'}{'start_color'}{'red'}, 
+                                       $self->{'data'}{'start_color'}{'green'}, 
+                                       $self->{'data'}{'start_color'}{'blue'} );
+
     $dc->SetPen( Wx::Pen->new( $start_color, $self->{'data'}{'line'}{'thickness'}, &Wx::wxPENSTYLE_SOLID) );
 
-    my $max_freq = $self->{'data'}{'x'}{'freq'};
-    $max_freq = $self->{'data'}{'y'}{'freq'} if $max_freq < $self->{'data'}{'y'}{'freq'};
-    $max_freq = $self->{'data'}{'z'}{'freq'} if $max_freq < $self->{'data'}{'z'}{'freq'};
-    
-    my $step_in_circle = $self->{'data'}{'line'}{'density'} * 10 * $max_freq;
     my $cx = $self->{'center'}{'x'};
     my $cy = $self->{'center'}{'y'};
+    my $max_freq = abs $self->{'data'}{'x'}{'frequency'};
+    $max_freq = abs $self->{'data'}{'y'}{'frequency'} if $max_freq < abs $self->{'data'}{'y'}{'frequency'};
+    $max_freq = abs $self->{'data'}{'z'}{'frequency'} if $max_freq < abs $self->{'data'}{'z'}{'frequency'};
+    
+    my $step_in_circle = $self->{'data'}{'line'}{'density'} * 10 * $max_freq;
     my $t_iter = $self->{'data'}{'line'}{'length'} * $step_in_circle;
     my $xdamp  = $self->{'data'}{'x'}{'damp'} ? 1 - ($self->{'data'}{'x'}{'damp'}/500/$step_in_circle) : 0;
     my $ydamp  = $self->{'data'}{'y'}{'damp'} ? 1 - ($self->{'data'}{'y'}{'damp'}/500/$step_in_circle) : 0;
@@ -67,12 +68,9 @@ sub osc {
         $ry *= 2 * $self->{'data'}{'z'}{'radius'} / 3;
     }
     
-    my $dtx =   $self->{'data'}{'x'}{'freq'} * $TAU / $step_in_circle;
-    my $dty = - $self->{'data'}{'y'}{'freq'} * $TAU / $step_in_circle;
-    my $dtz =   $self->{'data'}{'z'}{'freq'} * $TAU / $step_in_circle;
-    $dtx = - $dtx if    $self->{'data'}{'x'}{'dir'};
-    $dty = - $dty if    $self->{'data'}{'y'}{'dir'};
-    $dtz = - $dtx if    $self->{'data'}{'z'}{'dir'};
+    my $dtx =   $self->{'data'}{'x'}{'frequency'} * $TAU / $step_in_circle;
+    my $dty = - $self->{'data'}{'y'}{'frequency'} * $TAU / $step_in_circle;
+    my $dtz =   $self->{'data'}{'z'}{'frequency'} * $TAU / $step_in_circle;
     $dtx =      0 unless $self->{'data'}{'x'}{'on'};
     $dty =      0 unless $self->{'data'}{'y'}{'on'};
     $dtz =      0 unless $self->{'data'}{'z'}{'on'};
@@ -105,16 +103,27 @@ sub osc {
             }
         }
     } else {
-        my $color_change_time = $step_in_circle * $self->{'data'}{'color_flow'}{'stepsize'};
+        my $cflow = $self->{'data'}{'color_flow'};
+        my $color_change_time;
         my @color;
         my $color_index = 1;
-        if ($self->{'data'}{'color_flow'}{'type'} eq 'linear'){
-            my $color_count = int ($self->{'data'}{'line'}{'length'} / $self->{'data'}{'color_flow'}{'stepsize'});
-            @color = map {[$_->rgb] } 
-                App::Harmonograph::Color->new( @{$self->{'data'}{'start_color'}}{'r', 'g', 'b'} )
-                    ->gradient_to( [@{$self->{'data'}{'end_color'}}{'r', 'g', 'b'}], $color_count + 1, $self->{'data'}{'color_flow'}{'dynamic'} );
+        my $startc = App::Harmonograph::Color->new( @{$self->{'data'}{'start_color'}}{'red', 'green', 'blue'} );
+        my $endc = App::Harmonograph::Color->new( @{$self->{'data'}{'end_color'}}{'red', 'green', 'blue'} );
+        if ($cflow->{'type'} eq 'linear'){
+            my $color_count = int ($self->{'data'}{'line'}{'length'} / $cflow->{'stepsize'});
+            @color = map {[$_->rgb] } $startc->gradient_to( $endc, $color_count + 1, $cflow->{'dynamic'} );
         } else {
+            return unless exists $cflow->{'period'} and $cflow->{'period'} > 1;
+            @color = map {[$_->rgb]} $startc->gradient_to( $endc, $cflow->{'period'}, $cflow->{'dynamic'} );
+            my @tc = reverse @color;
+            pop @tc;
+            shift @tc;
+            push @color, @tc;
+            @tc = @color;
+            my $color_circle_length = (2 * $cflow->{'period'} - 2) * $cflow->{'stepsize'};
+            push @color, @tc for 0 .. int ($self->{'data'}{'line'}{'length'} / $color_circle_length);
         }
+        $color_change_time = $step_in_circle * $cflow->{'stepsize'};
         if ($dtz){
             for (1 .. $t_iter){ # with Z pendulum
                 ($x, $y) =      ( cos $tx,           sin $ty );                  # Wave func
