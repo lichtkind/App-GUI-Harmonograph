@@ -13,14 +13,13 @@ sub new {
     my $self = $class->SUPER::new( $parent, -1 );
 
     my $flow_label = Wx::StaticText->new( $self, -1, 'Color Flow');
-    my $dyn_label = Wx::StaticText->new( $self, -1, 'Dynamics');
-
     $self->{'parent'} = $parent;
-    $self->{'type'}    = Wx::ComboBox->new( $self, -1, 'linear', [-1,-1], [105, -1], [qw/no linear circular/] );
-    $self->{'type'}->SetToolTip('choose between no color flow, linear color flow between start and end color or circular (start to end, back and again)');
+    $self->{'type'}    = Wx::ComboBox->new( $self, -1, 'linear', [-1,-1], [105, -1], [qw/no linear alter circular/] );
+    $self->{'type'}->SetToolTip("type of color flow: - linear - from start to end color \n  - alter(nate) - linearly between start and end color \n   - cicular - around the rainbouw from start color visiting end color");
+    $self->{'dynlabel'} = Wx::StaticText->new( $self, -1, 'Dynamics');
     $self->{'dynamic'}  = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[65, -1], [1,2,3,4,5,6,7,8, 9, 10], 1);
-    $self->{'dynamic'}->SetToolTip('dynamics of color change (1 = linear change, larger = starting slower becoming faster)');
-    $self->{'stepsize'}  = App::Harmonograph::GUI::SliderCombo->new( $self, 80, 'Step Size','after how many circles does color change', 1, 100, 1);
+    $self->{'dynamic'}->SetToolTip('dynamics of linear and alternating color change (1 = equal distanced colors change,\n larger = starting with slow color change becoming faster - or vice versa when dir activated)');
+    $self->{'stepsize'}  = App::Harmonograph::GUI::SliderCombo->new( $self,  94, 'Step Size','after how many circles does color change', 1, 100, 1);
     $self->{'period'}    = App::Harmonograph::GUI::SliderCombo->new( $self, 100, 'Period','amount of steps from start to end color', 2, 50, 10);
     $self->{'direction'} = Wx::CheckBox->new( $self, -1, ' Dir.');
     $self->{'direction'}->SetToolTip('if on color change starts fast getting slower, if odd starting slow ...');
@@ -33,14 +32,14 @@ sub new {
     my $row_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $row_sizer->Add( $flow_label,           0, $cf_attr,  10);
     $row_sizer->Add( $self->{'type'},       0, $cf_attr,  13);
-    $row_sizer->Add( $dyn_label,            0, $cf_attr,  75);
-    $row_sizer->Add( $self->{'dynamic'},    0, $cf_attr,  12);
-    $row_sizer->Add( $self->{'direction'},  0, $cf_attr,  12);
+    $row_sizer->Add( $self->{'stepsize'},   0, $cf_attr,  60);
     $row_sizer->Add( 0, 0, &Wx::wxEXPAND);
 
     my $row2_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $row2_sizer->Add( $self->{'stepsize'}, 0, $cf_attr,  0);
-    $row2_sizer->Add( $self->{'period'},   0, $cf_attr,  0);
+    $row2_sizer->Add( $self->{'dynlabel'},   0, $cf_attr,  15);
+    $row2_sizer->Add( $self->{'dynamic'},    0, $cf_attr,  15);
+    $row2_sizer->Add( $self->{'direction'},  0, $cf_attr,  12);
+    $row2_sizer->Add( $self->{'period'},     0, $cf_attr,  54);
     $row2_sizer->Add( 0, 0, &Wx::wxEXPAND);
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
@@ -80,8 +79,11 @@ sub update_enable {
     my ($self) = @_;
     my $type = $self->{'type'}->GetValue();
     $self->{'stepsize'}->Enable( $type ne 'no' );
-    $self->{'period'}->Enable( $type eq 'circular' );
-    $self->{'parent'}{'color'}{'end'}->Enable( $type ne 'no' );
+    $self->{'dynlabel'}->Enable( $type eq 'alter' or $type eq 'linear' );
+    $self->{'dynamic'}->Enable( $type eq 'alter' or $type eq 'linear' );
+    $self->{'direction'}->Enable( $type eq 'alter' or $type eq 'linear' );
+    $self->{'period'}->Enable( $type eq 'alter' or $type eq 'circular' );
+    $self->{'parent'}{'color'}{'end'}->Enable( $type eq 'alter' or $type eq 'circular' );
 }
 
 1;

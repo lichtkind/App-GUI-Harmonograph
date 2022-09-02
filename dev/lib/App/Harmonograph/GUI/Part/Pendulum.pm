@@ -37,7 +37,7 @@ sub new {
                             ($self, 100, 'Offset', 'additional offset pendulum starts with (0 - quater rotation)', 0, 100, 0);
                             
     $self->{'radius'} = App::Harmonograph::GUI::SliderCombo->new( $self, 100, 'r', 'radius of pendulum swing', 0, 150, 100);
-    $self->{'damp'} = App::Harmonograph::GUI::SliderCombo->new( $self, 100, 'Damp', 'damping factor', 0, 400, 0);
+    $self->{'damp'} = App::Harmonograph::GUI::SliderCombo->new( $self, 100, 'Damp', 'damping factor', 0, 1000, 0);
 
 
     Wx::Event::EVT_CHECKBOX( $self, $self->{'on'}, sub { $self->update_enable() });
@@ -109,6 +109,7 @@ sub set_data {
     $data->{ 'offset' } -= 0.5 if $data->{'offset'} >= 0.5;
     $self->{ 'quarter_off' }->SetValue( $data->{'offset'} >= 0.25 );
     $data->{ 'offset' } -= 0.25 if $data->{'offset'} >= 0.25;
+    $self->{'offset'}->SetValue( int( $data->{'offset'} * 400 ));
     $self->{ 'radius' }->SetValue( $data->{'radius'} * 100 );
     $self->{ 'damp' }->SetValue( $data->{'damp'} );
     $self->update_enable;

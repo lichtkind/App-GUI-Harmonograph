@@ -57,9 +57,9 @@ sub osc {
     
     my $step_in_circle = $self->{'data'}{'line'}{'density'} * 10 * $max_freq;
     my $t_iter = $self->{'data'}{'line'}{'length'} * $step_in_circle;
-    my $xdamp  = $self->{'data'}{'x'}{'damp'} ? 1 - ($self->{'data'}{'x'}{'damp'}/500/$step_in_circle) : 0;
-    my $ydamp  = $self->{'data'}{'y'}{'damp'} ? 1 - ($self->{'data'}{'y'}{'damp'}/500/$step_in_circle) : 0;
-    my $zdamp  = $self->{'data'}{'z'}{'damp'} ? 1 - ($self->{'data'}{'z'}{'damp'}/500/$step_in_circle) : 0;
+    my $xdamp  = $self->{'data'}{'x'}{'damp'} ? 1 - ($self->{'data'}{'x'}{'damp'}/10000/$step_in_circle) : 0;
+    my $ydamp  = $self->{'data'}{'y'}{'damp'} ? 1 - ($self->{'data'}{'y'}{'damp'}/10000/$step_in_circle) : 0;
+    my $zdamp  = $self->{'data'}{'z'}{'damp'} ? 1 - ($self->{'data'}{'z'}{'damp'}/10000/$step_in_circle) : 0;
 
     my $rx = $self->{'data'}{'x'}{'radius'} * $self->{'hard_radius'};
     my $ry = $self->{'data'}{'y'}{'radius'} * $self->{'hard_radius'};
@@ -112,7 +112,7 @@ sub osc {
         if ($cflow->{'type'} eq 'linear'){
             my $color_count = int ($self->{'data'}{'line'}{'length'} / $cflow->{'stepsize'});
             @color = map {[$_->rgb] } $startc->gradient_to( $endc, $color_count + 1, $cflow->{'dynamic'} );
-        } else {
+        } elsif ($cflow->{'type'} eq 'alter'){
             return unless exists $cflow->{'period'} and $cflow->{'period'} > 1;
             @color = map {[$_->rgb]} $startc->gradient_to( $endc, $cflow->{'period'}, $cflow->{'dynamic'} );
             my @tc = reverse @color;
@@ -122,6 +122,13 @@ sub osc {
             @tc = @color;
             my $color_circle_length = (2 * $cflow->{'period'} - 2) * $cflow->{'stepsize'};
             push @color, @tc for 0 .. int ($self->{'data'}{'line'}{'length'} / $color_circle_length);
+        } else {
+            return unless exists $cflow->{'period'} and $cflow->{'period'} > 1;
+            @color = map {[$_->rgb]} $startc->complementary( $cflow->{'period'}, 
+                                                             $endc->saturation - $startc->saturation,
+                                                             $endc->lightness - $startc->lightness);
+            my @tc = @color;
+            push @color, @tc for 0 .. int ($self->{'data'}{'line'}{'length'} / $cflow->{'period'} / $cflow->{'stepsize'});
         }
         $color_change_time = $step_in_circle * $cflow->{'stepsize'};
         if ($dtz){
