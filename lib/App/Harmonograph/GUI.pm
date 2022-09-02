@@ -59,7 +59,8 @@ sub OnInit {
 
     $frame->{'pendulum'}{'x'}  = App::Harmonograph::GUI::Part::Pendulum->new( $frame, 'x','pendulum in x direction (left to right)', 1, 30);
     $frame->{'pendulum'}{'y'}  = App::Harmonograph::GUI::Part::Pendulum->new( $frame, 'y','pendulum in y direction (left to right)', 1, 30);
-    $frame->{'pendulum'}{'z'}  = App::Harmonograph::GUI::Part::Pendulum->new( $frame, 'z','circular pendulum in z direction',        0, 30);
+    $frame->{'pendulum'}{'z'}  = App::Harmonograph::GUI::Part::Pendulum->new( $frame, 'z','circular pendulum',        0, 30);
+    $frame->{'pendulum'}{'r'}  = App::Harmonograph::GUI::Part::Pendulum->new( $frame, 'R','rotating pendulum',        0, 30);
     
     $frame->{'color'}{'start'} = App::Harmonograph::GUI::Part::Color->new( $frame, 'start', { red => 20, green => 20, blue => 110 } );
     $frame->{'color'}{'end'}   = App::Harmonograph::GUI::Part::Color->new( $frame, 'end',  { red => 110, green => 20, blue => 20 } );
@@ -165,6 +166,7 @@ sub OnInit {
     $setting_sizer->Add( $frame->{'pendulum'}{'x'},   0, $vert_attr, 20);
     $setting_sizer->Add( $frame->{'pendulum'}{'y'},   0, $vert_attr, 10);
     $setting_sizer->Add( $frame->{'pendulum'}{'z'},   0, $vert_attr, 10);
+    $setting_sizer->Add( $frame->{'pendulum'}{'r'},   0, $vert_attr, 10);
     $setting_sizer->Add( Wx::StaticLine->new( $frame, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 5);
     $setting_sizer->Add( $frame->{'line'},            0, $vert_attr, 10);
     $setting_sizer->Add( Wx::StaticLine->new( $frame, -1, [-1,-1], [ 135, 2] ),  0,$vert_attr, 10);
@@ -182,7 +184,7 @@ sub OnInit {
     $frame->SetSizer($main_sizer);
     $frame->SetAutoLayout( 1 );
     $frame->{'btn'}{'draw'}->SetFocus;
-    my $size = [1300, 900];
+    my $size = [1300, 1040];
     $frame->SetSize($size);
     $frame->SetMinSize($size);
     $frame->SetMaxSize($size);
@@ -217,6 +219,7 @@ sub get_data {
         x => $frame->{'pendulum'}{'x'}->get_data,
         y => $frame->{'pendulum'}{'y'}->get_data,
         z => $frame->{'pendulum'}{'z'}->get_data,
+        r => $frame->{'pendulum'}{'r'}->get_data,
         start_color => $frame->{'color'}{'start'}->get_data,
         end_color => $frame->{'color'}{'end'}->get_data,
         color_flow => $frame->{'color_flow'}->get_data,
@@ -227,7 +230,7 @@ sub get_data {
 sub set_data {
     my ($frame, $data) = @_;
     return unless ref $data eq 'HASH';
-    $frame->{'pendulum'}{$_}->set_data( $data->{$_} ) for qw/x y z/;
+    $frame->{'pendulum'}{$_}->set_data( $data->{$_} ) for qw/x y z r/;
     $frame->{'color'}{$_}->set_data( $data->{ $_.'_color' } ) for qw/start end/;
     $frame->{ $_ }->set_data( $data->{ $_ } ) for qw/color_flow line/;
 }
@@ -241,7 +244,7 @@ sub draw {
 }
 sub init {
     my ($frame) = @_;
-    $frame->{'pendulum'}{$_}->init() for qw/x y z/;
+    $frame->{'pendulum'}{$_}->init() for qw/x y z r/;
     $frame->{'color'}{$_}->init() for qw/start end/;
     $frame->{ $_ }->init() for qw/color_flow line/;
     draw( $frame );

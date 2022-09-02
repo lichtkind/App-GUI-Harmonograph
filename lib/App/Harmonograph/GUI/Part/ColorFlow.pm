@@ -83,7 +83,7 @@ sub update_enable {
     $self->{'dynamic'}->Enable( $type eq 'alter' or $type eq 'linear' );
     $self->{'direction'}->Enable( $type eq 'alter' or $type eq 'linear' );
     $self->{'period'}->Enable( $type eq 'alter' or $type eq 'circular' );
-    $self->{'parent'}{'color'}{'end'}->Enable( $type eq 'alter' or $type eq 'circular' );
+    $self->{'parent'}{'color'}{'end'}->Enable( $type ne 'no' );
 }
 
 1;
