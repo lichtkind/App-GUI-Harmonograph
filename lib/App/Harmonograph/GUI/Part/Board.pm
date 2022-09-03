@@ -145,7 +145,7 @@ sub osc {
 sub save_file {
     my( $self, $file_name ) = @_;
     my ($x, $y) = ($self->{'size'}{'x'}, $self->{'size'}{'y'});
-    my $dc = Wx::SVGFileDC->new( $file_name, $x, $y, 200 );
+    my $dc = Wx::SVGFileDC->new( $file_name, $x, $y, 250 ); # size, dpi
     $self->osc( $dc );
 }
 

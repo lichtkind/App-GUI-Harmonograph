@@ -9,7 +9,6 @@ use App::Harmonograph::GUI::SliderCombo;
 
 sub new {
     my ( $class, $parent ) = @_;
-    #return unless defined $max;
     my $self = $class->SUPER::new( $parent, -1 );
 
     my $flow_label = Wx::StaticText->new( $self, -1, 'Color Flow');
