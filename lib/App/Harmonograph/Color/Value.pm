@@ -3,7 +3,6 @@ use v5.12;
 # check, convert and measure color values
 
 package App::Harmonograph::Color::Value;
-our $VERSION = '1.0';
 use Carp;
 use Exporter 'import';
 our @EXPORT_OK = qw/check_rgb check_hsl trim_rgb trim_hsl 

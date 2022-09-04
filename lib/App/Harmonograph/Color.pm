@@ -5,7 +5,6 @@
 use v5.12;
 
 package App::Harmonograph::Color;
-our $VERSION = '2.402.0';
 
 use Carp;
 use App::Harmonograph::Color::Constant ':all';

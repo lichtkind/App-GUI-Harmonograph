@@ -1,4 +1,4 @@
-use v5.18;
+use v5.12;
 use warnings;
 use Wx;
 use utf8;

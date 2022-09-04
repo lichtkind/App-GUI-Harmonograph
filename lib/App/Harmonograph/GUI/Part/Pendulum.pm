@@ -1,9 +1,8 @@
-use v5.18;
+use v5.12;
 use warnings;
 use Wx;
 
 package App::Harmonograph::GUI::Part::Pendulum;
-my $VERSION = 0.1;
 use base qw/Wx::Panel/;
 use App::Harmonograph::GUI::SliderCombo;
 

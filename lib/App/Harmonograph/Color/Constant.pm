@@ -3,7 +3,6 @@ use v5.12;
 # named colors from X11, HTML (SVG) standard and Pantone report
 
 package App::Harmonograph::Color::Constant;
-our $VERSION = '1.0';
 use Carp;
 use App::Harmonograph::Color::Value ':all';
 

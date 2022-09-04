@@ -1,4 +1,4 @@
-use v5.18;
+use v5.12;
 use warnings;
 use utf8;
 
@@ -7,13 +7,14 @@ use utf8;
 # X Y sync ? , undo ?
 
 package App::Harmonograph::GUI;
-my $VERSION = 0.14;
 use base qw/Wx::Frame/;
 use App::Harmonograph::GUI::Part::Pendulum;
 use App::Harmonograph::GUI::Part::ColorFlow;
 use App::Harmonograph::GUI::Part::Color;
 use App::Harmonograph::GUI::Part::PenLine;
 use App::Harmonograph::GUI::Part::Board;
+use App::Harmonograph::Settings;
+use App::Harmonograph::Config;
 
 sub new {
     my ( $class, $parent, $title ) = @_;
@@ -85,7 +86,7 @@ sub new {
             $self->{'file_base_cc'}++;
         }
         my $data = get_data( $self );
-        $self->{'file_base_cc'}++ unless hash_eq( $self->{'last_file_settings'}, $data );
+        $self->{'file_base_cc'}++ unless App::Harmonograph::Settings::are_equal( $self->{'last_file_settings'}, $data );
         write_settings_file( $self, $base.'_'.$self->{'file_base_cc'}.'.ini' );
         $self->{'last_file_settings'} = $data;
     });
@@ -98,7 +99,7 @@ sub new {
             $self->{'file_base_cc'}++;
         }
         my $data = get_data( $self );
-        $self->{'file_base_cc'}++ unless hash_eq( $self->{'last_file_settings'}, $data );
+        $self->{'file_base_cc'}++ unless App::Harmonograph::Settings::are_equal( $self->{'last_file_settings'}, $data );
         write_image( $self, $base.'_'.$self->{'file_base_cc'}.'.svg' );
         $self->{'last_file_settings'} = $data;
     });
@@ -248,53 +249,26 @@ sub load_setting_file {
     my $dialog = Wx::FileDialog->new ( $self, "Select a settings file to load", '.', '',
                    ( join '|', 'INI files (*.ini)|*.ini', 'All files (*.*)|*.*' ), &Wx::wxFD_OPEN );
     unless( $dialog->ShowModal == &Wx::wxID_CANCEL ) {
-        my $path = $dialog->GetPath;
-        open my $FH, '<', $path or return $self->SetStatusText( "could not red $path", 0 );
-        my $data = {};
-        my $cat = '';
-        while (<$FH>) {
-            chomp;
-            next unless $_ or substr( $_, 0, 1) eq '#';
-            if    (/\s*\[(\w+)\]/)           { $cat = $1 }
-            elsif (/\s*(\w+)\s*=\s*(.+)\s*$/){ $data->{$cat}{$1} = $2 }
-        }
-        close $FH;
-        set_data( $self, $data );
-        $self->SetStatusText( "loaded settings from $path", 1 );
-        draw( $self );
+        my $data = App::Harmonograph::Settings::load( $dialog->GetPath );
+        if (ref $data){
+            $self->set_data( $data );
+            $self->SetStatusText( "loaded settings from ".$dialog->GetPath, 1 );
+            $self->draw;
+        } else { $self->SetStatusText( $data, 0 ) }
     }
 }
 
 sub write_settings_file {
     my ($self, $file)  = @_;
-    my $data = get_data($self);
-    open my $FH, '>', $file or return $self->SetStatusText( "could not write $file: $!", 0 );
-    for my $main_key (sort keys %$data){
-        say $FH "\n  [$main_key]\n";
-        my $subhash = $data->{$main_key};
-        next unless ref $subhash eq 'HASH';
-        for my $key (sort keys %$subhash){
-            say $FH "$key = $subhash->{$key}";
-        }
-    }
-    close $FH;
-    $self->SetStatusText( "saved settings into file $file", 1 );
+    my $ret = App::Harmonograph::Settings::write( $file, $self->get_data );
+    if ($ret){ $self->SetStatusText( $ret, 0 ) }
+    else     { $self->SetStatusText( "saved settings into file $file", 1 ) }
 }
 
 sub write_image {
     my ($self, $file)  = @_;
     $self->{'board'}->save_file( $file );
     $self->SetStatusText( "saved image under $file", 0 );
-}
-
-sub hash_eq {
-    my ($h1, $h2)  = @_;
-    return 0 unless ref $h1 eq 'HASH' and $h2 eq 'HASH';
-    for my $key (keys %$h1){
-        next if not ref $h1->{$key} and exists $h2->{$key} and not ref $h2->{$key} and $h1->{$key} eq $h2->{$key};
-        next if hash_eq( $h1->{$key}, $h2->{$key} );
-        return 0;
-    }
 }
 
 1;

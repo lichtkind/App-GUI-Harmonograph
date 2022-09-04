@@ -1,9 +1,8 @@
-use v5.18;
+use v5.12;
 use warnings;
 use Wx;
 
 package App::Harmonograph::GUI::Part::Board;
-my $VERSION = 0.03;
 use base qw/Wx::Panel/;
 use Wx::Event qw(EVT_PAINT);
 my $TAU = 6.283185307;
