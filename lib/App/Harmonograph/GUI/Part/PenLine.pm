@@ -13,7 +13,7 @@ sub new {
 
     $self->{'length'} = App::Harmonograph::GUI::SliderCombo->new( $self, 80, 'Length','length of drawing in full circles',     1,  150,  10);
     $self->{'density'} = App::Harmonograph::GUI::SliderCombo->new( $self, 80, 'Dense','x 10 pixel per circle',  1,  400,  100);
-    $self->{'thickness'}  = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[65, -1], [1,2,3,4,5,6,7,8], 1);
+    $self->{'thickness'}  = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[65, -1], [1,2,3,4,5,6,7,8,9], 1);
     $self->{'thickness'}->SetToolTip('dot size (c of line) in pixel');
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);

@@ -2,9 +2,10 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::Harmonograph::GUI::Part::Color;
+package App::Harmonograph::GUI::Part::ColorBrowser;
 use base qw/Wx::Panel/;
 use App::Harmonograph::GUI::SliderCombo;
+use App::Harmonograph::GUI::ColorDisplay;
 use App::Harmonograph::Color;
 
 sub new {
@@ -21,37 +22,24 @@ sub new {
     $self->{'hue'} =  App::Harmonograph::GUI::SliderCombo->new( $self, 100, ' H  ', "hue of $type color",         0, 359,  0);
     $self->{'sat'} =  App::Harmonograph::GUI::SliderCombo->new( $self, 100, ' S  ', "saturation of $type color",  0, 100,  0);
     $self->{'light'} =  App::Harmonograph::GUI::SliderCombo->new( $self, 100, ' L  ', "lightness of $type color",   0, 100,  0);
-    $self->{'display'} = Wx::Panel->new( $self, -1, [-1,-1], [25, 10] );
+    $self->{'display'} = App::Harmonograph::GUI::ColorDisplay->new( $self, 25, 10, $init);
     $self->{'display'}->SetToolTip("$type color monitor");
     
-    Wx::Event::EVT_PAINT( $self->{'display'}, sub {
-        my( $dpanel, $event ) = @_;
-        return unless ref $self->{'blue'} and ref $self->{'red'} and ref $self->{'green'};
-        my $dc = Wx::PaintDC->new( $dpanel );
-        my $bgb = Wx::Brush->new(
-                      Wx::Colour->new( $self->{'red'}->GetValue, 
-                                       $self->{'green'}->GetValue, 
-                                       $self->{'blue'}->GetValue), &Wx::wxBRUSHSTYLE_SOLID );
-        $dc->SetBackground( $bgb );
-        $dc->Clear();
-    } );
-
-
     my $rgb2hsl = sub {
-        my @hsl = App::Harmonograph::Color::Value::hsl_from_rgb( 
-            $self->{'red'}->GetValue, $self->{'green'}->GetValue, $self->{'blue'}->GetValue);
+        my @rgb = ($self->{'red'}->GetValue, $self->{'green'}->GetValue, $self->{'blue'}->GetValue);
+        my @hsl = App::Harmonograph::Color::Value::hsl_from_rgb( @rgb );
         $self->{'hue'}->SetValue( $hsl[0], 1 );
         $self->{'sat'}->SetValue( $hsl[1], 1 );
         $self->{'light'}->SetValue( $hsl[2], 1 );
-        $self->{'display'}->Refresh;
+        $self->{'display'}->set_color( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
     };
     my $hsl2rgb = sub {
         my @rgb = App::Harmonograph::Color::Value::rgb_from_hsl( 
-            $self->{'hue'}->GetValue,  $self->{'sat'}->GetValue, $self->{'light'}->GetValue);
+            $self->{'hue'}->GetValue,  $self->{'sat'}->GetValue, $self->{'light'}->GetValue );
         $self->{'red'}->SetValue( $rgb[0], 1 );
         $self->{'green'}->SetValue( $rgb[1], 1 );
         $self->{'blue'}->SetValue( $rgb[2], 1 );
-        $self->{'display'}->Refresh;
+        $self->{'display'}->set_color( { red => $rgb[0], green => $rgb[1], blue => $rgb[2] } );
     };
     $self->{'red'}->SetCallBack( $rgb2hsl );
     $self->{'green'}->SetCallBack( $rgb2hsl );
@@ -84,21 +72,15 @@ sub new {
     $sizer->Add( $bl_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW, 0);
 
     $self->SetSizer($sizer);
-    $self->init();
-    $self->{'display'}->Refresh;
     $self;
 }
 
-sub init { $_[0]->set_data( $_[0]->{'init'} ) }
+sub init {
+    my ($self) = @_;
+    $self->set_data( $self->{'init'} );
+}    
 
-sub get_data {
-    my ( $self ) = @_;
-    {
-        red => $self->{'red'}->GetValue,
-        green => $self->{'green'}->GetValue,
-        blue => $self->{'blue'}->GetValue,
-    }
-}
+sub get_data { $_[0]->{'display'}->get_color( ) }
 
 sub set_data {
     my ( $self, $data ) = @_;

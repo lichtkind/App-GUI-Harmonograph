@@ -33,7 +33,7 @@ sub new {
     $self->{'quarter_off'} = Wx::CheckBox->new( $self, -1, ' 4');
     $self->{'quarter_off'}->SetToolTip('pendulum starts with offset of quater rotation');
     $self->{'offset'} = App::Harmonograph::GUI::SliderCombo->new
-                            ($self, 100, 'Offset', 'additional offset pendulum starts with (0 - quater rotation)', 0, 100, 0);
+                            ($self, 110, 'Offset', 'additional offset pendulum starts with (0 - quater rotation)', 0, 100, 0);
                             
     $self->{'radius'} = App::Harmonograph::GUI::SliderCombo->new( $self, 100, 'r', 'radius of pendulum swing', 0, 150, 100);
     $self->{'damp'} = App::Harmonograph::GUI::SliderCombo->new( $self, 100, 'Damp', 'damping factor', 0, 1000, 0);

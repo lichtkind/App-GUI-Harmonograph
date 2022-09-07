@@ -1,6 +1,7 @@
 use v5.12;
 use warnings;
-
+use FindBin;
+use File::Spec;
 # parameter of a drawing
 
 package App::Harmonograph::Settings;
@@ -44,6 +45,37 @@ sub are_equal {
         return 0;
     }
 }
+
+sub ensure_file_ending {
+    my ($file, $ending)  = @_;
+    my $ret = $file;
+    $ret;
+}
+
+sub extract_dir {
+    my ($path)  = @_;
+    my ($volume, $dir, $file) = File::Spec->splitpath( $path );
+    $path = File::Spec->catdir( $volume, $dir );
+    shrink_path( $path );
+}
+
+sub shrink_path {
+    my ($path)  = @_;
+    my $i = index($path, $FindBin::Bin );
+    $path = '.' . substr( $path, length $FindBin::Bin) if $i > -1;
+    $i = index($path, $ENV{HOME} );
+    $path = '~' . substr( $path, length $ENV{HOME}) if $i > -1;
+    $path;
+}
+
+sub expand_path {
+    my ($path)  = @_;
+    $path = File::Spec->catdir( $FindBin::Bin, substr( $path, 1) ) if substr($path, 0,1) eq '.';
+    $path = File::Spec->catdir( $ENV{HOME}, substr( $path, 1) ) if substr($path, 0,1) eq '~';
+    $path;
+}
+
+
 
 
 1;

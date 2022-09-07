@@ -4,8 +4,8 @@ use Wx;
 
 package App::Harmonograph::GUI::Part::Board;
 use base qw/Wx::Panel/;
-use Wx::Event qw(EVT_PAINT);
 my $TAU = 6.283185307;
+my $COPY_DC = 1;
 
 sub new {
     my ( $class, $parent, $x, $y ) = @_;
@@ -15,8 +15,21 @@ sub new {
     $self->{'center'}{'x'} = $x / 2;
     $self->{'center'}{'y'} = $y / 2;
     $self->{'hard_radius'} = ($x > $y ? $self->{'center'}{'y'} : $self->{'center'}{'x'}) - 25;
+    $self->{'dc'} = Wx::MemoryDC->new( );
+    $self->{'bmp'} = Wx::Bitmap->new( $self->{'size'}{'x'}+10, $self->{'size'}{'y'} + 10, 24);
+    $self->{'dc'}->SelectObject( $self->{'bmp'} );
 
-    EVT_PAINT( $self, \&paint );
+    Wx::Event::EVT_PAINT( $self, sub {
+        my( $self, $event ) = @_;
+        return unless ref $self->{'data'} and ref $self->{'data'}{'x'};
+        if (exists $self->{'data'}{'new'}) {
+            $self->{'dc'}->Blit (0, 0, $self->{'size'}{'x'}+10, $self->{'size'}{'y'}+10, $self->paint( Wx::PaintDC->new( $self ) ), 0, 0);
+        } else {
+            Wx::PaintDC->new( $self )->Blit (0, 0, $self->{'size'}{'x'}, $self->{'size'}{'y'}, $self->{'dc'}, 10, 10);
+        }
+        1;
+    }
+ );
     return $self;
 }
 
@@ -24,22 +37,14 @@ sub set_data {
     my( $self, $data ) = @_;
     return unless ref $data eq 'HASH';
     $self->{'data'} = $data;
+    $self->{'data'}{'new'} = 1;
 }
+
 
 sub paint {
-    my( $self, $event ) = @_;
-    my $dc = Wx::PaintDC->new( $self );
-    my $bgb = Wx::Brush->new( Wx::Colour->new( 255, 255, 255 ), &Wx::wxBRUSHSTYLE_SOLID );
-    $dc->SetBackground( $bgb );
-    $dc->Clear();
-    $self->osc( $dc ) if ref $self->{'data'} and ref $self->{'data'}{'x'};
-    1;
-}
-
-sub osc {
     my( $self, $dc ) = @_;
-    my $bgb = Wx::Brush->new( Wx::Colour->new( 255, 255, 255 ), &Wx::wxBRUSHSTYLE_SOLID );
-    $dc->SetBackground( $bgb );
+    my $background_color = Wx::Colour->new( 255, 255, 255 );
+    $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );     # $dc->SetBrush( $fgb );
     $dc->Clear();
 
     my $start_color = Wx::Colour->new( $self->{'data'}{'start_color'}{'red'}, 
@@ -120,8 +125,8 @@ sub osc {
     $color_change_time = $step_in_circle * $cflow->{'stepsize'};
 
     my $code = 'for (1 .. $t_iter){';
-    $code .= ( $dtx ? '$x = $rx * cos $tx;' : '$x = 0;') if $dtx;
-    $code .= ( $dty ? '$y = $ry * sin $ty;' : '$y = 0;') if $dtx;
+    $code .= ( $dtx ? '$x = $rx * cos $tx;' : '$x = 0;');
+    $code .= ( $dty ? '$y = $ry * sin $ty;' : '$y = 0;');
     $code .= '$x -= $rz * cos $tz;' if $dtz;
     $code .= '$y -= $rz * sin $tz;' if $dtz;
     $code .= '($x, $y) = (($x * cos($rz) ) - ($y * sin($tr) ), ($x * sin($tr) ) + ($y * cos($tr) ) );' if $dtr;
@@ -139,16 +144,24 @@ sub osc {
     $code .= '}';
     eval $code;
     die "bad iter code - $@ : $code" if $@;
+    delete $self->{'data'}{'new'};
+    $dc;
 }
 
 sub save_file {
-    my( $self, $file_name ) = @_;
-    my ($x, $y) = ($self->{'size'}{'x'}, $self->{'size'}{'y'});
-    my $dc = Wx::SVGFileDC->new( $file_name, $x, $y, 250 ); # size, dpi
-    $self->osc( $dc );
+    my( $self, $file_name, $width, $height ) = @_;
+    $width  //= $self->{'size'}{'x'};
+    $height //= $self->{'size'}{'y'};
+    Wx::SVGFileDC->new( $file_name, $width, $height, 250 )  #  250 dpi
+                 ->Blit (0, 0, $width, $height, $self->{'dc'}, 10, 10); # copy from in RAM image
+}
+
+sub save_png_file {
+    my( $self, $file_name, $width, $height ) = @_;
+    $width  //= $self->{'size'}{'x'};
+    $height //= $self->{'size'}{'y'};
+    Wx::SVGFileDC->new( $file_name, $width, $height, 250 )  #  250 dpi
+                 ->Blit (0, 0, $width, $height, $self->{'dc'}, 10, 10); # copy from in RAM image
 }
 
 1;
-    # $dc->Blit( 0,0, $x, $y, $self->{'dc'}, 0,0,$x, $y );
-    # bool Blit (wxCoord xdest, wxCoord ydest, wxCoord width, wxCoord height, wxDC *source, wxCoord xsrc, wxCoord ysrc, wxRasterOperationMode logicalFunc=wxCOPY, bool useMask=false, wxCoord xsrcMask=wxDefaultCoord, wxCoord ysrcMask=wxDefaultCoord)
-    # $dc->SetBrush( $fgb );
