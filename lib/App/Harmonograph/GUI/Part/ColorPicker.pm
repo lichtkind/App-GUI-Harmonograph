@@ -14,20 +14,22 @@ sub new {
     $space //= 0;
     my $self = $class->SUPER::new( $parent, -1 );
 
-    my $colors = $parent->{'config'}->get_value('color');
-    my $color_names = [ sort keys %$colors ];
-    my $fcolor = $colors->{ $color_names->[0] };
+    $self->{'colors'} = { %{$parent->{'config'}->get_value('color')} };
+    $self->{'color_names'} = [ sort keys %{$self->{'colors'}} ];
+    $self->{'color_index'} = 0;
+    my @np = split ' ', $label;
+    $self->{'browser'}     = $parent->{'color'}{ lc $np[0] };
+
 
     my $btnw = 50; my $btnh = 40;# button width and height
     $self->{'label'}  = Wx::StaticText->new($self, -1, $label.':' );
-    $self->{'select'} = Wx::ComboBox->new( $self, -1, $color_names->[0], [-1,-1], [$length, -1], $color_names);
+    $self->{'select'} = Wx::ComboBox->new( $self, -1, $self->current_color_name, [-1,-1], [$length, -1], $self->{'color_names'});
     $self->{'<'}    = Wx::Button->new( $self, -1, '<',       [-1,-1], [ 30, 20] );
     $self->{'>'}    = Wx::Button->new( $self, -1, '>',       [-1,-1], [ 30, 20] );
     $self->{'load'} = Wx::Button->new( $self, -1, 'Load',    [-1,-1], [$btnw, $btnh] );
     $self->{'del'}  = Wx::Button->new( $self, -1, 'Del',     [-1,-1], [$btnw, $btnh] );
     $self->{'save'} = Wx::Button->new( $self, -1, 'Save',    [-1,-1], [$btnw, $btnh] );
-    $self->{'display'} = App::Harmonograph::GUI::ColorDisplay->new
-                           ( $self, 25, 10, {red=> $fcolor->[0], green=> $fcolor->[1], blue=> $fcolor->[2] });
+    $self->{'display'} = App::Harmonograph::GUI::ColorDisplay->new( $self, 25, 10, $self->current_color );
     
     #$self->{'label'}->SetToolTip("use displayed color on the right side as $label");
     $self->{'select'}->SetToolTip("select color in list directly");
@@ -38,6 +40,28 @@ sub new {
     $self->{'del'}->SetToolTip("delete displayed color from storage)");
     $self->{'display'}->SetToolTip("color monitor");
 
+    Wx::Event::EVT_COMBOBOX( $self, $self->{'select'}, sub {
+        my ($win, $evt) = @_;                            $self->{'color_index'} = $evt->GetInt; $self->update_display });
+    Wx::Event::EVT_BUTTON( $self, $self->{'<'},    sub { $self->{'color_index'}--;  $self->update_display });
+    Wx::Event::EVT_BUTTON( $self, $self->{'>'},    sub { $self->{'color_index'}++;  $self->update_display });
+    Wx::Event::EVT_BUTTON( $self, $self->{'load'}, sub { $self->{'browser'}->set_data( $self->current_color ) });
+    Wx::Event::EVT_BUTTON( $self, $self->{'del'},  sub {
+        delete $self->{'colors'}{ $self->current_color_name };
+        $self->update_select();
+    });
+    Wx::Event::EVT_BUTTON( $self, $self->{'save'}, sub { 
+        my $dialog = Wx::TextEntryDialog->new ( $self, "Please insert the color name", 'Request Dialog');
+        return if $dialog->ShowModal == &Wx::wxID_CANCEL;
+        my $name = $dialog->GetValue();
+        return $self->GetParent->SetStatusText( "color name '$name' already taken ") if exists $self->{'colors'}{ $name };
+        my $cval = $self->{'browser'}->get_data;
+        $self->{'colors'}{ $name } = [ $cval->{'red'}, $cval->{'green'}, $cval->{'blue'} ];
+        $self->update_select();
+        for (0 .. $#{$self->{'color_names'}}){
+            $self->{'color_index'} = $_ if $name eq $self->{'color_names'}[$_];
+        }
+        $self->update_display();
+    });
 
     my $vset_attr = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxGROW | &Wx::wxTOP| &Wx::wxBOTTOM;
     my $all_attr  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxGROW | &Wx::wxALL;
@@ -59,24 +83,30 @@ sub new {
     $self;
 }
 
-sub init {
+sub get_data { $_[0]->{'colors'} }
+
+sub current_color_name { $_[0]->{'color_names'}->[ $_[0]->{'color_index'} ] }
+
+sub current_color {
     my ( $self ) = @_;
-    $self->set_data ( { length => 10, density => 100, thickness => 1 } );
+    my $cc = $self->{'colors'}->{ $self->current_color_name };
+    {red=> $cc->[0], green=> $cc->[1], blue=> $cc->[2] };
 }
 
-sub get_data {
+sub update_select {
     my ( $self ) = @_;
-    {
-        length    => $self->{'length'}->GetValue,
-        density   => $self->{'density'}->GetValue,
-        thickness => $self->{'thickness'}->GetValue,
-    }
+    $self->{'color_names'} = [ sort keys %{$self->{'colors'}} ];
+    $self->{'select'}->Clear ();
+    $self->{'select'}->Append( $_) for @{$self->{'color_names'}};
+    $self->update_display();
 }
 
-sub set_color {
-    my ( $self, $data ) = @_;
-    return unless ref $data eq 'HASH';
-    $self->{$_}->SetValue( $data->{$_} ) for qw/length density thickness/, 
+sub update_display {
+    my ( $self ) = @_;
+    $self->{'color_index'} = $#{$self->{'color_names'}} if $self->{'color_index'} < 0;
+    $self->{'color_index'} = 0                          if $self->{'color_index'} > $#{$self->{'color_names'}};
+    $self->{'select'}->SetSelection( $self->{'color_index'} );
+    $self->{'display'}->set_color( $self->current_color );
 }
 
 1;

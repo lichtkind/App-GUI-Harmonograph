@@ -2,9 +2,8 @@ use v5.12;
 use warnings;
 use utf8;
 
-# state config save PNG
-# overwrite protection
-#   
+# save PNG
+# modular conections
 # X Y sync ? , undo ?
 
 package App::Harmonograph::GUI;
@@ -90,7 +89,12 @@ sub new {
         $self->open_setting_file( $path );
         $self->SetStatusText( "loaded settings from ".$path, 1) 
     });
-    Wx::Event::EVT_TOGGLEBUTTON( $self, $self->{'btn'}{'tips'},  sub { Wx::ToolTip::Enable( $_[1]->IsChecked ) });
+    Wx::Event::EVT_TOGGLEBUTTON( $self, $self->{'btn'}{'tips'},  sub { 
+        Wx::ToolTip::Enable( $_[1]->IsChecked );
+        $self->{'config'}->set_value('tips', $_[1]->IsChecked ? 1 : 0 );
+    });
+    Wx::Event::EVT_TEXT_ENTER( $self, $self->{'txt'}{'file_bname'}, sub { $self->update_base_name });
+    Wx::Event::EVT_KILL_FOCUS(        $self->{'txt'}{'file_bname'}, sub { $self->update_base_name });
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'new'},  sub { $self->init });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'open'}, sub { 
@@ -103,10 +107,10 @@ sub new {
         else { 
             my $dir = App::Harmonograph::Settings::extract_dir( $path );
             $self->{'config'}->set_value('save_dir', $dir);
-            $self->SetStatusText( "loaded settings from ".$dialog->GetPath, 1) 
+            $self->SetStatusText( "loaded settings from ".$dialog->GetPath, 1);
         }
     });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'dir'},  sub { $self->get_dir }) ;
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'dir'},  sub { $self->change_base_dir }) ;
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'write'},sub { 
         my $dialog = Wx::FileDialog->new ( $self, "Select a file name to store data",$self->{'config'}->get_value('write_dir'), '',
                ( join '|', 'INI files (*.ini)|*.ini', 'All files (*.*)|*.*' ), &Wx::wxFD_SAVE );
@@ -115,39 +119,31 @@ sub new {
         #my $i = rindex $path, '.';
         #$path = substr($path, 0, $i - 1 ) if $i > -1;
         #$path .= '.ini' unless lc substr ($path, -4) eq '.ini';
+        return if -e $path and
+                  Wx::MessageDialog->new( $self, "\n\nReally overwrite the settings file?", 'Confirmation Question',
+                                          &Wx::wxYES_NO | &Wx::wxICON_QUESTION )->ShowModal() != &Wx::wxID_YES;
         $self->write_settings_file( $path );
         my $dir = App::Harmonograph::Settings::extract_dir( $path );
         $self->{'config'}->set_value('write_dir', $dir);
         $path = App::Harmonograph::Settings::shrink_path( $path);
         $self->{'config'}->add_setting_file( $path );
-        $self->update_last_saved();
+        $self->update_last_settings();
         $self->{'cmb'}{'last'}->SetSelection( $self->{'cmb'}{'last'}->GetCount() );
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'write_next'},  sub {
-        my $base = $self->{'txt'}{'file_base'}->GetValue();
-        return $self->{'txt'}{'file_base'}->SetFocus, $self->SetStatusText( "please remove file ending", 0 ) if $base =~ /\./ and substr( $base, 0, 1) ne '.';
-        return $self->{'txt'}{'file_base'}->SetFocus, $self->SetStatusText( "please add file name without ending", 0 ) if substr( $base, -1 ) eq '/';
-        while (1){
-            last unless -e $base.'_'.$self->{'file_base_cc'}.'.ini';
-            $self->{'file_base_cc'}++;
-        }
         my $data = get_data( $self );
-        $self->{'file_base_cc'}++ unless App::Harmonograph::Settings::are_equal( $self->{'last_file_settings'}, $data );
-        write_settings_file( $self, $base.'_'.$self->{'file_base_cc'}.'.ini' );
+        $self->inc_base_counter unless App::Harmonograph::Settings::are_equal( $self->{'last_file_settings'}, $data );
+        my $path = $self->base_path . '.ini';
+        $self->write_settings_file( $path);
+        $self->{'config'}->add_setting_file( $path );
         $self->{'last_file_settings'} = $data;
-        $self->update_last_saved();
+        $self->update_last_settings();
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'save_next'},  sub {
-        my $base = $self->{'txt'}{'file_base'}->GetValue();
-        return $self->{'txt'}{'file_base'}->SetFocus, $self->SetStatusText( "please remove file ending", 0 ) if $base =~ /\./ and substr( $base, 0, 1) ne '.';
-        return $self->{'txt'}{'file_base'}->SetFocus, $self->SetStatusText( "please add file name without ending", 0 ) if substr( $base, -1 ) eq '/';
-        while (1){
-            last unless -e $base.'_'.$self->{'file_base_cc'}.'.svg';
-            $self->{'file_base_cc'}++;
-        }
         my $data = get_data( $self );
-        $self->{'file_base_cc'}++ unless App::Harmonograph::Settings::are_equal( $self->{'last_file_settings'}, $data );
-        write_image( $self, $base.'_'.$self->{'file_base_cc'}.'.svg' );
+        $self->inc_base_counter unless App::Harmonograph::Settings::are_equal( $self->{'last_file_settings'}, $data );
+        my $path = $self->base_path . '.svg';
+        $self->write_image( $path );
         $self->{'last_file_settings'} = $data;
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'draw'},  sub { draw( $self ) });
@@ -156,12 +152,35 @@ sub new {
                    ( join '|', 'SVG files (*.svg)|*.svg', 'All files (*.*)|*.*' ), &Wx::wxFD_SAVE );
         return if $dialog->ShowModal == &Wx::wxID_CANCEL;
         my $path = $dialog->GetPath;
+        return if -e $path and
+                  Wx::MessageDialog->new( $self, "\n\nReally overwrite the image file?", 'Confirmation Question',
+                                          &Wx::wxYES_NO | &Wx::wxICON_QUESTION )->ShowModal() != &Wx::wxID_YES;
         $self->write_image( $path );
         my $dir = App::Harmonograph::Settings::extract_dir( $path );
         $self->{'config'}->set_value('save_dir', $dir);
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'exit'},  sub { $self->Close; } );
-    Wx::Event::EVT_CLOSE( $self, sub {$self->{'config'}->save(); $_[1]->Skip(1) });
+    Wx::Event::EVT_CLOSE( $self, sub {
+        my $all_color = $self->{'config'}->get_value('color');
+        my $startc = $self->{'color'}{'startio'}->get_data;
+        my $endc = $self->{'color'}{'endio'}->get_data;
+        for my $name (keys %$endc){
+            $all_color->{$name} = $endc->{$name} unless exists $all_color->{$name};
+        }
+        for my $name (keys %$startc){
+            $all_color->{$name} = $startc->{$name} unless exists $all_color->{$name};
+        }
+        for my $name (keys %$all_color){
+            if (exists $startc->{$name} and exists $endc->{$name}){
+                $endc->{$name} = $startc->{$name} if $startc->{$name}[0] != $all_color->{$name}[0]
+                                                  or $startc->{$name}[1] != $all_color->{$name}[1]
+                                                  or $startc->{$name}[2] != $all_color->{$name}[2];
+                $all_color->{$name} = $endc->{$name};
+            } else { delete $all_color->{$name} }
+        }
+        $self->{'config'}->save(); 
+        $_[1]->Skip(1) 
+    });
 
     my $std_attr = &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALIGN_CENTER_HORIZONTAL;
     my $vert_attr = $std_attr | &Wx::wxTOP;
@@ -245,6 +264,7 @@ sub new {
     $self->SetMinSize($size);
     $self->SetMaxSize($size);
     $self->init();
+    $self->{'last_file_settings'} = get_data( $self );
     $self;
 }
 
@@ -286,7 +306,55 @@ sub draw {
     $self->SetStatusText( "done drawing", 0 );
 }
 
-sub update_last_saved {
+sub update_base_name {
+    my ($self) = @_;
+    my $file = $self->{'txt'}{'file_bname'}->GetValue;
+    $self->{'config'}->set_value('file_base_name', $file);
+    $self->{'config'}->set_value('file_base_counter', 1);
+    $self->inc_base_counter();
+}
+
+sub inc_base_counter {
+    my ($self) = @_;
+    my $dir = $self->{'config'}->get_value('file_base_dir');
+    $dir = App::Harmonograph::Settings::expand_path( $dir );
+    my $base = File::Spec->catfile( $dir, $self->{'config'}->get_value('file_base_name') );
+    my $cc = $self->{'config'}->get_value('file_base_counter');
+    while (1){
+        last unless -e $base.'_'.$cc.'.svg' 
+                 or -e $base.'_'.$cc.'.png' 
+                 or -e $base.'_'.$cc.'.jpg'
+                 or -e $base.'_'.$cc.'.gif'
+                 or -e $base.'_'.$cc.'.ini';
+        $cc++;
+    }
+    $self->{'txt'}{'file_bnr'}->SetValue( $cc );
+    $self->{'config'}->set_value('file_base_counter', $cc);
+    $self->{'last_file_settings'} = get_data( $self );
+}
+
+
+sub change_base_dir {
+    my $self = shift;
+    my $dialog = Wx::DirDialog->new ( $self, "Select a directory to store a series of files", $self->{'config'}->get_value('file_base_dir'));
+    return if $dialog->ShowModal == &Wx::wxID_CANCEL;
+    my $new_dir = $dialog->GetPath;
+    $new_dir = App::Harmonograph::Settings::shrink_path( $new_dir ) . '/';
+    $self->{'btn'}{'dir'}->SetToolTip('directory to save file series: '.$new_dir);
+    $self->{'config'}->set_value('file_base_dir', $new_dir);
+    $self->update_base_name();
+}
+
+sub base_path {
+    my ($self) = @_;
+    my $dir = $self->{'config'}->get_value('file_base_dir');
+    $dir = App::Harmonograph::Settings::expand_path( $dir );
+    File::Spec->catfile( $dir, $self->{'config'}->get_value('file_base_name') )
+        .'_'.$self->{'config'}->get_value('file_base_counter');
+    
+}
+
+sub update_last_settings {
     my ($self) = @_;
     my $files = $self->{'config'}->get_value('last_settings');
     $self->{'cmb'}{'last'}->Clear ();
@@ -304,18 +372,6 @@ sub open_setting_file {
     $data;
 }
 
-sub get_dir {
-    my $self = shift;
-    my $dialog = Wx::DirDialog->new ( $self, "Select a directory to store a series of files", $self->{'config'}->get_value('file_base_dir'));
-    return if $dialog->ShowModal == &Wx::wxID_CANCEL;
-    my $path = $dialog->GetPath;
-    $path = App::Harmonograph::Settings::shrink_path( $path ) . '/';
-    $self->{'btn'}{'dir'}->SetToolTip('directory to save file series: '.$path);
-    $self->{'config'}->set_value('file_base_dir', $path);
-    $self->{'config'}->set_value('file_base_counter', 1);
-    $self->{'txt'}{'file_bnr'}->SetValue(1);
-}
-
 sub write_settings_file {
     my ($self, $file)  = @_;
     my $ret = App::Harmonograph::Settings::write( $file, $self->get_data );
@@ -326,7 +382,8 @@ sub write_settings_file {
 sub write_image {
     my ($self, $file)  = @_;
     $self->{'board'}->save_file( $file );
-    $self->SetStatusText( "saved image under $file", 0 );
+    $file = App::Harmonograph::Settings::shrink_path( $file );
+    $self->SetStatusText( "saved image under: $file", 0 );
 }
 
 
@@ -335,26 +392,12 @@ sub write_image {
 
 __END__
 
-    #$self->{'list'}{'sol'}->DeleteAllItems();
-    #$self->{'list'}{'sol'}->InsertStringItem( 0, "$_->[0],$_->[1] : $_->[2]") for reverse @{$self->{'game'}{'solution_stack'}};
-    #$self->{'list'}{'cand'}  = Wx::ListCtrl->new( $self, -1, [-1,-1],[290,-1], &Wx::wxLC_ICON );
-   # Wx::Event::EVT_LIST_ITEM_SELECTED( $self, $self->{'list'}{'cand'}, sub {$self->{'txt'}{'comment'}->SetValue($self->{'game'}{'candidate_stack'}[ $_[1]->GetIndex() ][3]) } );
-
     # Wx::Event::EVT_LEFT_DOWN( $self->{'board'}, sub {  });
     # Wx::Event::EVT_RIGHT_DOWN( $self->{'board'}, sub {
     #    my ($panel, $event) = @_;
-    #    return unless $self->{'editable'};
     #    my ($mx, $my) = ($event->GetX, $event->GetY);
-    #    my $c = 1 + int(($mx - 15)/52);
-    #    my $r = 1 + int(($my - 16)/57);
-    #    return if $r < 1 or $r > 9 or $c < 1 or $c > 9;
-    #    return if $self->{'game'}->cell_solution( $r, $c );
     #    my $cand_menu = Wx::Menu->new();
     #    $cand_menu->AppendCheckItem($_,$_) for 1..9;
-    #    my $nr;
     #    for (1 .. 9) {$cand_menu->Check($_, 1),$nr++ if $self->{'game'}->is_cell_candidate($r,$c,$_) }
     #    return if $nr < 2;
     #    my $digit = $panel->GetPopupMenuSelectionFromUser( $cand_menu, $event->GetX, $event->GetY);
-    #    return unless $digit > 0;
-    #    $self->{'game'}->remove_candidate($r, $c, $digit, 'set by app user');
-    #});

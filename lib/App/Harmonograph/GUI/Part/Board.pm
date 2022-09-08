@@ -152,8 +152,9 @@ sub save_file {
     my( $self, $file_name, $width, $height ) = @_;
     $width  //= $self->{'size'}{'x'};
     $height //= $self->{'size'}{'y'};
-    Wx::SVGFileDC->new( $file_name, $width, $height, 250 )  #  250 dpi
-                 ->Blit (0, 0, $width, $height, $self->{'dc'}, 10, 10); # copy from in RAM image
+    my $dc = Wx::SVGFileDC->new( $file_name, $width, $height, 250 );  #  250 dpi
+    $self->paint( $dc );
+                 #->Blit (0, 0, $width, $height, $self->{'dc'}, 10, 10); # copy from in RAM image
 }
 
 sub save_png_file {

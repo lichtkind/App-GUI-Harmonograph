@@ -5,7 +5,7 @@ use utf8;
 use FindBin;
 
 package App::Harmonograph;
-my $VERSION = 0.14;
+my $VERSION = 0.15;
 use base qw/Wx::App/;
 use App::Harmonograph::GUI;
 
@@ -33,58 +33,35 @@ App::Harmonograph - sculpting beautiful circular drawings
 
 =head1 SYNOPSIS 
 
-    use Chart::type;   (type is one of: Points, Lines, Bars, LinesPoints, Composite,
-    StackedBars, Mountain, Pie, HorizontalBars, Split, ErrorBars, Pareto, Direction) 
 
-    $obj = Chart::type->new;
-    $obj = Chart::type->new ( $png_width, $png_height );
+    1: start the program (hamonograph.pl )
+    
+    2. read docs or push help buttons to understand the GUI and mechanics
+    
+    3. move knobs to interesting configuration
+    
+    4. push "Draw"
 
-    $obj->set ( $key_1, $val_1, ... ,$key_n, $val_n );
-    $obj->set ( $key_1 => $val_1,
-            ...
-            $key_n => $val_n );
-    $obj->set ( %hash );
-
-    # GIFgraph.pm-style API to produce png formatted charts
-    @data = ( \@x_tick_labels, \@dataset1, ... , \@dataset_n );
-    $obj->png ( "filename", \@data );
-    $obj->png ( $filehandle, \@data );
-    $obj->png ( FILEHANDLE, \@data );
-    $obj->cgi_png ( \@data );
-
-    # Graph.pm-style API
-    $obj->add_pt ($label, $val_1, ... , $val_n);
-    $obj->add_dataset ($val_1, ... , $val_n);
-    $obj->png ( "filename" );
-    $obj->png ( $filehandle );
-    $obj->png ( FILEHANDLE );
-    $obj->cgi_png ();
-
-    The similar functions are available for j-peg
-
-    # Retrieve image map information
-    $obj->set ( 'imagemap' => 'true' );
-    $imagemap_ref = $obj->imagemap_dump ();
-
+    5. push "Save" if you like the picture or push "Write" to safe the 
+       settings into a file so you can later continue to tweak it
 
 =head1 DESCRIPTION
 
-Chart helps you to create PNG and JPG images with visualizations of numeric data.
-This page gives you a summary how to use it. 
-For a more thorough documentation and lots of example code please visit the L<Chart::Manual>.
+An Harmonograph is an apparatus of several connected pendula, creating
+together spiraling pictures :
 
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/Chart/main/dev/example/landing/points.png"    alt="point chart"               width="300" height="225">
-<img src="https://raw.githubusercontent.com/lichtkind/Chart/main/dev/example/landing/composite.png" alt="composite of bars and lines" width="300" height="225">
-<img src="https://raw.githubusercontent.com/lichtkind/Chart/main/dev/example/landing/sbars.png"     alt="stacked bars"              width="300" height="200">
-<img src="https://raw.githubusercontent.com/lichtkind/Chart/main/dev/example/landing/bars.png"      alt="multi bar chart"           width="300" height="250">
-<img src="https://raw.githubusercontent.com/lichtkind/Chart/main/dev/example/landing/hbars.png"     alt="horizontal bar chart"      width="300" height="240">
-<img src="https://raw.githubusercontent.com/lichtkind/Chart/main/dev/example/landing/polar.png"     alt="polar chart"               width="250" height="250">
-<img src="https://raw.githubusercontent.com/lichtkind/Chart/main/dev/example/landing/ring.png"      alt="pie chart"                 width="250" height="225">
-<img src="https://raw.githubusercontent.com/lichtkind/Chart/main/dev/example/landing/mountain.png"  alt="mountain chart"            width="300" height="225">
-<img src="https://raw.githubusercontent.com/lichtkind/Chart/main/dev/example/landing/split.png"     alt="split chart"               width="250" height="250">
-<img src="https://raw.githubusercontent.com/lichtkind/Chart/main/dev/example/landing/error.png"     alt="error bar chart"           width="300" height="225">
+<img src="https://raw.githubusercontent.com/lichtkind/App-Harmonograph/main/dev/example/landing/points.png"    alt="point chart"               width="300" height="225">
+<img src="https://raw.githubusercontent.com/lichtkind/App-Harmonograph/main/dev/example/landing/composite.png" alt="composite of bars and lines" width="300" height="225">
+<img src="https://raw.githubusercontent.com/lichtkind/App-Harmonograph/main/dev/example/landing/sbars.png"     alt="stacked bars"              width="300" height="200">
+<img src="https://raw.githubusercontent.com/lichtkind/App-Harmonograph/main/dev/example/landing/bars.png"      alt="multi bar chart"           width="300" height="250">
+<img src="https://raw.githubusercontent.com/lichtkind/App-Harmonograph/main/dev/example/landing/hbars.png"     alt="horizontal bar chart"      width="300" height="240">
+<img src="https://raw.githubusercontent.com/lichtkind/App-Harmonograph/main/dev/example/landing/polar.png"     alt="polar chart"               width="250" height="250">
+<img src="https://raw.githubusercontent.com/lichtkind/App-Harmonograph/main/dev/example/landing/ring.png"      alt="pie chart"                 width="250" height="225">
+<img src="https://raw.githubusercontent.com/lichtkind/App-Harmonograph/main/dev/example/landing/mountain.png"  alt="mountain chart"            width="300" height="225">
+<img src="https://raw.githubusercontent.com/lichtkind/App-Harmonograph/main/dev/example/landing/split.png"     alt="split chart"               width="250" height="250">
+<img src="https://raw.githubusercontent.com/lichtkind/App-Harmonograph/main/dev/example/landing/error.png"     alt="error bar chart"           width="300" height="225">
 </p>
 
 =head2 use-ing Chart
