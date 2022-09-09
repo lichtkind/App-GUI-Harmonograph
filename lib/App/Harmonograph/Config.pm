@@ -104,6 +104,7 @@ sub set_value {
 
 sub add_setting_file {
     my ($self, $file) = @_;
+    $file = App::Harmonograph::Settings::shrink_path( $file );
     for my $f (@{$self->{'data'}{'last_settings'}}) { return if $f eq $file }
     push @{$self->{'data'}{'last_settings'}}, $file;
     shift @{$self->{'data'}{'last_settings'}} if @{$self->{'data'}{'last_settings'}} > 15;

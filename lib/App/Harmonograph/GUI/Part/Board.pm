@@ -150,19 +150,32 @@ sub paint {
 
 sub save_file {
     my( $self, $file_name, $width, $height ) = @_;
+    my $file_end = lc substr( $file_name, -3 );
+    if ($file_end eq 'svg') { $self->save_svg_file( $file_name, $width, $height ) }
+    elsif ($file_end eq 'png' or $file_end eq 'jpg') { $self->save_bmp_file( $file_name, $file_end, $width, $height ) } 
+    else { return "unknown file ending: '$file_end'" }
+}
+
+sub save_svg_file {
+    my( $self, $file_name, $width, $height ) = @_;
     $width  //= $self->{'size'}{'x'};
     $height //= $self->{'size'}{'y'};
     my $dc = Wx::SVGFileDC->new( $file_name, $width, $height, 250 );  #  250 dpi
     $self->paint( $dc );
-                 #->Blit (0, 0, $width, $height, $self->{'dc'}, 10, 10); # copy from in RAM image
 }
 
-sub save_png_file {
-    my( $self, $file_name, $width, $height ) = @_;
+sub save_bmp_file {
+    my( $self, $file_name, $file_end, $width, $height ) = @_;
     $width  //= $self->{'size'}{'x'};
     $height //= $self->{'size'}{'y'};
-    Wx::SVGFileDC->new( $file_name, $width, $height, 250 )  #  250 dpi
-                 ->Blit (0, 0, $width, $height, $self->{'dc'}, 10, 10); # copy from in RAM image
+    my $bmp = Wx::Bitmap->new( $width, $height, 24); # bit depth
+    my $dc = Wx::MemoryDC->new( );
+    $dc->SelectObject( $bmp );
+    $dc->Blit (0, 0, $self->{'size'}{'x'}, $self->{'size'}{'y'}, $self->{'dc'}, 10, 10);
+    $dc->SelectObject( &Wx::wxNullBitmap );
+    $bmp->SaveFile( $file_name, $file_end eq 'png' ? &Wx::wxBITMAP_TYPE_PNG : &Wx::wxBITMAP_TYPE_JPEG );
 }
 
 1;
+
+# https://developer.mozilla.org/en-US/docs/Web/SVG/Element#shape_elements <polyline>

@@ -125,7 +125,6 @@ sub new {
         $self->write_settings_file( $path );
         my $dir = App::Harmonograph::Settings::extract_dir( $path );
         $self->{'config'}->set_value('write_dir', $dir);
-        $path = App::Harmonograph::Settings::shrink_path( $path);
         $self->{'config'}->add_setting_file( $path );
         $self->update_last_settings();
         $self->{'cmb'}{'last'}->SetSelection( $self->{'cmb'}{'last'}->GetCount() );
@@ -149,15 +148,15 @@ sub new {
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'draw'},  sub { draw( $self ) });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'save'},  sub {
         my $dialog = Wx::FileDialog->new ( $self, "select a file name to save image", $self->{'config'}->get_value('save_dir'), '',
-                   ( join '|', 'SVG files (*.svg)|*.svg', 'All files (*.*)|*.*' ), &Wx::wxFD_SAVE );
+                   ( join '|', 'SVG files (*.svg)|*.svg', 'PNG files (*.png)|*.png', 'JPEG files (*.jpg)|*.jpg', 'All files (*.*)|*.*' ), &Wx::wxFD_SAVE );
         return if $dialog->ShowModal == &Wx::wxID_CANCEL;
         my $path = $dialog->GetPath;
         return if -e $path and
                   Wx::MessageDialog->new( $self, "\n\nReally overwrite the image file?", 'Confirmation Question',
                                           &Wx::wxYES_NO | &Wx::wxICON_QUESTION )->ShowModal() != &Wx::wxID_YES;
-        $self->write_image( $path );
-        my $dir = App::Harmonograph::Settings::extract_dir( $path );
-        $self->{'config'}->set_value('save_dir', $dir);
+        my $ret = $self->write_image( $path );
+        if ($ret){ $self->SetStatusText( $ret, 0 ) }
+        else     { $self->{'config'}->set_value('save_dir', App::Harmonograph::Settings::extract_dir( $path )) }
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'exit'},  sub { $self->Close; } );
     Wx::Event::EVT_CLOSE( $self, sub {
@@ -215,13 +214,13 @@ sub new {
 
     my $help_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     my $help_lbl  = Wx::StaticText->new($self, -1, 'Help:' );
-    $help_sizer->Add( $help_lbl,              0, $all_attr,  20 );
+    $help_sizer->Add( $help_lbl,               0, $all_attr,  20 );
     $help_sizer->AddSpacer( 4 );
-    $help_sizer->Add( $self->{'btn'}{'tips'}, 0, $all_attr,  10 );
+    $help_sizer->Add( $self->{'btn'}{'tips'},  0, $all_attr,  10 );
     $help_sizer->Add( $self->{'btn'}{'about'}, 0, $all_attr,  10 );
     $help_sizer->Add( $self->{'btn'}{'knobs'}, 0, $all_attr,  10 );
-    $help_sizer->Add( $self->{'btn'}{'math'}, 0, $all_attr,  10 );
-    $help_sizer->Add( $self->{'btn'}{'exit'}, 0, $all_attr,  10 );
+    $help_sizer->Add( $self->{'btn'}{'math'},  0, $all_attr,  10 );
+    $help_sizer->Add( $self->{'btn'}{'exit'},  0, $all_attr,  10 );
     $help_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $board_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
