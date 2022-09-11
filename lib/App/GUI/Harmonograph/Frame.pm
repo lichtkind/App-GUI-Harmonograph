@@ -2,20 +2,20 @@ use v5.12;
 use warnings;
 use utf8;
 
-# save PNG
+# fast preview
 # modular conections
 # X Y sync ? , undo ?
 
-package App::Harmonograph::GUI;
+package App::GUI::Harmonograph::Frame;
 use base qw/Wx::Frame/;
-use App::Harmonograph::GUI::Part::Pendulum;
-use App::Harmonograph::GUI::Part::ColorFlow;
-use App::Harmonograph::GUI::Part::ColorBrowser;
-use App::Harmonograph::GUI::Part::ColorPicker;
-use App::Harmonograph::GUI::Part::PenLine;
-use App::Harmonograph::GUI::Part::Board;
-use App::Harmonograph::Settings;
-use App::Harmonograph::Config;
+use App::GUI::Harmonograph::Frame::Part::Pendulum;
+use App::GUI::Harmonograph::Frame::Part::ColorFlow;
+use App::GUI::Harmonograph::Frame::Part::ColorBrowser;
+use App::GUI::Harmonograph::Frame::Part::ColorPicker;
+use App::GUI::Harmonograph::Frame::Part::PenLine;
+use App::GUI::Harmonograph::Frame::Part::Board;
+use App::GUI::Harmonograph::Settings;
+use App::GUI::Harmonograph::Config;
 
 sub new {
     my ( $class, $parent, $title ) = @_;
@@ -24,7 +24,7 @@ sub new {
     $self->CreateStatusBar( 2 );
     $self->SetStatusWidths(2, 800, 100);
     $self->SetStatusText( "no file loaded", 1 );
-    $self->{'config'} = App::Harmonograph::Config->new();
+    $self->{'config'} = App::GUI::Harmonograph::Config->new();
     Wx::ToolTip::Enable( $self->{'config'}->get_value('tips') );
     Wx::InitAllImageHandlers();
 
@@ -64,27 +64,27 @@ sub new {
     $self->{'txt'}{'file_bnr'}->SetToolTip("index of file base name,\nwhen pushing Next button, image or settings are saved under Dir + File + Index + Ending");
     $self->{'cmb'}{'last'}->SetToolTip("last saved configuration, select to reload them");
 
-    $self->{'pendulum'}{'x'}  = App::Harmonograph::GUI::Part::Pendulum->new( $self, 'x','pendulum in x direction (left to right)', 1, 30);
-    $self->{'pendulum'}{'y'}  = App::Harmonograph::GUI::Part::Pendulum->new( $self, 'y','pendulum in y direction (left to right)', 1, 30);
-    $self->{'pendulum'}{'z'}  = App::Harmonograph::GUI::Part::Pendulum->new( $self, 'z','circular pendulum',        0, 30);
-    $self->{'pendulum'}{'r'}  = App::Harmonograph::GUI::Part::Pendulum->new( $self, 'R','rotating pendulum',        0, 30);
+    $self->{'pendulum'}{'x'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'x','pendulum in x direction (left to right)', 1, 30);
+    $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'y','pendulum in y direction (left to right)', 1, 30);
+    $self->{'pendulum'}{'z'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'z','circular pendulum',        0, 30);
+    $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'R','rotating pendulum',        0, 30);
+                                
+    $self->{'color'}{'start'}   = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self, 'start', { red => 20, green => 20, blue => 110 } );
+    $self->{'color'}{'end'}     = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self, 'end',  { red => 110, green => 20, blue => 20 } );
     
-    $self->{'color'}{'start'} = App::Harmonograph::GUI::Part::ColorBrowser->new( $self, 'start', { red => 20, green => 20, blue => 110 } );
-    $self->{'color'}{'end'}   = App::Harmonograph::GUI::Part::ColorBrowser->new( $self, 'end',  { red => 110, green => 20, blue => 20 } );
-    
-    $self->{'color'}{'startio'} = App::Harmonograph::GUI::Part::ColorPicker->new( $self, 'Start Color', $self->{'config'}->get_value('color') , 162, 1);
-    $self->{'color'}{'endio'}   = App::Harmonograph::GUI::Part::ColorPicker->new( $self, 'End Color', $self->{'config'}->get_value('color') , 162, 7);
+    $self->{'color'}{'startio'} = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self, 'Start Color', $self->{'config'}->get_value('color') , 162, 1);
+    $self->{'color'}{'endio'}   = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self, 'End Color', $self->{'config'}->get_value('color') , 162, 7);
 
-    $self->{'color_flow'} = App::Harmonograph::GUI::Part::ColorFlow->new( $self );
-    $self->{'line'} = App::Harmonograph::GUI::Part::PenLine->new( $self );
-
-    $self->{'board'}    = App::Harmonograph::GUI::Part::Board->new($self, 600, 600);
+    $self->{'color_flow'}       = App::GUI::Harmonograph::Frame::Part::ColorFlow->new( $self );
+    $self->{'line'}             = App::GUI::Harmonograph::Frame::Part::PenLine->new( $self );
+                               
+    $self->{'board'}            = App::GUI::Harmonograph::Frame::Part::Board->new($self, 600, 600);
 
 
 
     Wx::Event::EVT_COMBOBOX( $self, $self->{'cmb'}{'last'}, sub { 
         my $path = $_[1]->GetString;
-        $path = App::Harmonograph::Settings::expand_path( $path );
+        $path = App::GUI::Harmonograph::Settings::expand_path( $path );
         return $self->SetStatusText( "could not find file: ".$path, 0 ) unless -r $path;
         $self->open_setting_file( $path );
         $self->SetStatusText( "loaded settings from ".$path, 1) 
@@ -105,7 +105,7 @@ sub new {
         my $ret = $self->open_setting_file ( $path );
         if (not ref $ret) { $self->SetStatusText( $ret, 0) }
         else { 
-            my $dir = App::Harmonograph::Settings::extract_dir( $path );
+            my $dir = App::GUI::Harmonograph::Settings::extract_dir( $path );
             $self->{'config'}->set_value('save_dir', $dir);
             $self->SetStatusText( "loaded settings from ".$dialog->GetPath, 1);
         }
@@ -123,7 +123,7 @@ sub new {
                   Wx::MessageDialog->new( $self, "\n\nReally overwrite the settings file?", 'Confirmation Question',
                                           &Wx::wxYES_NO | &Wx::wxICON_QUESTION )->ShowModal() != &Wx::wxID_YES;
         $self->write_settings_file( $path );
-        my $dir = App::Harmonograph::Settings::extract_dir( $path );
+        my $dir = App::GUI::Harmonograph::Settings::extract_dir( $path );
         $self->{'config'}->set_value('write_dir', $dir);
         $self->{'config'}->add_setting_file( $path );
         $self->update_last_settings();
@@ -131,7 +131,7 @@ sub new {
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'write_next'},  sub {
         my $data = get_data( $self );
-        $self->inc_base_counter unless App::Harmonograph::Settings::are_equal( $self->{'last_file_settings'}, $data );
+        $self->inc_base_counter unless App::GUI::Harmonograph::Settings::are_equal( $self->{'last_file_settings'}, $data );
         my $path = $self->base_path . '.ini';
         $self->write_settings_file( $path);
         $self->{'config'}->add_setting_file( $path );
@@ -140,8 +140,8 @@ sub new {
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'save_next'},  sub {
         my $data = get_data( $self );
-        $self->inc_base_counter unless App::Harmonograph::Settings::are_equal( $self->{'last_file_settings'}, $data );
-        my $path = $self->base_path . '.svg';
+        $self->inc_base_counter unless App::GUI::Harmonograph::Settings::are_equal( $self->{'last_file_settings'}, $data );
+        my $path = $self->base_path . '.' . $self->{'config'}->get_value('file_base_ending');
         $self->write_image( $path );
         $self->{'last_file_settings'} = $data;
     });
@@ -156,7 +156,7 @@ sub new {
                                           &Wx::wxYES_NO | &Wx::wxICON_QUESTION )->ShowModal() != &Wx::wxID_YES;
         my $ret = $self->write_image( $path );
         if ($ret){ $self->SetStatusText( $ret, 0 ) }
-        else     { $self->{'config'}->set_value('save_dir', App::Harmonograph::Settings::extract_dir( $path )) }
+        else     { $self->{'config'}->set_value('save_dir', App::GUI::Harmonograph::Settings::extract_dir( $path )) }
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'exit'},  sub { $self->Close; } );
     Wx::Event::EVT_CLOSE( $self, sub {
@@ -316,7 +316,7 @@ sub update_base_name {
 sub inc_base_counter {
     my ($self) = @_;
     my $dir = $self->{'config'}->get_value('file_base_dir');
-    $dir = App::Harmonograph::Settings::expand_path( $dir );
+    $dir = App::GUI::Harmonograph::Settings::expand_path( $dir );
     my $base = File::Spec->catfile( $dir, $self->{'config'}->get_value('file_base_name') );
     my $cc = $self->{'config'}->get_value('file_base_counter');
     while (1){
@@ -338,7 +338,7 @@ sub change_base_dir {
     my $dialog = Wx::DirDialog->new ( $self, "Select a directory to store a series of files", $self->{'config'}->get_value('file_base_dir'));
     return if $dialog->ShowModal == &Wx::wxID_CANCEL;
     my $new_dir = $dialog->GetPath;
-    $new_dir = App::Harmonograph::Settings::shrink_path( $new_dir ) . '/';
+    $new_dir = App::GUI::Harmonograph::Settings::shrink_path( $new_dir ) . '/';
     $self->{'btn'}{'dir'}->SetToolTip('directory to save file series: '.$new_dir);
     $self->{'config'}->set_value('file_base_dir', $new_dir);
     $self->update_base_name();
@@ -347,7 +347,7 @@ sub change_base_dir {
 sub base_path {
     my ($self) = @_;
     my $dir = $self->{'config'}->get_value('file_base_dir');
-    $dir = App::Harmonograph::Settings::expand_path( $dir );
+    $dir = App::GUI::Harmonograph::Settings::expand_path( $dir );
     File::Spec->catfile( $dir, $self->{'config'}->get_value('file_base_name') )
         .'_'.$self->{'config'}->get_value('file_base_counter');
     
@@ -362,18 +362,18 @@ sub update_last_settings {
 
 sub open_setting_file {
     my ($self, $path) = @_;
-    my $data = App::Harmonograph::Settings::load( $path );
+    my $data = App::GUI::Harmonograph::Settings::load( $path );
     return $data unless ref $data;
     $self->set_data( $data );
     $self->draw;
-    my $dir = App::Harmonograph::Settings::extract_dir( $path );
+    my $dir = App::GUI::Harmonograph::Settings::extract_dir( $path );
     $self->{'config'}->set_value('open_dir', $dir);
     $data;
 }
 
 sub write_settings_file {
     my ($self, $file)  = @_;
-    my $ret = App::Harmonograph::Settings::write( $file, $self->get_data );
+    my $ret = App::GUI::Harmonograph::Settings::write( $file, $self->get_data );
     if ($ret){ $self->SetStatusText( $ret, 0 ) }
     else     { $self->SetStatusText( "saved settings into file $file", 1 ) }
 }
@@ -381,7 +381,7 @@ sub write_settings_file {
 sub write_image {
     my ($self, $file)  = @_;
     $self->{'board'}->save_file( $file );
-    $file = App::Harmonograph::Settings::shrink_path( $file );
+    $file = App::GUI::Harmonograph::Settings::shrink_path( $file );
     $self->SetStatusText( "saved image under: $file", 0 );
 }
 

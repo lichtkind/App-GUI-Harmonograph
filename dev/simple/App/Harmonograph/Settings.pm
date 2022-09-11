@@ -79,8 +79,10 @@ sub are_equal {
 
 sub clone {
     my ($settings)  = @_;
-
+    return unless ref $settings eq 'HASH';
+    {map { $_ => {%{$settings->{$_}}} } keys %$settings};
 }
+
 
 
 

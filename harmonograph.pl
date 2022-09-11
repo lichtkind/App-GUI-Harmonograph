@@ -1,12 +1,10 @@
-use v5.18;
+#!/usr/bin/perl -w
+use v5.12;
 use lib 'lib';
-use lib '../lib';
-use Benchmark;
+use App::GUI::Harmonograph;
 
-use App::Harmonograph;
+App::GUI::Harmonograph->new->MainLoop( );
 
-App::Harmonograph->new->MainLoop( );
-
-
+exit 0;
 __END__
 

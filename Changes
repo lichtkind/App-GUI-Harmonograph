@@ -1,0 +1,13 @@
+
+0.4  2022-09-1  lichtkind
+-------
+    * = initial CPAN release
+    * + 4 pendula: X, Y, Z (wobble), Rotating with haveing each setting of
+    *   - pendulum length (amplitude)
+    *   - frequency (integer + decimal), invertable 
+    *   - offset, checks for 90 and 180 degree
+    * + line length, dot denisty and dot size
+    * + color flow: no, linear, alternating, circular
+    * save images as SVG, JPEG and PNG
+    * save and load settings in INI files
+    * quick save of images and settings for series of files
