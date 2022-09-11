@@ -5,7 +5,8 @@ use utf8;
 use FindBin;
 
 package App::GUI::Harmonograph;
-my $VERSION = 0.4_0;
+our $VERSION = '0.4_1';
+
 use base qw/Wx::App/;
 use App::GUI::Harmonograph::Frame;
 
