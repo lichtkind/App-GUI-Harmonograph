@@ -179,7 +179,7 @@ sub new {
     my ($pkg) = @_;
     for my $d ('.', File::HomeDir->my_home, File::HomeDir->my_documents){
         my $path = File::Spec->catfile( $d, $file );
-        $dir = $d if -r $path;
+        $dir = $d, last if -r $path;
     }
     my $data = $dir 
              ? load( $pkg, File::Spec->catfile( $dir, $file ) )
@@ -196,8 +196,8 @@ sub load {
     while (<$FH>) {
         chomp;
         next unless $_ or substr( $_, 0, 1) eq '#';
-        if    (/^\s*(\w+):/)              {                   $cat = $1 }
-        elsif (/^\s+-\s+(\S+)\s*$/)       { push @{$data->{$cat}}, $1   }
+        if    (/^\s*(\w+):/)              {                $cat = $1 }
+        elsif (/^\s+-\s+(.+)\s*$/)        { push @{$data->{$cat}}, $1        }
         elsif (/^\s+\+\s+(\w+)\s*=\s*\[\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\]/) 
                                           { $data->{$cat}{$1} = [$2, $3, $4] }
         elsif (/\s*(\w+)\s*=\s*(.+)\s*$/) { $data->{$1} = $2; $cat = '' }
@@ -229,7 +229,7 @@ sub save {
 
 sub get_value {
     my ($self, $key) = @_;
-    $self->{'data'}{$key};
+    $self->{'data'}{$key} if exists $self->{'data'}{$key};
 }
 
 sub set_value {

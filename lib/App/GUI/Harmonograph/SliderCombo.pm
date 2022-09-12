@@ -97,7 +97,3 @@ sub SetCallBack {    my ( $self, $code) = @_;
 
 
 1;
-
-__END__
-
-$self->{'spin'}  = Wx::SpinCtrl->new( $self, -1, $init_value, [-1, -1], [130, -1], &Wx::wxSP_VERTICAL | &Wx::wxSP_ARROW_KEYS, $min, $max, $init_value );

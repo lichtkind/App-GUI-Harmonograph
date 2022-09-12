@@ -92,6 +92,13 @@ sub get_data {
     }
 }
 
+sub SetCallBack {    
+    my ( $self, $code) = @_;
+    return unless ref $code eq 'CODE';
+#    $self->{'callback'} = $code if 
+}
+
+
 sub set_data {
     my ( $self, $data ) = @_;
     return unless ref $data eq 'HASH' and exists $data->{'frequency'}

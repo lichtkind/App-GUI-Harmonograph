@@ -2,20 +2,20 @@
 
 Please submit Bug reports under
 
- https://rt.cpan.org/Dist/Display.html?Name=App-Harmonograph (preferred)
+ https://rt.cpan.org/Dist/Display.html?Name=App-GUI-Harmonograph (preferred)
  
  or if you like
  
- https://github.com/lichtkind/App-Harmonograph/issues
+ https://github.com/lichtkind/App-GUI-Harmonograph/issues
  
 
 Patches are welcome under:
 
- https://github.com/lichtkind/App-Harmonograph/pulls (preferred)
+ https://github.com/lichtkind/App-GUI-Harmonograph/pulls (preferred)
  
  but arrive also via 
  
- https://rt.cpan.org/Dist/Display.html?Name=App-Harmonograph
+ https://rt.cpan.org/Dist/Display.html?Name=App-GUI-Harmonograph
 
 
 Also feature Requests are welcome but please read the TODO first.

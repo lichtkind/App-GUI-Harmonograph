@@ -14,6 +14,9 @@ use App::GUI::Harmonograph::Frame::Part::ColorBrowser;
 use App::GUI::Harmonograph::Frame::Part::ColorPicker;
 use App::GUI::Harmonograph::Frame::Part::PenLine;
 use App::GUI::Harmonograph::Frame::Part::Board;
+use App::GUI::Harmonograph::Dialog::Function;
+use App::GUI::Harmonograph::Dialog::Interface;
+use App::GUI::Harmonograph::Dialog::About;
 use App::GUI::Harmonograph::Settings;
 use App::GUI::Harmonograph::Config;
 
@@ -28,24 +31,50 @@ sub new {
     Wx::ToolTip::Enable( $self->{'config'}->get_value('tips') );
     Wx::InitAllImageHandlers();
 
+    # create GUI parts
+    
+    $self->{'pendulum'}{'x'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'x','pendulum in x direction (left to right)', 1, 30);
+    $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'y','pendulum in y direction (left to right)', 1, 30);
+    $self->{'pendulum'}{'z'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'z','circular pendulum',        0, 30);
+    $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'R','rotating pendulum',        0, 30);
+                                
+    $self->{'color'}{'start'}   = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self, 'start', { red => 20, green => 20, blue => 110 } );
+    $self->{'color'}{'end'}     = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self, 'end',  { red => 110, green => 20, blue => 20 } );
+    
+    $self->{'color'}{'startio'} = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self, 'Start Color', $self->{'config'}->get_value('color') , 162, 1);
+    $self->{'color'}{'endio'}   = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self, 'End Color', $self->{'config'}->get_value('color') , 162, 7);
+
+    $self->{'color_flow'}       = App::GUI::Harmonograph::Frame::Part::ColorFlow->new( $self );
+    $self->{'line'}             = App::GUI::Harmonograph::Frame::Part::PenLine->new( $self );
+                               
+    $self->{'board'}            = App::GUI::Harmonograph::Frame::Part::Board->new($self, 600, 600);
+    $self->{'dialog'}{'about'}  = App::GUI::Harmonograph::Dialog::About->new();
+    $self->{'dialog'}{'interface'} = App::GUI::Harmonograph::Dialog::Interface->new();
+    $self->{'dialog'}{'function'}  = App::GUI::Harmonograph::Dialog::Function->new();
+
     my $btnw = 50; my $btnh     = 40;# button width and height
+    $self->{'btn'}{'tips'}      = Wx::ToggleButton->new( $self, -1,'&Tool Tips',[-1,-1],[-1, -1], 1 );
+    $self->{'btn'}{'tips'}->SetValue( $self->{'config'}->get_value('tips') );
+    $self->{'btn'}{'about'}    = Wx::Button->new( $self, -1, '&About',[-1,-1], [-1, -1] );
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'about'},  sub { $self->{'dialog'}{'about'}->ShowModal });
+    $self->{'btn'}{'knobs'}     = Wx::Button->new( $self, -1, '&Knobs',[-1,-1], [-1, -1] );
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'knobs'},  sub { $self->{'dialog'}{'interface'}->ShowModal });
+    $self->{'btn'}{'math'}      = Wx::Button->new( $self, -1, '&Function',[-1,-1], [-1, -1] );
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'math'},   sub { $self->{'dialog'}{'function'}->ShowModal });
+    $self->{'btn'}{'exit'}      = Wx::Button->new( $self, -1, '&Quit', [-1,-1],[$btnw, -1] );
+    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'exit'},  sub { $self->Close; } );
+
     $self->{'btn'}{'new'}       = Wx::Button->new( $self, -1, '&New',  [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'open'}      = Wx::Button->new( $self, -1, '&Open', [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'write'}     = Wx::Button->new( $self, -1, '&Write',[-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'dir'}       = Wx::Button->new( $self, -1, 'Dir',   [-1,-1],[$btnw, $btnh] );
-    $self->{'btn'}{'write_next'}= Wx::Button->new( $self, -1, '&Next', [-1,-1],[$btnw, $btnh] );
+    $self->{'btn'}{'write_next'}= Wx::Button->new( $self, -1, 'Nex&t', [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'draw'}      = Wx::Button->new( $self, -1, '&Draw', [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'save'}      = Wx::Button->new( $self, -1, '&Save', [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'save_next'} = Wx::Button->new( $self, -1, 'Ne&xt', [-1,-1],[$btnw, $btnh] );
-    $self->{'btn'}{'tips'}      = Wx::ToggleButton->new( $self, -1,'&Tool Tips',[-1,-1],[-1, $btnh], 1 );
-    $self->{'btn'}{'tips'}->SetValue( $self->{'config'}->get_value('tips') );
-    $self->{'btn'}{'knobs'}     = Wx::Button->new( $self, -1, '&Knobs',[-1,-1], [-1, $btnh] );
-    $self->{'btn'}{'math'}      = Wx::Button->new( $self, -1, '&Function',[-1,-1], [-1, $btnh] );
-    $self->{'btn'}{'about'}     = Wx::Button->new( $self, -1, '&About',[-1,-1], [-1, $btnh] );
-    $self->{'btn'}{'exit'}      = Wx::Button->new( $self, -1, '&Exit', [-1,-1],[$btnw, $btnh] );
     $self->{'txt'}{'file_bname'}= Wx::TextCtrl->new( $self,-1, $self->{'config'}->get_value('file_base_name'), [-1,-1], [170, -1] );
     $self->{'txt'}{'file_bnr'}  = Wx::TextCtrl->new( $self,-1, $self->{'config'}->get_value('file_base_counter'), [-1,-1], [ 36, -1], &Wx::wxTE_READONLY );
-    $self->{'cmb'}{'last'}      = Wx::ComboBox->new( $self,-1, 'select settings file to load', [-1,-1], [225, -1], $self->{'config'}{'data'}{'last_settings'} );
+    $self->{'cmb'}{'last'}      = Wx::ComboBox->new( $self,-1, 'select settings file to load', [-1,-1], [225, -1], $self->{'config'}->get_value( 'last_settings' ) );
 
     $self->{'btn'}{'new'} ->SetToolTip('put all settings to default (start values)');
     $self->{'btn'}{'open'}->SetToolTip('load image settings from a text file');
@@ -64,24 +93,11 @@ sub new {
     $self->{'txt'}{'file_bnr'}->SetToolTip("index of file base name,\nwhen pushing Next button, image or settings are saved under Dir + File + Index + Ending");
     $self->{'cmb'}{'last'}->SetToolTip("last saved configuration, select to reload them");
 
-    $self->{'pendulum'}{'x'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'x','pendulum in x direction (left to right)', 1, 30);
-    $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'y','pendulum in y direction (left to right)', 1, 30);
-    $self->{'pendulum'}{'z'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'z','circular pendulum',        0, 30);
-    $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'R','rotating pendulum',        0, 30);
-                                
-    $self->{'color'}{'start'}   = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self, 'start', { red => 20, green => 20, blue => 110 } );
-    $self->{'color'}{'end'}     = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self, 'end',  { red => 110, green => 20, blue => 20 } );
-    
-    $self->{'color'}{'startio'} = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self, 'Start Color', $self->{'config'}->get_value('color') , 162, 1);
-    $self->{'color'}{'endio'}   = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self, 'End Color', $self->{'config'}->get_value('color') , 162, 7);
 
-    $self->{'color_flow'}       = App::GUI::Harmonograph::Frame::Part::ColorFlow->new( $self );
-    $self->{'line'}             = App::GUI::Harmonograph::Frame::Part::PenLine->new( $self );
-                               
-    $self->{'board'}            = App::GUI::Harmonograph::Frame::Part::Board->new($self, 600, 600);
-
-
-
+    Wx::Event::EVT_TOGGLEBUTTON( $self, $self->{'btn'}{'tips'},  sub { 
+        Wx::ToolTip::Enable( $_[1]->IsChecked );
+        $self->{'config'}->set_value('tips', $_[1]->IsChecked ? 1 : 0 );
+    });
     Wx::Event::EVT_COMBOBOX( $self, $self->{'cmb'}{'last'}, sub { 
         my $path = $_[1]->GetString;
         $path = App::GUI::Harmonograph::Settings::expand_path( $path );
@@ -89,13 +105,9 @@ sub new {
         $self->open_setting_file( $path );
         $self->SetStatusText( "loaded settings from ".$path, 1) 
     });
-    Wx::Event::EVT_TOGGLEBUTTON( $self, $self->{'btn'}{'tips'},  sub { 
-        Wx::ToolTip::Enable( $_[1]->IsChecked );
-        $self->{'config'}->set_value('tips', $_[1]->IsChecked ? 1 : 0 );
-    });
     Wx::Event::EVT_TEXT_ENTER( $self, $self->{'txt'}{'file_bname'}, sub { $self->update_base_name });
     Wx::Event::EVT_KILL_FOCUS(        $self->{'txt'}{'file_bname'}, sub { $self->update_base_name });
-
+    
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'new'},  sub { $self->init });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'open'}, sub { 
         my $dialog = Wx::FileDialog->new ( $self, "Select a settings file to load", $self->{'config'}->get_value('open_dir'), '',
@@ -158,7 +170,6 @@ sub new {
         if ($ret){ $self->SetStatusText( $ret, 0 ) }
         else     { $self->{'config'}->set_value('save_dir', App::GUI::Harmonograph::Settings::extract_dir( $path )) }
     });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'exit'},  sub { $self->Close; } );
     Wx::Event::EVT_CLOSE( $self, sub {
         my $all_color = $self->{'config'}->get_value('color');
         my $startc = $self->{'color'}{'startio'}->get_data;
@@ -177,10 +188,13 @@ sub new {
                 $all_color->{$name} = $endc->{$name};
             } else { delete $all_color->{$name} }
         }
-        $self->{'config'}->save(); 
+        $self->{'config'}->save();
+        $self->{'dialog'}{$_}->Destroy() for qw/interface function about/;
         $_[1]->Skip(1) 
     });
 
+    # GUI layout assembly
+    
     my $std_attr = &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALIGN_CENTER_HORIZONTAL;
     my $vert_attr = $std_attr | &Wx::wxTOP;
     my $vset_attr = $std_attr | &Wx::wxTOP| &Wx::wxBOTTOM;
@@ -215,11 +229,15 @@ sub new {
     my $help_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     my $help_lbl  = Wx::StaticText->new($self, -1, 'Help:' );
     $help_sizer->Add( $help_lbl,               0, $all_attr,  20 );
-    $help_sizer->AddSpacer( 4 );
+    $help_sizer->AddSpacer( 8 );
     $help_sizer->Add( $self->{'btn'}{'tips'},  0, $all_attr,  10 );
-    $help_sizer->Add( $self->{'btn'}{'about'}, 0, $all_attr,  10 );
+    $help_sizer->AddSpacer( 5 );
     $help_sizer->Add( $self->{'btn'}{'knobs'}, 0, $all_attr,  10 );
+    $help_sizer->AddSpacer( 5 );
     $help_sizer->Add( $self->{'btn'}{'math'},  0, $all_attr,  10 );
+    $help_sizer->AddSpacer( 5 );
+    $help_sizer->Add( $self->{'btn'}{'about'}, 0, $all_attr,  10 );
+    $help_sizer->AddSpacer( 15 );
     $help_sizer->Add( $self->{'btn'}{'exit'},  0, $all_attr,  10 );
     $help_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
@@ -398,5 +416,4 @@ __END__
     #    my $cand_menu = Wx::Menu->new();
     #    $cand_menu->AppendCheckItem($_,$_) for 1..9;
     #    for (1 .. 9) {$cand_menu->Check($_, 1),$nr++ if $self->{'game'}->is_cell_candidate($r,$c,$_) }
-    #    return if $nr < 2;
     #    my $digit = $panel->GetPopupMenuSelectionFromUser( $cand_menu, $event->GetX, $event->GetY);

@@ -5,7 +5,8 @@ use utf8;
 use FindBin;
 
 package App::GUI::Harmonograph;
-our $VERSION = '0.4_1';
+our $NAME = __PACKAGE__;
+our $VERSION = '0.4_2';
 
 use base qw/Wx::App/;
 use App::GUI::Harmonograph::Frame;
@@ -34,18 +35,34 @@ App::GUI::Harmonograph - sculpting beautiful circular drawings
 
 =head1 SYNOPSIS 
 
+=over 4
 
-    1: start the program (harmonograph.pl )
-    
-    2. push help buttons (down left) to understand GUI and mechanics
-    
-    3. move knobs to interesting configuration
-    
-    4. push "Draw" to produce visible image
+=item 1.
 
-    5. push "Save" to store image in a file
-    
-    6. push "Write" to safe settings into a file for tweaking them later
+start the program (harmonograph)
+
+=item 2.
+
+push help buttons (down left) to understand GUI and mechanics
+
+=item 3.
+
+move knobs to interesting configuration
+
+=item 4.
+
+push "Draw" (below right drawing board) to produce visible / full image
+
+=item 5.
+
+push "Save" (below left) to store image in a PNG / JPEG / SVG file
+
+=item 6.
+
+push "Write" (second row right) to safe settings into a INI file 
+for tweaking them later
+
+=back
 
 =head1 DESCRIPTION
 
@@ -61,6 +78,53 @@ together spiraling pictures :
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/wolke.png"     alt=""  width="300" height="300">
 </p>
 
+
+
+
+=head1 Mechanics
+
+This is a cybernetic recreation of an Prof. Blackburns invention with 
+several enhancements:
+
+=over 4
+
+=item *
+
+third pendulum can rotate
+
+=item *
+
+pendula can oscillate at none integer frequncies
+
+=item *
+
+changeable amplitude damping
+
+=item *
+
+changeable dot density and size
+
+=item *
+
+3 types of color changes with changeable speed and polynomial dynamics
+
+=back
+
+
+
+=head1 GUI
+
+=head2 Pendulum
+
+=head2 Line
+
+=head2 Colors
+
+=head1 Workflow
+
+=head2 File Formats
+
+=head2 File Series
 
 
 =head1 AUTHOR

@@ -40,6 +40,8 @@ sub set_data {
     $self->{'data'}{'new'} = 1;
 }
 
+sub set_sketch_flag { $_[0]->{'data'}{'sketch'} = 1 }
+
 
 sub paint {
     my( $self, $dc ) = @_;
@@ -104,7 +106,7 @@ sub paint {
     if ($cflow->{'type'} eq 'linear'){
         my $color_count = int ($self->{'data'}{'line'}{'length'} / $cflow->{'stepsize'});
         @color = map {[$_->rgb] } $startc->gradient_to( $endc, $color_count + 1, $cflow->{'dynamic'} );
-    } elsif ($cflow->{'type'} eq 'alter'){
+    } elsif ($cflow->{'type'} eq 'alternate'){
         return unless exists $cflow->{'period'} and $cflow->{'period'} > 1;
         @color = map {[$_->rgb]} $startc->gradient_to( $endc, $cflow->{'period'}, $cflow->{'dynamic'} );
         my @tc = reverse @color;
