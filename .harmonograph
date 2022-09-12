@@ -56,22 +56,22 @@ color:
   + turquoise = [ 69, 184, 172 ]
   + warmtaupe = [ 175, 148, 131 ]
 file_base_counter = 4
-file_base_dir = ./img/
+file_base_dir = ./../img/
 file_base_ending = png
 file_base_name = wirbel
 last_settings:
-  - ./img/wirbel.ini
-  - ./img/wirbel_1.ini
-  - ./img/wirbel_2.ini
-  - ./img/tuerkis.ini
-  - ./img/dopelfalte.ini
-  - ./img/4ohr.ini
-  - ./img/schnecke.ini
-  - ./img/wirbel_3.ini
-  - ./img/wolke.ini
-  - ./img/wirbel_4.ini
-  - ./img/hose.ini
-open_dir = ./img
-save_dir = ./img
-tips = 1
-write_dir = ./img
+  - ./../img/wirbel.ini
+  - ./../img/wirbel_1.ini
+  - ./../img/wirbel_2.ini
+  - ./../img/tuerkis.ini
+  - ./../img/dopelfalte.ini
+  - ./../img/4ohr.ini
+  - ./../img/schnecke.ini
+  - ./../img/wirbel_3.ini
+  - ./../img/wolke.ini
+  - ./../img/wirbel_4.ini
+  - ./../img/hose.ini
+open_dir = ./../img
+save_dir = ./../img
+tips = 0
+write_dir = ./../img
