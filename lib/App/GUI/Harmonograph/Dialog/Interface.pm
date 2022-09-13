@@ -31,7 +31,7 @@ sub new {
     my $settings10 = Wx::StaticText->new( $self,-1, 'Topmost are the settings for the color change, which is set on default to "no"');
     my $settings11 = Wx::StaticText->new( $self,-1, 'In that case only the start (upper) color will be used, and not the lower end (target) color.');
     my $settings12 = Wx::StaticText->new( $self,-1, 'Both allows instant change of red, green and blue value or hue, saturation and lightness.');
-    my $settings13 = Wx::StaticText->new( $self,-1, 'An one time or alternating gradient between both colors with different dynamics can be employed tool.');
+    my $settings13 = Wx::StaticText->new( $self,-1, 'An one time or alternating gradient between both colors with different dynamics can be employed too.');
     my $settings14 = Wx::StaticText->new( $self,-1, 'Circular gradients travel around the rainbow through complement with saturation and lightness of the target.');
     my $settings15 = Wx::StaticText->new( $self,-1, 'Steps size refers always to how maby circles are draw before the color changes .');
 
@@ -42,7 +42,7 @@ sub new {
     my $commands4 = Wx::StaticText->new( $self, -1, 'Push "Dir" to select the directory and type in directly the file base name - the index is found automatically.');
     my $commands5 = Wx::StaticText->new( $self, -1, 'Push "Next" to save the image under the path: dir + base name + index + ending (set in config) - index will ++.');
     my $commands6 = Wx::StaticText->new( $self, -1, 'Push "Next" in the row below to also save the settings of the current state under same name with ending .ini.');
-    my $commands7 = Wx::StaticText->new( $self, -1, 'The second button row deals with settings. "New" resets them to init and "Open" ans "Write" loads and stores them.');
+    my $commands7 = Wx::StaticText->new( $self, -1, 'The second button row deals with settings. "New" resets them to init and "Open" and "Write" loads and stores them.');
     my $commands8 = Wx::StaticText->new( $self, -1, 'The combo box in the middle of the second row allows a quick load of the last stored settings.');
     my $commands9 = Wx::StaticText->new( $self, -1, 'Row 3 and 4 access the color store (of config file .harmonograph) and their exchange with start and end color.');
 

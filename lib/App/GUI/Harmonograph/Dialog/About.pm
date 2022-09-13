@@ -27,7 +27,7 @@ sub new {
     
     my $sizer = Wx::BoxSizer->new( &Wx::wxVERTICAL );
     my $t_attrs = &Wx::wxGROW | &Wx::wxALL | &Wx::wxALIGN_CENTRE_HORIZONTAL;
-    $sizer->AddSpacer( 5 );
+    $sizer->AddSpacer( 10 );
     $sizer->Add( $version,         0, $t_attrs, 10 );
     $sizer->Add( $author,          0, $t_attrs, 10 );
     $sizer->Add( $license,         0, $t_attrs, 10 );

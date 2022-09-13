@@ -142,7 +142,7 @@ sub paint {
     $code .= '$rz *= $zdamp;'  if $zdamp;
     $code .= '$dtr *= $rdamp;' if $rdamp;
     $code .= '$dc->SetPen( Wx::Pen->new( Wx::Colour->new( @{$color[$color_index++]} ),'.
-             ' $self->{data}{line}{thickness}, &Wx::wxPENSTYLE_SOLID)) unless $_ % $color_change_time;' if $cflow->{'type'} ne 'no';
+             ' $self->{data}{line}{thickness}, &Wx::wxPENSTYLE_SOLID)) unless $_ % $color_change_time;' if $cflow->{'type'} ne 'no' and @color;
     $code .= '}';
     eval $code;
     die "bad iter code - $@ : $code" if $@;
