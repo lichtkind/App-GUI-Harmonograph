@@ -4,7 +4,7 @@
 
 ### VERSION
  
-    0.4
+    0.42
 
 [Home on CPAN](https://metacpan.org/pod/App-Harmonograph)
 
