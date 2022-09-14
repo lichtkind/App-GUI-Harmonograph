@@ -58,12 +58,18 @@ sub paint {
     my $cx = $self->{'center'}{'x'};
     my $cy = $self->{'center'}{'y'};
     my $max_freq = abs $self->{'data'}{'x'}{'frequency'};
+
     $max_freq = abs $self->{'data'}{'y'}{'frequency'} if $max_freq < abs $self->{'data'}{'y'}{'frequency'};
     $max_freq = abs $self->{'data'}{'z'}{'frequency'} if $max_freq < abs $self->{'data'}{'z'}{'frequency'};
     $max_freq = abs $self->{'data'}{'r'}{'frequency'} if $max_freq < abs $self->{'data'}{'r'}{'frequency'};
     
-    my $step_in_circle = $self->{'data'}{'line'}{'density'} * 10 * $max_freq;
-    my $t_iter = $self->{'data'}{'line'}{'length'} * $step_in_circle;
+    my $step_in_circle = exists $self->{'data'}{'sketch'} 
+                       ? 300 * $max_freq
+                       : $self->{'data'}{'line'}{'density'} * 10 * $max_freq;
+    my $t_iter =         exists $self->{'data'}{'sketch'} 
+               ? 5 * $step_in_circle
+               : $self->{'data'}{'line'}{'length'} * $step_in_circle;
+
     my $xdamp  = $self->{'data'}{'x'}{'damp'} ? 1 - ($self->{'data'}{'x'}{'damp'}/10000/$step_in_circle) : 0;
     my $ydamp  = $self->{'data'}{'y'}{'damp'} ? 1 - ($self->{'data'}{'y'}{'damp'}/10000/$step_in_circle) : 0;
     my $zdamp  = $self->{'data'}{'z'}{'damp'} ? 1 - ($self->{'data'}{'z'}{'damp'}/10000/$step_in_circle) : 0;
@@ -147,6 +153,7 @@ sub paint {
     eval $code;
     die "bad iter code - $@ : $code" if $@;
     delete $self->{'data'}{'new'};
+    delete $self->{'data'}{'sketch'};
     $dc;
 }
 

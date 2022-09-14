@@ -77,10 +77,10 @@ sub update_enable {
     my ($self) = @_;
     my $type = $self->{'type'}->GetValue();
     $self->{'stepsize'}->Enable( $type ne 'no' );
-    $self->{'dynlabel'}->Enable( $type eq 'alter' or $type eq 'linear' );
-    $self->{'dynamic'}->Enable( $type eq 'alter' or $type eq 'linear' );
-    $self->{'direction'}->Enable( $type eq 'alter' or $type eq 'linear' );
-    $self->{'period'}->Enable( $type eq 'alter' or $type eq 'circular' );
+    $self->{'dynlabel'}->Enable( $type eq 'alternate' or $type eq 'linear' );
+    $self->{'dynamic'}->Enable( $type eq 'alternate' or $type eq 'linear' );
+    $self->{'direction'}->Enable( $type eq 'alternate' or $type eq 'linear' );
+    $self->{'period'}->Enable( $type eq 'alternate' or $type eq 'circular' );
     $self->{'parent'}{'color'}{'end'}->Enable( $type ne 'no' );
 }
 

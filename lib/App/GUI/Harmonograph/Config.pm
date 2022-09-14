@@ -196,11 +196,11 @@ sub load {
     while (<$FH>) {
         chomp;
         next unless $_ or substr( $_, 0, 1) eq '#';
-        if    (/^\s*(\w+):/)              {                $cat = $1 }
+        if    (/^\s*(\w+):/)              { $data->{$cat} = [];    $cat = $1 }
         elsif (/^\s+-\s+(.+)\s*$/)        { push @{$data->{$cat}}, $1        }
         elsif (/^\s+\+\s+(\w+)\s*=\s*\[\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\]/) 
                                           { $data->{$cat}{$1} = [$2, $3, $4] }
-        elsif (/\s*(\w+)\s*=\s*(.+)\s*$/) { $data->{$1} = $2; $cat = '' }
+        elsif (/\s*(\w+)\s*=\s*(.+)\s*$/) { $data->{$1} = $2; $cat = ''      }
     }
     close $FH;
     $data;
@@ -239,7 +239,7 @@ sub set_value {
 
 sub add_setting_file {
     my ($self, $file) = @_;
-    $file = App::Harmonograph::Settings::shrink_path( $file );
+    $file = App::GUI::Harmonograph::Settings::shrink_path( $file );
     for my $f (@{$self->{'data'}{'last_settings'}}) { return if $f eq $file }
     push @{$self->{'data'}{'last_settings'}}, $file;
     shift @{$self->{'data'}{'last_settings'}} if @{$self->{'data'}{'last_settings'}} > 15;

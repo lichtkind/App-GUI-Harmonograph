@@ -16,6 +16,7 @@ sub new {
     $self->{'name'} = $label;
     $self->{'value'} = $init_value // $min;
     $self->{'delta'} = $delta // 1;
+    $self->{'callback'} = sub {};
   
     $self->{'txt'}      = Wx::TextCtrl->new( $self, -1, $init_value, [-1,-1], [26 + 4 * int(log $max),-1], &Wx::wxTE_RIGHT);
     $self->{'btn'}{'-'} = Wx::Button->new( $self, -1, '-', [-1,-1],[30, 30] );
@@ -71,7 +72,6 @@ sub new {
         $self->SetValue( $cmd->GetInt );
     });
 
-    $self->{'callback'} = sub { };
     return $self;
 }
 
@@ -91,8 +91,10 @@ sub SetValue {
     $self->{'callback'}->( $value ) unless defined $passive;
 }
 
-sub SetCallBack {    my ( $self, $code) = @_;
-    $self->{'callback'} = $code if ref $code eq 'CODE';
+sub SetCallBack {    
+    my ( $self, $code) = @_;
+    return unless ref $code eq 'CODE';
+    $self->{'callback'} = $code;
 }
 
 

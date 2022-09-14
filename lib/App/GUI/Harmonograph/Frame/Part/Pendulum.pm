@@ -14,6 +14,7 @@ sub new {
     $self->{'name'} = $label;
     $self->{'maxf'} = $max;
     $self->{'initially_on'} = $on;
+    $self->{'callback'} = sub {};
 
     $self->{'on'} = Wx::CheckBox->new( $self, -1, '', [-1,-1],[-1,-1], 1 );
     $self->{'on'}->SetToolTip('set partial pendulum on or off');
@@ -39,7 +40,11 @@ sub new {
     $self->{'damp'} = App::GUI::Harmonograph::SliderCombo->new( $self, 100, 'Damp', 'damping factor', 0, 1000, 0);
 
 
-    Wx::Event::EVT_CHECKBOX( $self, $self->{'on'}, sub { $self->update_enable() });
+    Wx::Event::EVT_CHECKBOX( $self, $self->{'on'},          sub { $self->update_enable(); $self->{'callback'}->() });
+    Wx::Event::EVT_CHECKBOX( $self, $self->{'invert_freq'}, sub {                         $self->{'callback'}->() });
+    Wx::Event::EVT_CHECKBOX( $self, $self->{'direction'},   sub {                         $self->{'callback'}->() });
+    Wx::Event::EVT_CHECKBOX( $self, $self->{'half_off'},    sub {                         $self->{'callback'}->() });
+    Wx::Event::EVT_CHECKBOX( $self, $self->{'quarter_off'}, sub {                         $self->{'callback'}->() });
     
     my $f_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $f_sizer->Add( $self->{'frequency'}, 0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT, 49);
@@ -95,7 +100,8 @@ sub get_data {
 sub SetCallBack {    
     my ( $self, $code) = @_;
     return unless ref $code eq 'CODE';
-#    $self->{'callback'} = $code if 
+    $self->{'callback'} = $code;
+    $self->{ $_ }->SetCallBack( $code ) for qw /radius damp frequency freq_dez offset/;
 }
 
 

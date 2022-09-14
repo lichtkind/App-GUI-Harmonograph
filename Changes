@@ -1,3 +1,12 @@
+0.42  2022-09-14  lichtkind
+-------
+    * = post first release bug fix release
+    * + sketch mode to get fast previews when playing with knobs
+    * - removing not working toggle button for tool tips
+    * ! fix visual element enable mechanism due changed key words of color flow
+    * ! crash when last settings list in config was empty
+    * ! crash when saving settings
+
 
 0.41  2022-09-14  lichtkind
 -------

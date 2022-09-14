@@ -37,6 +37,7 @@ sub new {
     $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'y','pendulum in y direction (left to right)', 1, 30);
     $self->{'pendulum'}{'z'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'z','circular pendulum',        0, 30);
     $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'R','rotating pendulum',        0, 30);
+    $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/x y z r/;
                                 
     $self->{'color'}{'start'}   = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self, 'start', { red => 20, green => 20, blue => 110 } );
     $self->{'color'}{'end'}     = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self, 'end',  { red => 110, green => 20, blue => 20 } );
@@ -53,8 +54,8 @@ sub new {
     $self->{'dialog'}{'function'}  = App::GUI::Harmonograph::Dialog::Function->new();
 
     my $btnw = 50; my $btnh     = 40;# button width and height
-    $self->{'btn'}{'tips'}      = Wx::ToggleButton->new( $self, -1,'&Tool Tips',[-1,-1],[-1, -1], 1 );
-    $self->{'btn'}{'tips'}->SetValue( $self->{'config'}->get_value('tips') );
+    #$self->{'btn'}{'tips'}      = Wx::ToggleButton->new( $self, -1,'&Tool Tips',[-1,-1],[-1, -1], 1 );
+    #$self->{'btn'}{'tips'}->SetValue( $self->{'config'}->get_value('tips') );
     $self->{'btn'}{'about'}    = Wx::Button->new( $self, -1, '&About',[-1,-1], [-1, -1] );
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'about'},  sub { $self->{'dialog'}{'about'}->ShowModal });
     $self->{'btn'}{'knobs'}     = Wx::Button->new( $self, -1, '&Knobs',[-1,-1], [-1, -1] );
@@ -84,7 +85,7 @@ sub new {
     $self->{'btn'}{'draw'}->SetToolTip('redraw the harmonographic image');
     $self->{'btn'}{'save'}->SetToolTip('save image into SVG file');
     $self->{'btn'}{'save_next'}->SetToolTip('save current image into SVG file with name seen in text field with added number and file ending .svg');
-    $self->{'btn'}{'tips'}->SetToolTip('you can read this tool tip because the toggle button below is switched on');
+    # $self->{'btn'}{'tips'}->SetToolTip('you can read this tool tip because the toggle button below is switched on');
     $self->{'btn'}{'knobs'}->SetToolTip('explaining the layout of the program - what knob does what');
     $self->{'btn'}{'math'}->SetToolTip('explaining the math behind the knobs');
     $self->{'btn'}{'about'}->SetToolTip('introduction and overview text');
@@ -94,10 +95,10 @@ sub new {
     $self->{'cmb'}{'last'}->SetToolTip("last saved configuration, select to reload them");
 
 
-    Wx::Event::EVT_TOGGLEBUTTON( $self, $self->{'btn'}{'tips'},  sub { 
-        Wx::ToolTip::Enable( $_[1]->IsChecked );
-        $self->{'config'}->set_value('tips', $_[1]->IsChecked ? 1 : 0 );
-    });
+    #Wx::Event::EVT_TOGGLEBUTTON( $self, $self->{'btn'}{'tips'},  sub { 
+    #    Wx::ToolTip::Enable( $_[1]->IsChecked );
+    #    $self->{'config'}->set_value('tips', $_[1]->IsChecked ? 1 : 0 );
+    #});
     Wx::Event::EVT_COMBOBOX( $self, $self->{'cmb'}{'last'}, sub { 
         my $path = $_[1]->GetString;
         $path = App::GUI::Harmonograph::Settings::expand_path( $path );
@@ -229,15 +230,14 @@ sub new {
     my $help_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     my $help_lbl  = Wx::StaticText->new($self, -1, 'Help:' );
     $help_sizer->Add( $help_lbl,               0, $all_attr,  20 );
-    $help_sizer->AddSpacer( 8 );
-    $help_sizer->Add( $self->{'btn'}{'tips'},  0, $all_attr,  10 );
-    $help_sizer->AddSpacer( 5 );
+    $help_sizer->AddSpacer( 29 );
+   # $help_sizer->Add( $self->{'btn'}{'tips'},  0, $all_attr,  10 );
     $help_sizer->Add( $self->{'btn'}{'knobs'}, 0, $all_attr,  10 );
-    $help_sizer->AddSpacer( 5 );
+    $help_sizer->AddSpacer( 10 );
     $help_sizer->Add( $self->{'btn'}{'math'},  0, $all_attr,  10 );
-    $help_sizer->AddSpacer( 5 );
+    $help_sizer->AddSpacer( 10 );
     $help_sizer->Add( $self->{'btn'}{'about'}, 0, $all_attr,  10 );
-    $help_sizer->AddSpacer( 15 );
+    $help_sizer->AddSpacer( 20 );
     $help_sizer->Add( $self->{'btn'}{'exit'},  0, $all_attr,  10 );
     $help_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
@@ -290,7 +290,7 @@ sub init {
     $self->{'pendulum'}{$_}->init() for qw/x y z r/;
     $self->{'color'}{$_}->init() for qw/start end/;
     $self->{ $_ }->init() for qw/color_flow line/;
-    $self->draw( );
+    $self->sketch( );
 }
 
 sub get_data {
@@ -320,7 +320,16 @@ sub draw {
     $self->SetStatusText( "drawing .....", 0 );
     $self->{'board'}->set_data( $self->get_data );
     $self->{'board'}->Refresh;
-    $self->SetStatusText( "done drawing", 0 );
+    $self->SetStatusText( "done complete drawing", 0 );
+}
+
+sub sketch {
+    my ($self) = @_;
+    $self->SetStatusText( "sketching a preview .....", 0 );
+    $self->{'board'}->set_data( $self->get_data );
+    $self->{'board'}->set_sketch_flag( );
+    $self->{'board'}->Refresh;
+    $self->SetStatusText( "done sketching a preview", 0 );
 }
 
 sub update_base_name {

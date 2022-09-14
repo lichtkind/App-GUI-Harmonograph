@@ -6,7 +6,7 @@ use FindBin;
 
 package App::GUI::Harmonograph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.41';
+our $VERSION = '0.42';
 
 use base qw/Wx::App/;
 use App::GUI::Harmonograph::Frame;
@@ -51,7 +51,7 @@ move knobs to interesting configuration
 
 =item 4.
 
-push "Draw" (below right drawing board) to produce visible / full image
+push "Draw" (below right drawing board) to produce full image
 
 =item 5.
 
@@ -62,12 +62,15 @@ push "Save" (below left) to store image in a PNG / JPEG / SVG file
 push "Write" (second row right) to safe settings into a INI file 
 for tweaking them later
 
-
-After first use a config file .harmonograph will be created in you home
-directory. You may move it into "Documents" or your local directory
-you start the app from.
-
 =back
+
+Please note that quick preview gets only triggered by the pendulum
+controls (section X, Y Z and R).
+
+After first use of the program, a config file .harmonograph will be
+created in you home directory. You may move it into "Documents" or your
+local directory you start the app from.
+
 
 =head1 DESCRIPTION
 
@@ -82,11 +85,6 @@ creating together spiraling pictures :
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/df.png"        alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/wolke.png"     alt=""  width="300" height="300">
 </p>
-
-
-
-
-=head1 Mechanics
 
 
 This is a cybernetic recreation of an Prof. Blackburns invention with 
@@ -115,6 +113,9 @@ changeable dot density and dot size
 3 types of color changes with changeable speed and polynomial dynamics
 
 =back
+
+
+=head1 Mechanics
 
 The classic Harmonograph is sturdy metal rack which does not move 
 while 3 pendula swing independently.
