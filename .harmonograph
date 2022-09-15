@@ -1,3 +1,4 @@
+:
 color:
   + airyblue = [ 146, 182, 213 ]
   + aquasky = [ 127, 205, 205 ]
@@ -55,12 +56,11 @@ color:
   + truered = [ 188, 36, 60 ]
   + turquoise = [ 69, 184, 172 ]
   + warmtaupe = [ 175, 148, 131 ]
-file_base_counter = 4
+file_base_counter = 5
 file_base_dir = ./../img/
 file_base_ending = png
 file_base_name = wirbel
 last_settings:
-  - ./../img/wirbel.ini
   - ./../img/wirbel_1.ini
   - ./../img/wirbel_2.ini
   - ./../img/tuerkis.ini
@@ -71,7 +71,12 @@ last_settings:
   - ./../img/wolke.ini
   - ./../img/wirbel_4.ini
   - ./../img/hose.ini
-open_dir = ./../img
-save_dir = ./../img
-tips = 0
-write_dir = ./../img
+  - ./../img/schnecke_2.ini
+  - ~/code/perl/modul/App-GUI-Harmonograph/img/vorhang.ini
+  - ~/code/perl/modul/App-GUI-Harmonograph/img/qloch.ini
+  - ~/code/perl/modul/App-GUI-Harmonograph/img/fisch.ini
+  - ./../img/wirbel_5.ini
+open_dir = /~/code/perl/modul/App-GUI-Harmonograph/img
+save_dir = ~/code/perl/modul/App-Harmonograph/img
+tips = 1
+write_dir = ~/code/perl/modul/App-GUI-Harmonograph/img
