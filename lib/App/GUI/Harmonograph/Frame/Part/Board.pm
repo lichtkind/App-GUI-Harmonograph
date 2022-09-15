@@ -10,26 +10,37 @@ my $COPY_DC = 1;
 sub new {
     my ( $class, $parent, $x, $y ) = @_;
     my $self = $class->SUPER::new( $parent, -1, [-1,-1], [$x, $y] );
+    $self->{'menu_size'} = 27;
     $self->{'size'}{'x'} = $x;
     $self->{'size'}{'y'} = $y;
     $self->{'center'}{'x'} = $x / 2;
     $self->{'center'}{'y'} = $y / 2;
     $self->{'hard_radius'} = ($x > $y ? $self->{'center'}{'y'} : $self->{'center'}{'x'}) - 25;
     $self->{'dc'} = Wx::MemoryDC->new( );
-    $self->{'bmp'} = Wx::Bitmap->new( $self->{'size'}{'x'}+10, $self->{'size'}{'y'} + 10, 24);
+    $self->{'bmp'} = Wx::Bitmap->new( $self->{'size'}{'x'} + 10, $self->{'size'}{'y'} +10 + $self->{'menu_size'}, 24);
     $self->{'dc'}->SelectObject( $self->{'bmp'} );
 
     Wx::Event::EVT_PAINT( $self, sub {
         my( $self, $event ) = @_;
         return unless ref $self->{'data'} and ref $self->{'data'}{'x'};
+        $self->{'x_pos'} = $self->GetPosition->x;
+        $self->{'y_pos'} = $self->GetPosition->y;
+
         if (exists $self->{'data'}{'new'}) {
-            $self->{'dc'}->Blit (0, 0, $self->{'size'}{'x'}+10, $self->{'size'}{'y'}+10, $self->paint( Wx::PaintDC->new( $self ) ), 0, 0);
+            $self->{'dc'}->Blit (0, 0, $self->{'size'}{'x'} + $self->{'x_pos'}, 
+                                       $self->{'size'}{'y'} + $self->{'y_pos'} + $self->{'menu_size'}, 
+                                       $self->paint( Wx::PaintDC->new( $self ) ), 0, 0);
         } else {
-            Wx::PaintDC->new( $self )->Blit (0, 0, $self->{'size'}{'x'}, $self->{'size'}{'y'}, $self->{'dc'}, 10, 10);
+            Wx::PaintDC->new( $self )->Blit (0, 0, $self->{'size'}{'x'}, 
+                                                   $self->{'size'}{'y'} + $self->{'menu_size'}, 
+                                            $self->{'dc'}, 
+                                                   $self->{'x_pos'} , $self->{'y_pos'} + $self->{'menu_size'} );
         }
         1;
-    }
- );
+    });
+    
+    # Blit (wxCoord xdest, wxCoord ydest, wxCoord width, wxCoord height, wxDC *source, wxCoord xsrc, wxCoord ysrc, wxRasterOperationMode logicalFunc=wxCOPY, bool useMask=false, wxCoord xsrcMask=wxDefaultCoord, wxCoord ysrcMask=wxDefaultCoord)
+    
     return $self;
 }
 
@@ -45,6 +56,7 @@ sub set_sketch_flag { $_[0]->{'data'}{'sketch'} = 1 }
 
 sub paint {
     my( $self, $dc ) = @_;
+    
     my $background_color = Wx::Colour->new( 255, 255, 255 );
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );     # $dc->SetBrush( $fgb );
     $dc->Clear();
@@ -180,7 +192,7 @@ sub save_bmp_file {
     my $bmp = Wx::Bitmap->new( $width, $height, 24); # bit depth
     my $dc = Wx::MemoryDC->new( );
     $dc->SelectObject( $bmp );
-    $dc->Blit (0, 0, $self->{'size'}{'x'}, $self->{'size'}{'y'}, $self->{'dc'}, 10, 10);
+    $dc->Blit (0, 0, $self->{'size'}{'x'}, $self->{'size'}{'y'}, $self->{'dc'}, 10, 10 + $self->{'menu_size'});
     $dc->SelectObject( &Wx::wxNullBitmap );
     $bmp->SaveFile( $file_name, $file_end eq 'png' ? &Wx::wxBITMAP_TYPE_PNG : &Wx::wxBITMAP_TYPE_JPEG );
 }

@@ -16,7 +16,7 @@ sub new {
     my $f5 = Wx::StaticText->new( $self, -1, 'is a diagonal line. Because when X goes right Y goes up and vice versa.' );
     my $f6 = Wx::StaticText->new( $self, -1, 'But if we start one pendulum at the center and the other at the upmost position we get a circle.' );
     my $f7 = Wx::StaticText->new( $self, -1, 'In other words: we added an offset of 90 degrees to Y (or X). Our third pendulum Z moves the paper' );
-    my $f8 = Wx::StaticText->new( $self, -1, 'and does exactly the already described circular movement without rotating arund its center.' );
+    my $f8 = Wx::StaticText->new( $self, -1, 'and does exactly the already described circular movement without rotating around its center.' );
     my $f9 = Wx::StaticText->new( $self, -1, 'If both circular movements (of X, Y and Z) are concurrent the pen just stays at one point,' );
     my $f10 = Wx::StaticText->new( $self, -1, 'If both are countercurrent - we get a circle. Interesting things start to happen, if we alter' );
     my $f11 = Wx::StaticText->new( $self, -1, 'the speed of of X, Y and Z. And for even more complex drawings I added R, which is not really' );

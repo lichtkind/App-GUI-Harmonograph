@@ -54,42 +54,19 @@ sub new {
     $self->{'dialog'}{'function'}  = App::GUI::Harmonograph::Dialog::Function->new();
 
     my $btnw = 50; my $btnh     = 40;# button width and height
-    #$self->{'btn'}{'tips'}      = Wx::ToggleButton->new( $self, -1,'&Tool Tips',[-1,-1],[-1, -1], 1 );
-    #$self->{'btn'}{'tips'}->SetValue( $self->{'config'}->get_value('tips') );
-    $self->{'btn'}{'about'}    = Wx::Button->new( $self, -1, '&About',[-1,-1], [-1, -1] );
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'about'},  sub { $self->{'dialog'}{'about'}->ShowModal });
-    $self->{'btn'}{'knobs'}     = Wx::Button->new( $self, -1, '&Knobs',[-1,-1], [-1, -1] );
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'knobs'},  sub { $self->{'dialog'}{'interface'}->ShowModal });
-    $self->{'btn'}{'math'}      = Wx::Button->new( $self, -1, '&Function',[-1,-1], [-1, -1] );
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'math'},   sub { $self->{'dialog'}{'function'}->ShowModal });
-    $self->{'btn'}{'exit'}      = Wx::Button->new( $self, -1, '&Quit', [-1,-1],[$btnw, -1] );
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'exit'},  sub { $self->Close; } );
-
-    $self->{'btn'}{'new'}       = Wx::Button->new( $self, -1, '&New',  [-1,-1],[$btnw, $btnh] );
-    $self->{'btn'}{'open'}      = Wx::Button->new( $self, -1, '&Open', [-1,-1],[$btnw, $btnh] );
-    $self->{'btn'}{'write'}     = Wx::Button->new( $self, -1, '&Write',[-1,-1],[$btnw, $btnh] );
+    #Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'exit'},  sub { $self->Close; } );
     $self->{'btn'}{'dir'}       = Wx::Button->new( $self, -1, 'Dir',   [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'write_next'}= Wx::Button->new( $self, -1, 'Nex&t', [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'draw'}      = Wx::Button->new( $self, -1, '&Draw', [-1,-1],[$btnw, $btnh] );
-    $self->{'btn'}{'save'}      = Wx::Button->new( $self, -1, '&Save', [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'save_next'} = Wx::Button->new( $self, -1, 'Ne&xt', [-1,-1],[$btnw, $btnh] );
     $self->{'txt'}{'file_bname'}= Wx::TextCtrl->new( $self,-1, $self->{'config'}->get_value('file_base_name'), [-1,-1], [170, -1] );
     $self->{'txt'}{'file_bnr'}  = Wx::TextCtrl->new( $self,-1, $self->{'config'}->get_value('file_base_counter'), [-1,-1], [ 36, -1], &Wx::wxTE_READONLY );
     $self->{'cmb'}{'last'}      = Wx::ComboBox->new( $self,-1, 'select settings file to load', [-1,-1], [225, -1], $self->{'config'}->get_value( 'last_settings' ) );
 
-    $self->{'btn'}{'new'} ->SetToolTip('put all settings to default (start values)');
-    $self->{'btn'}{'open'}->SetToolTip('load image settings from a text file');
-    $self->{'btn'}{'write'}->SetToolTip('save image settings into text file');
     $self->{'btn'}{'dir'}->SetToolTip('directory to save file series: '.$self->{'config'}->get_value('file_base_dir'));
     $self->{'btn'}{'write_next'}->SetToolTip('save current image settings into text file with name seen in text field with added number and file ending .ini');
     $self->{'btn'}{'draw'}->SetToolTip('redraw the harmonographic image');
-    $self->{'btn'}{'save'}->SetToolTip('save image into SVG file');
     $self->{'btn'}{'save_next'}->SetToolTip('save current image into SVG file with name seen in text field with added number and file ending .svg');
-    # $self->{'btn'}{'tips'}->SetToolTip('you can read this tool tip because the toggle button below is switched on');
-    $self->{'btn'}{'knobs'}->SetToolTip('explaining the layout of the program - what knob does what');
-    $self->{'btn'}{'math'}->SetToolTip('explaining the math behind the knobs');
-    $self->{'btn'}{'about'}->SetToolTip('introduction and overview text');
-    $self->{'btn'}{'exit'}->SetToolTip('close the application');
     $self->{'txt'}{'file_bname'}->SetToolTip("file base name (without ending) for a series of files you save (settings and images)");
     $self->{'txt'}{'file_bnr'}->SetToolTip("index of file base name,\nwhen pushing Next button, image or settings are saved under Dir + File + Index + Ending");
     $self->{'cmb'}{'last'}->SetToolTip("last saved configuration, select to reload them");
@@ -109,39 +86,7 @@ sub new {
     Wx::Event::EVT_TEXT_ENTER( $self, $self->{'txt'}{'file_bname'}, sub { $self->update_base_name });
     Wx::Event::EVT_KILL_FOCUS(        $self->{'txt'}{'file_bname'}, sub { $self->update_base_name });
     
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'new'},  sub { $self->init });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'open'}, sub { 
-        my $dialog = Wx::FileDialog->new ( $self, "Select a settings file to load", $self->{'config'}->get_value('open_dir'), '',
-                   ( join '|', 'INI files (*.ini)|*.ini', 'All files (*.*)|*.*' ), &Wx::wxFD_OPEN );
-        return if $dialog->ShowModal == &Wx::wxID_CANCEL;
-        my $path = $dialog->GetPath;
-        my $ret = $self->open_setting_file ( $path );
-        if (not ref $ret) { $self->SetStatusText( $ret, 0) }
-        else { 
-            my $dir = App::GUI::Harmonograph::Settings::extract_dir( $path );
-            $self->{'config'}->set_value('save_dir', $dir);
-            $self->SetStatusText( "loaded settings from ".$dialog->GetPath, 1);
-        }
-    });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'dir'},  sub { $self->change_base_dir }) ;
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'write'},sub { 
-        my $dialog = Wx::FileDialog->new ( $self, "Select a file name to store data",$self->{'config'}->get_value('write_dir'), '',
-               ( join '|', 'INI files (*.ini)|*.ini', 'All files (*.*)|*.*' ), &Wx::wxFD_SAVE );
-        return if $dialog->ShowModal == &Wx::wxID_CANCEL;
-        my $path = $dialog->GetPath;
-        #my $i = rindex $path, '.';
-        #$path = substr($path, 0, $i - 1 ) if $i > -1;
-        #$path .= '.ini' unless lc substr ($path, -4) eq '.ini';
-        return if -e $path and
-                  Wx::MessageDialog->new( $self, "\n\nReally overwrite the settings file?", 'Confirmation Question',
-                                          &Wx::wxYES_NO | &Wx::wxICON_QUESTION )->ShowModal() != &Wx::wxID_YES;
-        $self->write_settings_file( $path );
-        my $dir = App::GUI::Harmonograph::Settings::extract_dir( $path );
-        $self->{'config'}->set_value('write_dir', $dir);
-        $self->{'config'}->add_setting_file( $path );
-        $self->update_last_settings();
-        $self->{'cmb'}{'last'}->SetSelection( $self->{'cmb'}{'last'}->GetCount() );
-    });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'write_next'},  sub {
         my $data = get_data( $self );
         $self->inc_base_counter unless App::GUI::Harmonograph::Settings::are_equal( $self->{'last_file_settings'}, $data );
@@ -159,18 +104,6 @@ sub new {
         $self->{'last_file_settings'} = $data;
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'draw'},  sub { draw( $self ) });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'save'},  sub {
-        my $dialog = Wx::FileDialog->new ( $self, "select a file name to save image", $self->{'config'}->get_value('save_dir'), '',
-                   ( join '|', 'SVG files (*.svg)|*.svg', 'PNG files (*.png)|*.png', 'JPEG files (*.jpg)|*.jpg', 'All files (*.*)|*.*' ), &Wx::wxFD_SAVE );
-        return if $dialog->ShowModal == &Wx::wxID_CANCEL;
-        my $path = $dialog->GetPath;
-        return if -e $path and
-                  Wx::MessageDialog->new( $self, "\n\nReally overwrite the image file?", 'Confirmation Question',
-                                          &Wx::wxYES_NO | &Wx::wxICON_QUESTION )->ShowModal() != &Wx::wxID_YES;
-        my $ret = $self->write_image( $path );
-        if ($ret){ $self->SetStatusText( $ret, 0 ) }
-        else     { $self->{'config'}->set_value('save_dir', App::GUI::Harmonograph::Settings::extract_dir( $path )) }
-    });
     Wx::Event::EVT_CLOSE( $self, sub {
         my $all_color = $self->{'config'}->get_value('color');
         my $startc = $self->{'color'}{'startio'}->get_data;
@@ -194,7 +127,44 @@ sub new {
         $_[1]->Skip(1) 
     });
 
+
     # GUI layout assembly
+    my $image_menu = Wx::Menu->new();
+    $image_menu->Append( 11100, "&Save\tCtrl+S", "save currently displayed image" );
+    
+    my $settings_menu = Wx::Menu->new();
+    $settings_menu->Append( 12100, "&Init\tCtrl+I", "put all settings to default" );
+    $settings_menu->Append( 12200, "&Open\tCtrl+O", "load settings from an INI file" );
+    $settings_menu->Append( 12400, "&Write\tCtrl+W", "store curent settings into an INI file" );
+    
+    my $help_menu = Wx::Menu->new();
+    $help_menu->Append( 13100, "&Function\tAlt+F", "Dialog with information how an Harmonograph works" );
+    $help_menu->Append( 13200, "&Knobs\tAlt+K", "Dialog explaining the layout and function of knobs" );
+    $help_menu->Append( 13300, "&About\tAlt+A", "Dialog with general information about the program" );
+
+    my $menu_bar = Wx::MenuBar->new();
+    $menu_bar->Append( $image_menu,    '&Image' );
+    $menu_bar->Append( $settings_menu, '&Settings' );
+    $menu_bar->Append( $help_menu,     '&Help' );
+    $self->SetMenuBar($menu_bar);
+
+    Wx::Event::EVT_MENU( $self, 11100, sub { $self->save_image_dialog });
+    Wx::Event::EVT_MENU( $self, 12100, sub { $self->init });
+    Wx::Event::EVT_MENU( $self, 12200, sub { $self->open_settings_dialog });
+    Wx::Event::EVT_MENU( $self, 12400, sub { $self->write_settings_dialog });
+    Wx::Event::EVT_MENU( $self, 13100, sub { $self->{'dialog'}{'function'}->ShowModal });
+    Wx::Event::EVT_MENU( $self, 13200, sub { $self->{'dialog'}{'interface'}->ShowModal });
+    Wx::Event::EVT_MENU( $self, 13300, sub { $self->{'dialog'}{'about'}->ShowModal });
+    Wx::Event::EVT_MENU_OPEN( $self, sub {
+        $settings_menu->Delete(12300);
+        my $recent = $self->{'config'}->get_value( 'last_settings' );
+        return unless ref $recent eq 'ARRAY';
+        my $Recent_ID = 12301;
+       # my $recent_menu = Wx::Menu->new();
+       # $recent_menu->Append($Recent_ID++, $_) for @$recent;
+        $settings_menu->Insert( 2, 12300, '&Recent', $recent_menu, 'recently saved settings' );
+    } );
+    
     
     my $std_attr = &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALIGN_CENTER_HORIZONTAL;
     my $vert_attr = $std_attr | &Wx::wxTOP;
@@ -207,7 +177,6 @@ sub new {
     my $image_lbl = Wx::StaticText->new( $self, -1, 'Image:' );
     $cmdi_sizer->Add( $image_lbl,     0, $all_attr, 20 );
     $cmdi_sizer->AddSpacer( 12 );
-    $cmdi_sizer->Add( $self->{'btn'}{'save'},      0, $vset_attr,10 );
     $cmdi_sizer->Add( $self->{'btn'}{'dir'},       0, $all_attr, 10 );
     $cmdi_sizer->Add( $self->{'txt'}{'file_bname'},0, $all_attr, 10 );
     $cmdi_sizer->Add( $self->{'txt'}{'file_bnr'},  0, $all_attr, 10 );
@@ -220,26 +189,9 @@ sub new {
     my $cmds_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     my $settings_lbl  = Wx::StaticText->new( $self, -1, 'Settings:' );
     $cmds_sizer->Add( $settings_lbl,       0, $all_attr, 20 );
-    $cmds_sizer->Add( $self->{'btn'}{'new'},0, $vset_attr, 10 );
-    $cmds_sizer->Add( $self->{'btn'}{'open'}, 0, $all_attr, 10 );
     $cmds_sizer->Add( $self->{'cmb'}{'last'},   0, $all_attr, 10 );
     $cmds_sizer->Add( $self->{'btn'}{'write_next'}, 0, $all_attr, 10 );
-    $cmds_sizer->Add( $self->{'btn'}{'write'},    0, $all_attr, 10 );
     $cmds_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
-
-    my $help_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-    my $help_lbl  = Wx::StaticText->new($self, -1, 'Help:' );
-    $help_sizer->Add( $help_lbl,               0, $all_attr,  20 );
-    $help_sizer->AddSpacer( 29 );
-   # $help_sizer->Add( $self->{'btn'}{'tips'},  0, $all_attr,  10 );
-    $help_sizer->Add( $self->{'btn'}{'knobs'}, 0, $all_attr,  10 );
-    $help_sizer->AddSpacer( 10 );
-    $help_sizer->Add( $self->{'btn'}{'math'},  0, $all_attr,  10 );
-    $help_sizer->AddSpacer( 10 );
-    $help_sizer->Add( $self->{'btn'}{'about'}, 0, $all_attr,  10 );
-    $help_sizer->AddSpacer( 20 );
-    $help_sizer->Add( $self->{'btn'}{'exit'},  0, $all_attr,  10 );
-    $help_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $board_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $board_sizer->Add( $self->{'board'}, 0, $all_attr,  10);
@@ -250,8 +202,6 @@ sub new {
     $board_sizer->Add( $self->{'color'}{'startio'}, 0, $vert_attr,  5);
     $board_sizer->Add( $self->{'color'}{'endio'},   0, $vert_attr,  5);
     $board_sizer->Add( 0, 5);
-    $board_sizer->Add( Wx::StaticLine->new( $self, -1, [-1,-1], [ 125, 2] ),  0, $line_attr, 20);
-    $board_sizer->Add( $help_sizer,       0, $vert_attr,  10);
     $board_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $setting_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
@@ -276,10 +226,11 @@ sub new {
     $self->SetSizer($main_sizer);
     $self->SetAutoLayout( 1 );
     $self->{'btn'}{'draw'}->SetFocus;
-    my $size = [1300, 1040];
+    my $size = [1300, 1064];
     $self->SetSize($size);
     $self->SetMinSize($size);
     $self->SetMaxSize($size);
+  
     $self->init();
     $self->{'last_file_settings'} = get_data( $self );
     $self;
@@ -291,6 +242,56 @@ sub init {
     $self->{'color'}{$_}->init() for qw/start end/;
     $self->{ $_ }->init() for qw/color_flow line/;
     $self->sketch( );
+    $self->SetStatusText( "all settings are set to default", 1);
+}
+
+sub open_settings_dialog {
+    my ($self) = @_;
+    my $dialog = Wx::FileDialog->new ( $self, "Select a settings file to load", $self->{'config'}->get_value('open_dir'), '',
+                   ( join '|', 'INI files (*.ini)|*.ini', 'All files (*.*)|*.*' ), &Wx::wxFD_OPEN );
+    return if $dialog->ShowModal == &Wx::wxID_CANCEL;
+    my $path = $dialog->GetPath;
+    my $ret = $self->open_setting_file ( $path );
+    if (not ref $ret) { $self->SetStatusText( $ret, 0) }
+    else { 
+        my $dir = App::GUI::Harmonograph::Settings::extract_dir( $path );
+        $self->{'config'}->set_value('save_dir', $dir);
+        $self->SetStatusText( "loaded settings from ".$dialog->GetPath, 1);
+    }
+}
+
+sub write_settings_dialog {
+    my ($self) = @_;
+    my $dialog = Wx::FileDialog->new ( $self, "Select a file name to store data",$self->{'config'}->get_value('write_dir'), '',
+               ( join '|', 'INI files (*.ini)|*.ini', 'All files (*.*)|*.*' ), &Wx::wxFD_SAVE );
+    return if $dialog->ShowModal == &Wx::wxID_CANCEL;
+    my $path = $dialog->GetPath;
+    #my $i = rindex $path, '.';
+    #$path = substr($path, 0, $i - 1 ) if $i > -1;
+    #$path .= '.ini' unless lc substr ($path, -4) eq '.ini';
+    return if -e $path and
+              Wx::MessageDialog->new( $self, "\n\nReally overwrite the settings file?", 'Confirmation Question',
+                                      &Wx::wxYES_NO | &Wx::wxICON_QUESTION )->ShowModal() != &Wx::wxID_YES;
+    $self->write_settings_file( $path );
+    my $dir = App::GUI::Harmonograph::Settings::extract_dir( $path );
+    $self->{'config'}->set_value('write_dir', $dir);
+    $self->{'config'}->add_setting_file( $path );
+    $self->update_last_settings();
+    #$self->{'cmb'}{'last'}->SetSelection( $self->{'cmb'}{'last'}->GetCount() );
+}
+
+sub save_image_dialog {
+    my ($self) = @_;
+    my $dialog = Wx::FileDialog->new ( $self, "select a file name to save image", $self->{'config'}->get_value('save_dir'), '',
+                   ( join '|', 'SVG files (*.svg)|*.svg', 'PNG files (*.png)|*.png', 'JPEG files (*.jpg)|*.jpg', 'All files (*.*)|*.*' ), &Wx::wxFD_SAVE );
+    return if $dialog->ShowModal == &Wx::wxID_CANCEL;
+    my $path = $dialog->GetPath;
+    return if -e $path and
+              Wx::MessageDialog->new( $self, "\n\nReally overwrite the image file?", 'Confirmation Question',
+                                      &Wx::wxYES_NO | &Wx::wxICON_QUESTION )->ShowModal() != &Wx::wxID_YES;
+    my $ret = $self->write_image( $path );
+    if ($ret){ $self->SetStatusText( $ret, 0 ) }
+    else     { $self->{'config'}->set_value('save_dir', App::GUI::Harmonograph::Settings::extract_dir( $path )) }
 }
 
 sub get_data {
@@ -422,7 +423,6 @@ __END__
     # Wx::Event::EVT_RIGHT_DOWN( $self->{'board'}, sub {
     #    my ($panel, $event) = @_;
     #    my ($mx, $my) = ($event->GetX, $event->GetY);
-    #    my $cand_menu = Wx::Menu->new();
     #    $cand_menu->AppendCheckItem($_,$_) for 1..9;
     #    for (1 .. 9) {$cand_menu->Check($_, 1),$nr++ if $self->{'game'}->is_cell_candidate($r,$c,$_) }
     #    my $digit = $panel->GetPopupMenuSelectionFromUser( $cand_menu, $event->GetX, $event->GetY);

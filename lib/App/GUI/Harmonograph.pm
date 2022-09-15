@@ -6,7 +6,7 @@ use FindBin;
 
 package App::GUI::Harmonograph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.42';
+our $VERSION = '0.43';
 
 use base qw/Wx::App/;
 use App::GUI::Harmonograph::Frame;
@@ -129,7 +129,7 @@ But if we start one pendulum at the center and the other
 at the upmost position we get a circle.
 In other words: we added an offset of 90 degrees to Y (or X).
 Our third pendulum Z moves the paper and does exactly 
-the already described circular movement without rotating arund its center.
+the already described circular movement without rotating around its center.
 If both circular movements (of X, Y and Z) are concurrent - 
 the pen just stays at one point, If both are countercurrent - 
 we get a circle. Interesting things start to happen, if we alter

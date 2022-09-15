@@ -1,6 +1,8 @@
 0.43  2022-09-    lichtkind
 -------
     * = post first release bug fix release
+    * ! smooth loading of settings without sketch triggering event loops
+    * ~ doc typos
 
 0.42  2022-09-14  lichtkind
 -------

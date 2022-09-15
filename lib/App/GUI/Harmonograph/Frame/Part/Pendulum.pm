@@ -115,15 +115,15 @@ sub set_data {
     $data->{ 'frequency'} = abs $data->{'frequency'};
     $self->{ 'invert_freq' }->SetValue( $data->{'frequency'} < 1 );
     $data->{ 'frequency'} = 1 / $data->{'frequency'} if $data->{'frequency'} < 1;
-    $self->{ 'frequency' }->SetValue( int $data->{'frequency'} );
-    $self->{ 'freq_dez' }->SetValue( int( 1000 * ($data->{'frequency'} - int $data->{'frequency'} ) ) );
+    $self->{ 'frequency' }->SetValue( int $data->{'frequency'}, 1 );
+    $self->{ 'freq_dez' }->SetValue( int( 1000 * ($data->{'frequency'} - int $data->{'frequency'} ) ), 1 );
     $self->{ 'half_off' }->SetValue( $data->{'offset'} >= 0.5 );
     $data->{ 'offset' } -= 0.5 if $data->{'offset'} >= 0.5;
     $self->{ 'quarter_off' }->SetValue( $data->{'offset'} >= 0.25 );
     $data->{ 'offset' } -= 0.25 if $data->{'offset'} >= 0.25;
-    $self->{'offset'}->SetValue( int( $data->{'offset'} * 400 ));
-    $self->{ 'radius' }->SetValue( $data->{'radius'} * 100 );
-    $self->{ 'damp' }->SetValue( $data->{'damp'} );
+    $self->{'offset'}->SetValue( int( $data->{'offset'} * 400 ), 1);
+    $self->{ 'radius' }->SetValue( $data->{'radius'} * 100, 1 );
+    $self->{ 'damp' }->SetValue( $data->{'damp'}, 1 );
     $self->update_enable;
     1;
 }
