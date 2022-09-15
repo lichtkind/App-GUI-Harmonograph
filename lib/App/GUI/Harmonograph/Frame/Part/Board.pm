@@ -56,10 +56,11 @@ sub set_sketch_flag { $_[0]->{'data'}{'sketch'} = 1 }
 
 sub paint {
     my( $self, $dc ) = @_;
-    
     my $background_color = Wx::Colour->new( 255, 255, 255 );
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );     # $dc->SetBrush( $fgb );
     $dc->Clear();
+    
+    my $progress = $self->GetParent->{'progress'};
 
     my $start_color = Wx::Colour->new( $self->{'data'}{'start_color'}{'red'}, 
                                        $self->{'data'}{'start_color'}{'green'}, 
@@ -159,9 +160,11 @@ sub paint {
     $code .= '$ry *= $ydamp;'  if $ydamp;
     $code .= '$rz *= $zdamp;'  if $zdamp;
     $code .= '$dtr *= $rdamp;' if $rdamp;
+    $code .= '$progress->set_percentage( $_ / $t_iter * 100 ) unless $_ % $color_change_time;' unless defined $self->{'data'}{'sketch'};
     $code .= '$dc->SetPen( Wx::Pen->new( Wx::Colour->new( @{$color[$color_index++]} ),'.
              ' $self->{data}{line}{thickness}, &Wx::wxPENSTYLE_SOLID)) unless $_ % $color_change_time;' if $cflow->{'type'} ne 'no' and @color;
     $code .= '}';
+    
     eval $code;
     die "bad iter code - $@ : $code" if $@;
     delete $self->{'data'}{'new'};

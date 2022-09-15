@@ -43,24 +43,25 @@ start the program (harmonograph)
 
 =item 2.
 
-push help buttons (down left) to understand GUI and mechanics
+read this POD or check dialogs from help menu
 
 =item 3.
 
-move knobs to interesting configuration
+move knobs and observe how preview sketch reacts til you got 
+an interesting configuration 
 
 =item 4.
 
-push "Draw" (below right drawing board) to produce full image
+push "Draw" (Ctrl+D or below drawing board) to produce full image
 
 =item 5.
 
-push "Save" (below left) to store image in a PNG / JPEG / SVG file
+choose "Save" in Image menu (or Ctrl+S) to store image in a PNG / JPEG / SVG file
 
 =item 6.
 
-push "Write" (second row right) to safe settings into a INI file 
-for tweaking them later
+choose "Write" in settings menu (Ctrl+W) to save settings into an
+INI file for tweaking them later
 
 =back
 
@@ -84,6 +85,7 @@ creating together spiraling pictures :
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/wirbel_4.png"  alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/df.png"        alt=""  width="300" height="300">
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/wolke.png"     alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/GUI.png"       alt=""  width="460" height="300">
 </p>
 
 
@@ -143,6 +145,10 @@ We emulate this with a damping factor.
 
 =head1 GUI
 
+=for HTML <p>
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/GUI.png"    alt=""  width="630" height="410">
+</p>
+
 The general layout of the program has three parts,
 which flow from the position of the drawing board.
 
@@ -155,13 +161,14 @@ In the left upper corner is the drawing board - showing the result of the Harmon
 =item 2
 
 The whole right half of the window contains the settings, which guide the drawing operation.
+These are divided into two tabs - roughly devided in form and decoration.
 
 =item 3
 
-The lower left side contains buttons which are commands, mostly for in and output of data.
+The lower left side contains buttons which are a few commands, 
+but most are in the main menu.
 
 =back
-
 
 Please mind the tool tips - short help texts which appear if the mouse
 stands still over a button or slider. Also helpful are messages in the
@@ -169,37 +176,41 @@ status bar at the bottom: on left regarding images and right about settings.
 When holting the Alt key you can see which Alt + letter combinations
 trigger which button.
 
+
 =head2 Pendulum
 
-The upper half of settings define the properties of the 4 pendula
-(X, Y, Z and R), which determine the shape of the drawing.
+The content of the first tab are the settings that define the properties
+of the 4 pendula (X, Y, Z and R), which determine the shape of the drawing.
 X moves the pen left - right (on the x axis), Y moves up - down,
 Z does a circling movement, R is a rotation ( around Z's axis).
 Each pendulum has the same three rows of controls. 
 
-The first row contains first an on/off switch.
+The first row contains from left to ritght an on/off switch.
 After that follows the pendulum's amplitude and damping.
 Amplitudes define the size of the drawing and damping just means:
 the drawings will spiral toward the center with time (line length).
 
 The second row lets you dial in the speed (frequency).
-The second combo control adds decimals for more complex drawings.
+For instance 2 means that the pendulum swings back and fourt twice 
+as fast. The second combo control adds decimals for more complex drawings.
 
 The third row has switches to invert (1/x) frequency or direction 
 and can also change the starting position.
 2 = 180 degree offset, 4 = 90 degree (both can be combined). 
-The last slider adds an fine tuned offset.
+The last slider adds an additional fine tuned offset between 0 and 90 degree.
+
 
 =head2 Line
 
-The next separated section below sets the properties of the pen.
+The second tab on the right side has knobs that set the properties of the pen.
 First how many rotations will be drawn. Secondly the distance between dots. 
 Greater distances, together with color changes, help to clearify
 muddled up drawings. The third selector sets the dot size in pixel.
 
 =head2 Colors
 
-The right bottom corner provides options for colorization and has in itself three parts.
+Below that on the second tab are the options for colorization and this
+has in itself three parts.
 Topmost are the settings for the color change, which is set on default to "no".
 In that case only the start (upper) color (below the color change section)
 will be used, and not the end (target) color (which is even below that).
@@ -214,32 +225,50 @@ around the rainbow through a complement color with saturation and lightness
 of the target settings.
 Steps size refers always to how maby circles are draw before the color changes.
 
+The third part on the second tab grants you access to the color store of
+config file .harmonograph. There you can store your favorite colors under
+a name and reload or delet them later. The upper row is for interactions
+with the sart color and the lower with the end color.
+
 =head2 Commands
 
-Each row of command buttons has a topic.
-The first row below the drawing board is concerned the the image.
-Push "Draw" to create the picture with chosen settings.
-This might take some seconds if line length and dot density are high.
-"Save" stores the image in an arbitrary PNG, JPG or SVG file 
-(the typed in file ending decides). 
-The four item between "Save" and "Draw" are for series of files
-with a common directory and file base name.
-Push "Dir" to select the directory and type in directly the file base name -
-the index is found automatically.
-Push "Next" to save the image under the path:
- dir + base name + index + ending (set in config). The index automatically
- autoincrements when chnaging the settings.
-Push "Next" in the row below to also save the settings of the current state
-under same name with ending .ini.
+In the lower left corner are two rows of command buttons. All other 
+commands are in the menu.
 
-The second button row deals with settings. 
-"New" resets them to init state. 
-"Open" loads an ini file and "Write" saves them.
-The combo box in the middle of the second row allows a quick load of the
-last stored settings.
+The upper row has only one button for making a full drawing. This
+might take some time if line length and dot density are high.
+For that reason - changes on the pendulum settings (first tab)
+(and only these) produce an immediate drawing to better understand the
+nature of your changes. In the interest of time, these are only sketches.
+For a full drawing that takes all settings into account you need to push
+the "Draw" button or Press Ctrl + D.
 
-Row three and four access the color store of config file .harmonograph.
-The allow storing you favorite colors under a name and reloading or deleting them later.
+The second row has commands to quickly save many files.
+First push "Dir" to select the directory and then type directly into the
+secand text fiel the file base name - the index is found automatically.
+Every time you now press "Save" a file with the current image is saved
+under the path: dir + base name + index + ending (set in config). 
+The index automatically autoincrements when changing the settings.
+Push "INI" next to it to also save the settings of the current state
+under same file name, but with the ending .ini.
+
+
+=head2 Menu
+
+The upmost menu bar has only three very simple menus.
+Please not that each menu shows which key combination triggers the same
+command and while hovering over an menu item you see a short help text
+the left status bar field.
+
+The first menu is for loading and storing setting files with arbitrary 
+names. Also a sub menu allows a quick load of the recently used files.
+The first entry lets you reset the whole program to the starting state
+and the last is just to exit (safely with saving the configs).
+
+The second menu has only two commands for drawing and saving an complete
+image in an arbitrary named PNG, JPG or SVG file (the file ending decides). 
+
+The third menu has some dialogs with documentation and additional information.
 
 
 =head1 AUTHOR

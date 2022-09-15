@@ -1,7 +1,7 @@
 use v5.12;
 use warnings;
 use utf8;
-
+use Wx::AUI;
 # fast preview
 # modular conections
 # X Y sync ? , undo ?
@@ -17,6 +17,7 @@ use App::GUI::Harmonograph::Frame::Part::Board;
 use App::GUI::Harmonograph::Dialog::Function;
 use App::GUI::Harmonograph::Dialog::Interface;
 use App::GUI::Harmonograph::Dialog::About;
+use App::GUI::Harmonograph::ProgressBar;
 use App::GUI::Harmonograph::Settings;
 use App::GUI::Harmonograph::Config;
 
@@ -32,57 +33,55 @@ sub new {
     Wx::InitAllImageHandlers();
 
     # create GUI parts
-    
-    $self->{'pendulum'}{'x'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'x','pendulum in x direction (left to right)', 1, 30);
-    $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'y','pendulum in y direction (left to right)', 1, 30);
-    $self->{'pendulum'}{'z'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'z','circular pendulum',        0, 30);
-    $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self, 'R','rotating pendulum',        0, 30);
+    $self->{'tabs'}             = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
+    $self->{'tab'}{'pendulum'}  = Wx::Panel->new($self->{'tabs'});
+    $self->{'tab'}{'pen'}       = Wx::Panel->new($self->{'tabs'});
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'pendulum'}, 'Pendulum Settings');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'pen'},      'Pen Settings');
+
+    $self->{'pendulum'}{'x'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'pendulum'}, 'x','pendulum in x direction (left to right)', 1, 30);
+    $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'pendulum'}, 'y','pendulum in y direction (left to right)', 1, 30);
+    $self->{'pendulum'}{'z'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'pendulum'}, 'z','circular pendulum',        0, 30);
+    $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'pendulum'}, 'R','rotating pendulum',        0, 30);
     $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/x y z r/;
                                 
-    $self->{'color'}{'start'}   = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self, 'start', { red => 20, green => 20, blue => 110 } );
-    $self->{'color'}{'end'}     = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self, 'end',  { red => 110, green => 20, blue => 20 } );
+    $self->{'color'}{'start'}   = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'start', { red => 20, green => 20, blue => 110 } );
+    $self->{'color'}{'end'}     = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'end',  { red => 110, green => 20, blue => 20 } );
     
-    $self->{'color'}{'startio'} = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self, 'Start Color', $self->{'config'}->get_value('color') , 162, 1);
-    $self->{'color'}{'endio'}   = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self, 'End Color', $self->{'config'}->get_value('color') , 162, 7);
+    $self->{'color'}{'startio'} = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self->{'tab'}{'pen'}, $self, 'Start Color IO', $self->{'config'}->get_value('color') , 162, 1);
+    $self->{'color'}{'endio'}   = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self->{'tab'}{'pen'}, $self, 'End Color IO', $self->{'config'}->get_value('color') , 162, 7);
 
-    $self->{'color_flow'}       = App::GUI::Harmonograph::Frame::Part::ColorFlow->new( $self );
-    $self->{'line'}             = App::GUI::Harmonograph::Frame::Part::PenLine->new( $self );
+    $self->{'color_flow'}       = App::GUI::Harmonograph::Frame::Part::ColorFlow->new( $self->{'tab'}{'pen'}, $self );
+    $self->{'line'}             = App::GUI::Harmonograph::Frame::Part::PenLine->new( $self->{'tab'}{'pen'} );
                                
-    $self->{'board'}            = App::GUI::Harmonograph::Frame::Part::Board->new($self, 600, 600);
-    $self->{'dialog'}{'about'}  = App::GUI::Harmonograph::Dialog::About->new();
+    $self->{'progress'}            = App::GUI::Harmonograph::ProgressBar->new( $self, 450, 5, { red => 20, green => 20, blue => 110 });
+    $self->{'board'}               = App::GUI::Harmonograph::Frame::Part::Board->new($self, 600, 600);
+    $self->{'dialog'}{'about'}     = App::GUI::Harmonograph::Dialog::About->new();
     $self->{'dialog'}{'interface'} = App::GUI::Harmonograph::Dialog::Interface->new();
     $self->{'dialog'}{'function'}  = App::GUI::Harmonograph::Dialog::Function->new();
 
     my $btnw = 50; my $btnh     = 40;# button width and height
     #Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'exit'},  sub { $self->Close; } );
     $self->{'btn'}{'dir'}       = Wx::Button->new( $self, -1, 'Dir',   [-1,-1],[$btnw, $btnh] );
-    $self->{'btn'}{'write_next'}= Wx::Button->new( $self, -1, 'Nex&t', [-1,-1],[$btnw, $btnh] );
+    $self->{'btn'}{'write_next'}= Wx::Button->new( $self, -1, 'INI',   [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'draw'}      = Wx::Button->new( $self, -1, '&Draw', [-1,-1],[$btnw, $btnh] );
-    $self->{'btn'}{'save_next'} = Wx::Button->new( $self, -1, 'Ne&xt', [-1,-1],[$btnw, $btnh] );
-    $self->{'txt'}{'file_bname'}= Wx::TextCtrl->new( $self,-1, $self->{'config'}->get_value('file_base_name'), [-1,-1], [170, -1] );
+    $self->{'btn'}{'save_next'} = Wx::Button->new( $self, -1, '&Save', [-1,-1],[$btnw, $btnh] );
+    $self->{'txt'}{'file_bdir'} = Wx::TextCtrl->new( $self,-1, $self->{'config'}->get_value('file_base_dir'), [-1,-1],  [170, -1] );
+    $self->{'txt'}{'file_bname'}= Wx::TextCtrl->new( $self,-1, $self->{'config'}->get_value('file_base_name'), [-1,-1],   [100, -1] );
     $self->{'txt'}{'file_bnr'}  = Wx::TextCtrl->new( $self,-1, $self->{'config'}->get_value('file_base_counter'), [-1,-1], [ 36, -1], &Wx::wxTE_READONLY );
-    $self->{'cmb'}{'last'}      = Wx::ComboBox->new( $self,-1, 'select settings file to load', [-1,-1], [225, -1], $self->{'config'}->get_value( 'last_settings' ) );
 
-    $self->{'btn'}{'dir'}->SetToolTip('directory to save file series: '.$self->{'config'}->get_value('file_base_dir'));
+    $self->{'btn'}{'dir'}->SetToolTip('slect directory to save file series in');
     $self->{'btn'}{'write_next'}->SetToolTip('save current image settings into text file with name seen in text field with added number and file ending .ini');
     $self->{'btn'}{'draw'}->SetToolTip('redraw the harmonographic image');
     $self->{'btn'}{'save_next'}->SetToolTip('save current image into SVG file with name seen in text field with added number and file ending .svg');
     $self->{'txt'}{'file_bname'}->SetToolTip("file base name (without ending) for a series of files you save (settings and images)");
     $self->{'txt'}{'file_bnr'}->SetToolTip("index of file base name,\nwhen pushing Next button, image or settings are saved under Dir + File + Index + Ending");
-    $self->{'cmb'}{'last'}->SetToolTip("last saved configuration, select to reload them");
 
 
     #Wx::Event::EVT_TOGGLEBUTTON( $self, $self->{'btn'}{'tips'},  sub { 
     #    Wx::ToolTip::Enable( $_[1]->IsChecked );
     #    $self->{'config'}->set_value('tips', $_[1]->IsChecked ? 1 : 0 );
     #});
-    Wx::Event::EVT_COMBOBOX( $self, $self->{'cmb'}{'last'}, sub { 
-        my $path = $_[1]->GetString;
-        $path = App::GUI::Harmonograph::Settings::expand_path( $path );
-        return $self->SetStatusText( "could not find file: ".$path, 0 ) unless -r $path;
-        $self->open_setting_file( $path );
-        $self->SetStatusText( "loaded settings from ".$path, 1) 
-    });
     Wx::Event::EVT_TEXT_ENTER( $self, $self->{'txt'}{'file_bname'}, sub { $self->update_base_name });
     Wx::Event::EVT_KILL_FOCUS(        $self->{'txt'}{'file_bname'}, sub { $self->update_base_name });
     
@@ -94,7 +93,6 @@ sub new {
         $self->write_settings_file( $path);
         $self->{'config'}->add_setting_file( $path );
         $self->{'last_file_settings'} = $data;
-        $self->update_last_settings();
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'save_next'},  sub {
         my $data = get_data( $self );
@@ -130,12 +128,15 @@ sub new {
 
     # GUI layout assembly
     my $image_menu = Wx::Menu->new();
-    $image_menu->Append( 11100, "&Save\tCtrl+S", "save currently displayed image" );
+    $image_menu->Append( 12100, "&Draw\tCtrl+D", "complete a sketch drawing" );
+    $image_menu->Append( 12200, "&Save\tCtrl+S", "save currently displayed image" );
     
-    my $settings_menu = Wx::Menu->new();
-    $settings_menu->Append( 12100, "&Init\tCtrl+I", "put all settings to default" );
-    $settings_menu->Append( 12200, "&Open\tCtrl+O", "load settings from an INI file" );
-    $settings_menu->Append( 12400, "&Write\tCtrl+W", "store curent settings into an INI file" );
+    my $settings_menu = $self->{'setting_menu'} = Wx::Menu->new();
+    $settings_menu->Append( 11100, "&Init\tCtrl+I", "put all settings to default" );
+    $settings_menu->Append( 11200, "&Open\tCtrl+O", "load settings from an INI file" );
+    $settings_menu->Append( 11400, "&Write\tCtrl+W", "store curent settings into an INI file" );
+    $settings_menu->AppendSeparator();
+    $settings_menu->Append( 11500, "&Quit\tAlt+Q", "save configs and close program" );
     
     my $help_menu = Wx::Menu->new();
     $help_menu->Append( 13100, "&Function\tAlt+F", "Dialog with information how an Harmonograph works" );
@@ -143,94 +144,105 @@ sub new {
     $help_menu->Append( 13300, "&About\tAlt+A", "Dialog with general information about the program" );
 
     my $menu_bar = Wx::MenuBar->new();
-    $menu_bar->Append( $image_menu,    '&Image' );
     $menu_bar->Append( $settings_menu, '&Settings' );
+    $menu_bar->Append( $image_menu,    '&Image' );
     $menu_bar->Append( $help_menu,     '&Help' );
     $self->SetMenuBar($menu_bar);
 
-    Wx::Event::EVT_MENU( $self, 11100, sub { $self->save_image_dialog });
-    Wx::Event::EVT_MENU( $self, 12100, sub { $self->init });
-    Wx::Event::EVT_MENU( $self, 12200, sub { $self->open_settings_dialog });
-    Wx::Event::EVT_MENU( $self, 12400, sub { $self->write_settings_dialog });
+    Wx::Event::EVT_MENU( $self, 11100, sub { $self->init });
+    Wx::Event::EVT_MENU( $self, 11200, sub { $self->open_settings_dialog });
+    Wx::Event::EVT_MENU( $self, 11400, sub { $self->write_settings_dialog });
+    Wx::Event::EVT_MENU( $self, 11500, sub { $self->Close });
+    Wx::Event::EVT_MENU( $self, 12100, sub { $self->draw });
+    Wx::Event::EVT_MENU( $self, 12200, sub { $self->save_image_dialog });
     Wx::Event::EVT_MENU( $self, 13100, sub { $self->{'dialog'}{'function'}->ShowModal });
     Wx::Event::EVT_MENU( $self, 13200, sub { $self->{'dialog'}{'interface'}->ShowModal });
     Wx::Event::EVT_MENU( $self, 13300, sub { $self->{'dialog'}{'about'}->ShowModal });
-    Wx::Event::EVT_MENU_OPEN( $self, sub {
-        $settings_menu->Delete(12300);
-        my $recent = $self->{'config'}->get_value( 'last_settings' );
-        return unless ref $recent eq 'ARRAY';
-        my $Recent_ID = 12301;
-       # my $recent_menu = Wx::Menu->new();
-       # $recent_menu->Append($Recent_ID++, $_) for @$recent;
-        $settings_menu->Insert( 2, 12300, '&Recent', $recent_menu, 'recently saved settings' );
-    } );
-    
-    
+
     my $std_attr = &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALIGN_CENTER_HORIZONTAL;
     my $vert_attr = $std_attr | &Wx::wxTOP;
     my $vset_attr = $std_attr | &Wx::wxTOP| &Wx::wxBOTTOM;
     my $horiz_attr = $std_attr | &Wx::wxLEFT;
     my $all_attr    = $std_attr | &Wx::wxALL;
     my $line_attr    = $std_attr | &Wx::wxLEFT | &Wx::wxRIGHT ;
+ 
+     my $pendulum_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
+    $pendulum_sizer->AddSpacer(15);
+    $pendulum_sizer->Add( $self->{'pendulum'}{'x'},   0, $vert_attr| &Wx::wxLEFT, 15);
+    $pendulum_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pendulum'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
+    $pendulum_sizer->Add( $self->{'pendulum'}{'y'},   0, $vert_attr| &Wx::wxLEFT, 15);
+    $pendulum_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pendulum'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
+    $pendulum_sizer->Add( $self->{'pendulum'}{'z'},   0, $vert_attr| &Wx::wxLEFT, 15);
+    $pendulum_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pendulum'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
+    $pendulum_sizer->Add( $self->{'pendulum'}{'r'},   0, $vert_attr| &Wx::wxLEFT, 15);
+    $pendulum_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+    $self->{'tab'}{'pendulum'}->SetSizer( $pendulum_sizer );
+
+    my $pen_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
+    $pen_sizer->AddSpacer(5);
+    $pen_sizer->Add( $self->{'line'},             0, $vert_attr, 10);
+    $pen_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pen'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
+    $pen_sizer->Add( $self->{'color_flow'},       0, $vert_attr, 15);
+    $pen_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pen'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
+    $pen_sizer->AddSpacer(10);
+    $pen_sizer->Add( Wx::StaticText->new( $self->{'tab'}{'pen'}, -1, 'Start Color', [-1,-1], [-1,-1], &Wx::wxALIGN_CENTRE_HORIZONTAL), 0, &Wx::wxALIGN_CENTER_HORIZONTAL|&Wx::wxGROW|&Wx::wxALL, 5);
+    $pen_sizer->Add( $self->{'color'}{'start'},   0, $vert_attr, 0);
+    $pen_sizer->AddSpacer( 5);
+    $pen_sizer->Add( Wx::StaticText->new( $self->{'tab'}{'pen'}, -1, 'End Color', [-1,-1], [-1,-1], &Wx::wxALIGN_CENTRE_HORIZONTAL), 0, &Wx::wxALIGN_CENTER_HORIZONTAL|&Wx::wxGROW|&Wx::wxALL, 5);
+    $pen_sizer->Add( $self->{'color'}{'end'},     0, $vert_attr, 0);
+    $pen_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pen'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
+    $pen_sizer->AddSpacer(10);
+    $pen_sizer->Add( $self->{'color'}{'startio'}, 0, $vert_attr,  5);
+    $pen_sizer->Add( $self->{'color'}{'endio'},   0, $vert_attr,  5);
+
+    $pen_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+    $self->{'tab'}{'pen'}->SetSizer( $pen_sizer );
     
     my $cmdi_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     my $image_lbl = Wx::StaticText->new( $self, -1, 'Image:' );
-    $cmdi_sizer->Add( $image_lbl,     0, $all_attr, 20 );
-    $cmdi_sizer->AddSpacer( 12 );
-    $cmdi_sizer->Add( $self->{'btn'}{'dir'},       0, $all_attr, 10 );
-    $cmdi_sizer->Add( $self->{'txt'}{'file_bname'},0, $all_attr, 10 );
-    $cmdi_sizer->Add( $self->{'txt'}{'file_bnr'},  0, $all_attr, 10 );
-    $cmdi_sizer->Add( $self->{'btn'}{'save_next'}, 0, $all_attr, 10 );
-    $cmdi_sizer->Add( $self->{'btn'}{'draw'},      0, $all_attr, 10 );
-    $cmdi_sizer->AddSpacer( 10 );
-    $cmdi_sizer->Add( Wx::StaticLine->new( $self, -1, [-1,-1], [ 2, 46] ),  0, $horiz_attr, 0);
+    $cmdi_sizer->Add( $image_lbl,     0, $all_attr, 15 );
+    $cmdi_sizer->Add( $self->{'progress'},         0, &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL| &Wx::wxALL, 10 );
+    $cmdi_sizer->AddSpacer(5);
+    $cmdi_sizer->Add( $self->{'btn'}{'draw'},      0, $all_attr, 5 );
     $cmdi_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $cmds_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-    my $settings_lbl  = Wx::StaticText->new( $self, -1, 'Settings:' );
-    $cmds_sizer->Add( $settings_lbl,       0, $all_attr, 20 );
-    $cmds_sizer->Add( $self->{'cmb'}{'last'},   0, $all_attr, 10 );
-    $cmds_sizer->Add( $self->{'btn'}{'write_next'}, 0, $all_attr, 10 );
+    my $series_lbl = Wx::StaticText->new( $self, -1, 'Series:' );
+    $cmds_sizer->Add( $series_lbl,     0, $all_attr, 15 );
+    $cmds_sizer->Add( $self->{'btn'}{'dir'},         0, $all_attr, 5 );
+    $cmds_sizer->Add( $self->{'txt'}{'file_bdir'},   0, $all_attr, 5 );
+    $cmds_sizer->Add( $self->{'txt'}{'file_bname'},  0, $all_attr, 5 );
+    $cmds_sizer->Add( $self->{'txt'}{'file_bnr'},    0, $all_attr, 5 );
+    $cmds_sizer->Add( $self->{'btn'}{'save_next'},   0, $all_attr, 5 );
+    $cmds_sizer->Add( $self->{'btn'}{'write_next'},  0, $all_attr, 5 );
     $cmds_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $board_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $board_sizer->Add( $self->{'board'}, 0, $all_attr,  10);
-    $board_sizer->Add( $cmdi_sizer,      0, $vert_attr,  5);
+    $board_sizer->Add( $self->{'board'}, 0, $all_attr,  5);
+    $board_sizer->Add( $cmdi_sizer,      0, $vert_attr, 5);
     $board_sizer->Add( 0, 5);
     $board_sizer->Add( Wx::StaticLine->new( $self, -1, [-1,-1], [ 125, 2] ),  0, $line_attr, 20);
-    $board_sizer->Add( $cmds_sizer,       0, $vert_attr,  5);
-    $board_sizer->Add( $self->{'color'}{'startio'}, 0, $vert_attr,  5);
-    $board_sizer->Add( $self->{'color'}{'endio'},   0, $vert_attr,  5);
     $board_sizer->Add( 0, 5);
+    $board_sizer->Add( $cmds_sizer,      0, $vert_attr, 5);
     $board_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $setting_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $setting_sizer->Add( $self->{'pendulum'}{'x'},   0, $vert_attr, 20);
-    $setting_sizer->Add( $self->{'pendulum'}{'y'},   0, $vert_attr, 10);
-    $setting_sizer->Add( $self->{'pendulum'}{'z'},   0, $vert_attr, 10);
-    $setting_sizer->Add( $self->{'pendulum'}{'r'},   0, $vert_attr, 10);
-    $setting_sizer->Add( Wx::StaticLine->new( $self, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr,  5);
-    $setting_sizer->Add( $self->{'line'},             0, $vert_attr, 10);
-    $setting_sizer->Add( Wx::StaticLine->new( $self, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
-    $setting_sizer->Add( $self->{'color_flow'},       0, $vert_attr, 15);
-    $setting_sizer->Add( Wx::StaticLine->new( $self, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
-    $setting_sizer->Add( $self->{'color'}{'start'},   0, $vert_attr, 10);
-    $setting_sizer->Add( $self->{'color'}{'end'},     0, $vert_attr, 20);
-    $setting_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+    $setting_sizer->Add( $self->{'tabs'}, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+    #$setting_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $main_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $main_sizer->Add( $board_sizer, 0, &Wx::wxEXPAND, 0);
-    $main_sizer->Add( $setting_sizer, 0, &Wx::wxEXPAND|&Wx::wxLEFT, 10);
-    $main_sizer->Add( 0, 0, &Wx::wxEXPAND);
+    $main_sizer->Add( $setting_sizer, 1, &Wx::wxEXPAND|&Wx::wxLEFT, 10);
 
     $self->SetSizer($main_sizer);
     $self->SetAutoLayout( 1 );
     $self->{'btn'}{'draw'}->SetFocus;
-    my $size = [1300, 1064];
+    my $size = [1260, 820];
     $self->SetSize($size);
     $self->SetMinSize($size);
     $self->SetMaxSize($size);
   
+    $self->update_recent_settings_menu();
     $self->init();
     $self->{'last_file_settings'} = get_data( $self );
     $self;
@@ -241,6 +253,7 @@ sub init {
     $self->{'pendulum'}{$_}->init() for qw/x y z r/;
     $self->{'color'}{$_}->init() for qw/start end/;
     $self->{ $_ }->init() for qw/color_flow line/;
+    $self->{'progress'}->set_color( { red => 20, green => 20, blue => 110 } );
     $self->sketch( );
     $self->SetStatusText( "all settings are set to default", 1);
 }
@@ -275,9 +288,6 @@ sub write_settings_dialog {
     $self->write_settings_file( $path );
     my $dir = App::GUI::Harmonograph::Settings::extract_dir( $path );
     $self->{'config'}->set_value('write_dir', $dir);
-    $self->{'config'}->add_setting_file( $path );
-    $self->update_last_settings();
-    #$self->{'cmb'}{'last'}->SetSelection( $self->{'cmb'}{'last'}->GetCount() );
 }
 
 sub save_image_dialog {
@@ -319,6 +329,8 @@ sub set_data {
 sub draw {
     my ($self) = @_;
     $self->SetStatusText( "drawing .....", 0 );
+    $self->{'progress'}->set_percentage( 0 );
+    $self->{'progress'}->set_color( $self->{'color'}{'start'}->get_data );
     $self->{'board'}->set_data( $self->get_data );
     $self->{'board'}->Refresh;
     $self->SetStatusText( "done complete drawing", 0 );
@@ -327,6 +339,7 @@ sub draw {
 sub sketch {
     my ($self) = @_;
     $self->SetStatusText( "sketching a preview .....", 0 );
+    $self->{'progress'}->set_percentage( 0 );
     $self->{'board'}->set_data( $self->get_data );
     $self->{'board'}->set_sketch_flag( );
     $self->{'board'}->Refresh;
@@ -367,7 +380,7 @@ sub change_base_dir {
     return if $dialog->ShowModal == &Wx::wxID_CANCEL;
     my $new_dir = $dialog->GetPath;
     $new_dir = App::GUI::Harmonograph::Settings::shrink_path( $new_dir ) . '/';
-    $self->{'btn'}{'dir'}->SetToolTip('directory to save file series: '.$new_dir);
+    $self->{'txt'}{'file_bdir'}->SetValue( $new_dir );
     $self->{'config'}->set_value('file_base_dir', $new_dir);
     $self->update_base_name();
 }
@@ -381,29 +394,49 @@ sub base_path {
     
 }
 
-sub update_last_settings {
-    my ($self) = @_;
-    my $files = $self->{'config'}->get_value('last_settings');
-    $self->{'cmb'}{'last'}->Clear ();
-    $self->{'cmb'}{'last'}->Append( $_) for @$files; 
-}
-
 sub open_setting_file {
-    my ($self, $path) = @_;
-    my $data = App::GUI::Harmonograph::Settings::load( $path );
-    return $data unless ref $data;
-    $self->set_data( $data );
-    $self->draw;
-    my $dir = App::GUI::Harmonograph::Settings::extract_dir( $path );
-    $self->{'config'}->set_value('open_dir', $dir);
-    $data;
+    my ($self, $file ) = @_;
+    my $data = App::GUI::Harmonograph::Settings::load( $file );
+    if (ref $data) {
+        $self->set_data( $data );
+        $self->draw;
+        my $dir = App::GUI::Harmonograph::Settings::extract_dir( $file );
+        $self->{'config'}->set_value('open_dir', $dir);
+        $self->SetStatusText( "loaded settings from ".$file, 1) ;
+        $self->{'config'}->add_setting_file( $file );
+        $self->update_recent_settings_menu();
+        $data;
+    } else {
+         $self->SetStatusText( $data, 0);
+    }
 }
 
 sub write_settings_file {
     my ($self, $file)  = @_;
     my $ret = App::GUI::Harmonograph::Settings::write( $file, $self->get_data );
     if ($ret){ $self->SetStatusText( $ret, 0 ) }
-    else     { $self->SetStatusText( "saved settings into file $file", 1 ) }
+    else     { 
+        $self->{'config'}->add_setting_file( $file );
+        $self->update_recent_settings_menu();
+        $self->SetStatusText( "saved settings into file $file", 1 );
+    }
+}
+
+sub update_recent_settings_menu {
+    my ($self) = @_;
+    my $recent = $self->{'config'}->get_value('last_settings');
+    return unless ref $recent eq 'ARRAY';
+    my $set_menu_ID = 11300;
+    $self->{'setting_menu'}->Destroy( $set_menu_ID );
+    my $Recent_ID = $set_menu_ID + 1;
+    $self->{'recent_menu'} = Wx::Menu->new();
+    for (@$recent){
+        my $path = $_;
+        $self->{'recent_menu'}->Append($Recent_ID, $path);
+        Wx::Event::EVT_MENU( $self, $Recent_ID++, sub { $self->open_setting_file( $path ) });
+    }
+    $self->{'setting_menu'}->Insert( 2, $set_menu_ID, '&Recent', $self->{'recent_menu'}, 'recently saved settings' );
+
 }
 
 sub write_image {
@@ -419,10 +452,4 @@ sub write_image {
 
 __END__
 
-    # Wx::Event::EVT_LEFT_DOWN( $self->{'board'}, sub {  });
-    # Wx::Event::EVT_RIGHT_DOWN( $self->{'board'}, sub {
-    #    my ($panel, $event) = @_;
-    #    my ($mx, $my) = ($event->GetX, $event->GetY);
-    #    $cand_menu->AppendCheckItem($_,$_) for 1..9;
-    #    for (1 .. 9) {$cand_menu->Check($_, 1),$nr++ if $self->{'game'}->is_cell_candidate($r,$c,$_) }
-    #    my $digit = $panel->GetPopupMenuSelectionFromUser( $cand_menu, $event->GetX, $event->GetY);
+# Wx::Event::EVT_LEFT_DOWN( $self->{'board'}, sub {});

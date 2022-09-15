@@ -7,13 +7,13 @@ use base qw/Wx::Panel/;
 use App::GUI::Harmonograph::SliderCombo;
 
 sub new {
-    my ( $class, $parent ) = @_;
+    my ( $class, $parent, $frame ) = @_;
     my $self = $class->SUPER::new( $parent, -1 );
 
     my $flow_label = Wx::StaticText->new( $self, -1, 'Color Change');
-    $self->{'parent'} = $parent;
+    $self->{'frame'} = $frame;
     $self->{'type'}    = Wx::ComboBox->new( $self, -1, 'linear', [-1,-1], [115, -1], [qw/no linear alternate circular/] );
-    $self->{'type'}->SetToolTip("type of color flow: - linear - from start to end color \n  - alter(nate) - linearly between start and end color \n   - cicular - around the rainbouw from start color visiting end color");
+    $self->{'type'}->SetToolTip("type of color flow: - linear - from start to end color \n  - alter(nate) - linearly between start and end color \n   - cicular - around the rainbow from start color visiting end color");
     $self->{'dynlabel'} = Wx::StaticText->new( $self, -1, 'Dynamics');
     $self->{'dynamic'}  = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[65, -1], [1,2,3,4,5,6,7,8, 9, 10], 1);
     $self->{'dynamic'}->SetToolTip('dynamics of linear and alternating color change (1 = equal distanced colors change,\n larger = starting with slow color change becoming faster - or vice versa when dir activated)');
@@ -28,16 +28,16 @@ sub new {
     my $cf_attr = &Wx::wxLEFT|&Wx::wxALIGN_LEFT|&Wx::wxALIGN_CENTER_VERTICAL;
     
     my $row_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $row_sizer->Add( $flow_label,           0, $cf_attr,  13);
+    $row_sizer->Add( $flow_label,           0, $cf_attr,  20);
     $row_sizer->Add( $self->{'type'},       0, $cf_attr,  10);
-    $row_sizer->Add( $self->{'stepsize'},   0, $cf_attr,  34);
+    $row_sizer->Add( $self->{'stepsize'},   0, $cf_attr,  59);
     $row_sizer->Add( 0, 0, &Wx::wxEXPAND);
 
     my $row2_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $row2_sizer->Add( $self->{'dynlabel'},   0, $cf_attr,  15);
-    $row2_sizer->Add( $self->{'dynamic'},    0, $cf_attr,  15);
+    $row2_sizer->Add( $self->{'dynlabel'},   0, $cf_attr,  20);
+    $row2_sizer->Add( $self->{'dynamic'},    0, $cf_attr,  35);
     $row2_sizer->Add( $self->{'direction'},  0, $cf_attr,  12);
-    $row2_sizer->Add( $self->{'period'},     0, $cf_attr,  56);
+    $row2_sizer->Add( $self->{'period'},     0, $cf_attr,  63);
     $row2_sizer->Add( 0, 0, &Wx::wxEXPAND);
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
@@ -81,7 +81,7 @@ sub update_enable {
     $self->{'dynamic'}->Enable( $type eq 'alternate' or $type eq 'linear' );
     $self->{'direction'}->Enable( $type eq 'alternate' or $type eq 'linear' );
     $self->{'period'}->Enable( $type eq 'alternate' or $type eq 'circular' );
-    $self->{'parent'}{'color'}{'end'}->Enable( $type ne 'no' );
+    $self->{'frame'}{'color'}{'end'}->Enable( $type ne 'no' );
 }
 
 1;

@@ -8,6 +8,8 @@ package App::GUI::Harmonograph::Settings;
 
 sub load {
     my ($file) = @_;
+    return unless defined $file;
+    $file = expand_path( $file );
     my $data = {};
     open my $FH, '<', $file or return "could not read $file: $!";
     my $cat = '';

@@ -8,21 +8,22 @@ use App::GUI::Harmonograph::ColorDisplay;
 use App::GUI::Harmonograph::Color;
 
 sub new {
-    my ( $class, $parent, $label, $data, $length, $space ) = @_;
+    my ( $class, $parent, $frame, $label, $data, $length, $space ) = @_;
     #return unless defined $max;
     $length //= 170;
     $space //= 0;
     my $self = $class->SUPER::new( $parent, -1 );
 
-    $self->{'colors'} = { %{$parent->{'config'}->get_value('color')} };
+    $self->{'colors'} = { %{$frame->{'config'}->get_value('color')} };
     $self->{'color_names'} = [ sort keys %{$self->{'colors'}} ];
     $self->{'color_index'} = 0;
     my @np = split ' ', $label;
-    $self->{'browser'}     = $parent->{'color'}{ lc $np[0] };
+    $self->{'target'}      = lc $np[0];
+    $self->{'browser'}     = $frame->{'color'}{ $self->{'target'} };
 
 
     my $btnw = 50; my $btnh = 40;# button width and height
-    $self->{'label'}  = Wx::StaticText->new($self, -1, $label.':' );
+    $self->{'label'}  = Wx::StaticText->new($self, -1, $label );
     $self->{'select'} = Wx::ComboBox->new( $self, -1, $self->current_color_name, [-1,-1], [$length, -1], $self->{'color_names'});
     $self->{'<'}    = Wx::Button->new( $self, -1, '<',       [-1,-1], [ 30, 20] );
     $self->{'>'}    = Wx::Button->new( $self, -1, '>',       [-1,-1], [ 30, 20] );
@@ -31,12 +32,12 @@ sub new {
     $self->{'save'} = Wx::Button->new( $self, -1, 'Save',    [-1,-1], [$btnw, $btnh] );
     $self->{'display'} = App::GUI::Harmonograph::ColorDisplay->new( $self, 25, 10, $self->current_color );
     
-    #$self->{'label'}->SetToolTip("use displayed color on the right side as $label");
+    $self->{'label'}->SetToolTip("access to internal color storage for $self->{'target'} color");
     $self->{'select'}->SetToolTip("select color in list directly");
     $self->{'<'}->SetToolTip("go to previous color in list");
     $self->{'>'}->SetToolTip("go to next color in list");
-    $self->{'load'}->SetToolTip("use displayed color on the right side as $label");
-    $self->{'save'}->SetToolTip("copy current $label here (into color storage)");
+    $self->{'load'}->SetToolTip("use displayed color on the right side as $self->{'target'} color");
+    $self->{'save'}->SetToolTip("copy current $self->{'target'} color here (into color storage)");
     $self->{'del'}->SetToolTip("delete displayed color from storage)");
     $self->{'display'}->SetToolTip("color monitor");
 
