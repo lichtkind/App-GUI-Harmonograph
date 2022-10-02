@@ -70,7 +70,7 @@ sub new {
     $self->{'txt'}{'file_bname'}= Wx::TextCtrl->new( $self,-1, $self->{'config'}->get_value('file_base_name'), [-1,-1],   [100, -1] );
     $self->{'txt'}{'file_bnr'}  = Wx::TextCtrl->new( $self,-1, $self->{'config'}->get_value('file_base_counter'), [-1,-1], [ 36, -1], &Wx::wxTE_READONLY );
 
-    $self->{'btn'}{'dir'}->SetToolTip('slect directory to save file series in');
+    $self->{'btn'}{'dir'}->SetToolTip('select directory to save file series in');
     $self->{'btn'}{'write_next'}->SetToolTip('save current image settings into text file with name seen in text field with added number and file ending .ini');
     $self->{'btn'}{'draw'}->SetToolTip('redraw the harmonographic image');
     $self->{'btn'}{'save_next'}->SetToolTip('save current image into SVG file with name seen in text field with added number and file ending .svg');

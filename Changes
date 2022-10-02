@@ -1,6 +1,9 @@
-0.44  2022-09-    lichtkind
+0.44  2022-10-03  lichtkind
 -------
-    * = 
+    * = minor optimizations
+    * + change image size in menu
+    * + change default image format in menu
+    * ~ fix POD links
 
 0.43  2022-09-15  lichtkind
 -------

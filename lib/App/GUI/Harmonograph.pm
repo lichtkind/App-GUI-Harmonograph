@@ -52,7 +52,7 @@ an interesting configuration
 
 =item 4.
 
-push "Draw" (Ctrl+D or below drawing board) to produce full image
+push "Draw" (below drawing board or Ctrl+D) to produce full image
 
 =item 5.
 
