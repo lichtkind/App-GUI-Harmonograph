@@ -3,6 +3,7 @@
     * = minor optimizations
     * + change image size in menu
     * + change default image format in menu
+    * ? added POD image for second panel
     * ~ fix POD links
 
 0.43  2022-09-15  lichtkind

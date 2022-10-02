@@ -29,19 +29,23 @@ sub new {
         if (exists $self->{'data'}{'new'}) {
             $self->{'dc'}->Blit (0, 0, $self->{'size'}{'x'} + $self->{'x_pos'}, 
                                        $self->{'size'}{'y'} + $self->{'y_pos'} + $self->{'menu_size'}, 
-                                       $self->paint( Wx::PaintDC->new( $self ) ), 0, 0);
+                                       $self->paint( Wx::PaintDC->new( $self ), $self->{'size'}{'x'}, $self->{'size'}{'y'} ), 0, 0);
         } else {
             Wx::PaintDC->new( $self )->Blit (0, 0, $self->{'size'}{'x'}, 
                                                    $self->{'size'}{'y'} + $self->{'menu_size'}, 
-                                            $self->{'dc'}, 
+                                                   $self->{'dc'}, 
                                                    $self->{'x_pos'} , $self->{'y_pos'} + $self->{'menu_size'} );
         }
         1;
-    });
-    
-    # Blit (wxCoord xdest, wxCoord ydest, wxCoord width, wxCoord height, wxDC *source, wxCoord xsrc, wxCoord ysrc, wxRasterOperationMode logicalFunc=wxCOPY, bool useMask=false, wxCoord xsrcMask=wxDefaultCoord, wxCoord ysrcMask=wxDefaultCoord)
+    }); # Blit (xdest, ydest, width, height, wxDC *source, wxCoord xsrc, wxCoord ysrc, wxRasterOperationMode logicalFunc=wxCOPY, bool useMask=false, wxCoord xsrcMask=wxDefaultCoord, wxCoord ysrcMask=wxDefaultCoord)
     
     return $self;
+}
+
+sub set_size {
+    my( $self, $size ) = @_;
+    $self->SetSize( $size, $size );
+    $self->GetParent->Layout;
 }
 
 sub set_data {
@@ -55,7 +59,7 @@ sub set_sketch_flag { $_[0]->{'data'}{'sketch'} = 1 }
 
 
 sub paint {
-    my( $self, $dc ) = @_;
+    my( $self, $dc, $width, $height ) = @_;
     my $background_color = Wx::Colour->new( 255, 255, 255 );
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );     # $dc->SetBrush( $fgb );
     $dc->Clear();
@@ -68,9 +72,11 @@ sub paint {
 
     $dc->SetPen( Wx::Pen->new( $start_color, $self->{'data'}{'line'}{'thickness'}, &Wx::wxPENSTYLE_SOLID) );
 
-    my $cx = $self->{'center'}{'x'};
-    my $cy = $self->{'center'}{'y'};
+    my $cx = (defined $width) ? $width / 2 : $self->{'center'}{'x'};
+    my $cy = (defined $height) ? $height / 2 : $self->{'center'}{'y'};
     my $max_freq = abs $self->{'data'}{'x'}{'frequency'};
+    my $raster_radius = (defined $height) ? (($width > $height ? $cy : $cx) - 25) : $self->{'hard_radius'};
+    
 
     $max_freq = abs $self->{'data'}{'y'}{'frequency'} if $max_freq < abs $self->{'data'}{'y'}{'frequency'};
     $max_freq = abs $self->{'data'}{'z'}{'frequency'} if $max_freq < abs $self->{'data'}{'z'}{'frequency'};
@@ -88,9 +94,9 @@ sub paint {
     my $zdamp  = $self->{'data'}{'z'}{'damp'} ? 1 - ($self->{'data'}{'z'}{'damp'}/10000/$step_in_circle) : 0;
     my $rdamp  = $self->{'data'}{'r'}{'damp'} ? 1 - ($self->{'data'}{'r'}{'damp'}/10000/$step_in_circle) : 0;
 
-    my $rx = $self->{'data'}{'x'}{'radius'} * $self->{'hard_radius'};
-    my $ry = $self->{'data'}{'y'}{'radius'} * $self->{'hard_radius'};
-    my $rz = $self->{'data'}{'z'}{'radius'} * $self->{'hard_radius'};
+    my $rx = $self->{'data'}{'x'}{'radius'} * $raster_radius;
+    my $ry = $self->{'data'}{'y'}{'radius'} * $raster_radius;
+    my $rz = $self->{'data'}{'z'}{'radius'} * $raster_radius;
     if ($self->{'data'}{'z'}{'on'}){
         $rx *= $self->{'data'}{'z'}{'radius'} / 2;
         $ry *= $self->{'data'}{'z'}{'radius'} / 2;
@@ -182,20 +188,25 @@ sub save_file {
 
 sub save_svg_file {
     my( $self, $file_name, $width, $height ) = @_;
+    $width  //= $self->GetParent->{'config'}->get_value('image_size');
+    $height //= $self->GetParent->{'config'}->get_value('image_size');
     $width  //= $self->{'size'}{'x'};
     $height //= $self->{'size'}{'y'};
     my $dc = Wx::SVGFileDC->new( $file_name, $width, $height, 250 );  #  250 dpi
-    $self->paint( $dc );
+    $self->paint( $dc, $width, $height );
 }
 
 sub save_bmp_file {
     my( $self, $file_name, $file_end, $width, $height ) = @_;
+    $width  //= $self->GetParent->{'config'}->get_value('image_size');
+    $height //= $self->GetParent->{'config'}->get_value('image_size');
     $width  //= $self->{'size'}{'x'};
     $height //= $self->{'size'}{'y'};
     my $bmp = Wx::Bitmap->new( $width, $height, 24); # bit depth
     my $dc = Wx::MemoryDC->new( );
     $dc->SelectObject( $bmp );
-    $dc->Blit (0, 0, $self->{'size'}{'x'}, $self->{'size'}{'y'}, $self->{'dc'}, 10, 10 + $self->{'menu_size'});
+    $self->paint( $dc, $width, $height);
+    # $dc->Blit (0, 0, $width, $height, $self->{'dc'}, 10, 10 + $self->{'menu_size'});
     $dc->SelectObject( &Wx::wxNullBitmap );
     $bmp->SaveFile( $file_name, $file_end eq 'png' ? &Wx::wxBITMAP_TYPE_PNG : &Wx::wxBITMAP_TYPE_JPEG );
 }

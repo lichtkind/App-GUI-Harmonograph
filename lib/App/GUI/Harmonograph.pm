@@ -201,6 +201,10 @@ The last slider adds an additional fine tuned offset between 0 and 90 degree.
 
 =head2 Line
 
+=for HTML <p>
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/GUI2.png"   alt=""  width="630" height="410">
+</p>
+
 The second tab on the right side has knobs that set the properties of the pen.
 First how many rotations will be drawn. Secondly the distance between dots. 
 Greater distances, together with color changes, help to clearify
@@ -264,8 +268,11 @@ names. Also a sub menu allows a quick load of the recently used files.
 The first entry lets you reset the whole program to the starting state
 and the last is just to exit (safely with saving the configs).
 
-The second menu has only two commands for drawing and saving an complete
-image in an arbitrary named PNG, JPG or SVG file (the file ending decides). 
+The second menu has only two commands for drawing an complete image
+and saving it in an arbitrary named PNG, JPG or SVG file (the file ending decides).
+The submenu above onle set the preferred format, which is the format
+of serial images and the first wild card in dialog. Above that is another
+submenu for setting the image size.
 
 The third menu has some dialogs with documentation and additional information.
 
