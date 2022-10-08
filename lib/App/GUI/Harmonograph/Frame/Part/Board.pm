@@ -5,7 +5,8 @@ use Wx;
 package App::GUI::Harmonograph::Frame::Part::Board;
 use base qw/Wx::Panel/;
 my $TAU = 6.283185307;
-my $COPY_DC = 1;
+
+use Graphics::Toolkit::Color;
 
 sub new {
     my ( $class, $parent, $x, $y ) = @_;
@@ -37,15 +38,9 @@ sub new {
                                                    $self->{'x_pos'} , $self->{'y_pos'} + $self->{'menu_size'} );
         }
         1;
-    }); # Blit (xdest, ydest, width, height, wxDC *source, wxCoord xsrc, wxCoord ysrc, wxRasterOperationMode logicalFunc=wxCOPY, bool useMask=false, wxCoord xsrcMask=wxDefaultCoord, wxCoord ysrcMask=wxDefaultCoord)
+    }); # Blit (xdest, ydest, width, height, DC *src, xsrc, ysrc, wxRasterOperationMode logicalFunc=wxCOPY, bool useMask=false)
     
     return $self;
-}
-
-sub set_size {
-    my( $self, $size ) = @_;
-    $self->SetSize( $size, $size );
-    $self->GetParent->Layout;
 }
 
 sub set_data {
@@ -125,9 +120,9 @@ sub paint {
     my $cflow = $self->{'data'}{'color_flow'};
     my $color_change_time;
     my @color;
-    my $color_index = 1;
-    my $startc = App::GUI::Harmonograph::Color->new( @{$self->{'data'}{'start_color'}}{'red', 'green', 'blue'} );
-    my $endc = App::GUI::Harmonograph::Color->new( @{$self->{'data'}{'end_color'}}{'red', 'green', 'blue'} );
+    my $color_index = 0;
+    my $startc = Graphics::Toolkit::Color->new( @{$self->{'data'}{'start_color'}}{'red', 'green', 'blue'} );
+    my $endc = Graphics::Toolkit::Color->new( @{$self->{'data'}{'end_color'}}{'red', 'green', 'blue'} );
     if ($cflow->{'type'} eq 'linear'){
         my $color_count = int ($self->{'data'}{'line'}{'length'} / $cflow->{'stepsize'});
         @color = map {[$_->rgb] } $startc->gradient_to( $endc, $color_count + 1, $cflow->{'dynamic'} );
@@ -148,6 +143,9 @@ sub paint {
                                                          $endc->lightness - $startc->lightness);
         my @tc = @color;
         push @color, @tc for 0 .. int ($self->{'data'}{'line'}{'length'} / $cflow->{'period'} / $cflow->{'stepsize'});
+    } else { @color = ([$self->{'data'}{'start_color'}{'red'}, 
+                        $self->{'data'}{'start_color'}{'green'}, 
+                        $self->{'data'}{'start_color'}{'blue'}  ]);
     }
     $color_change_time = $step_in_circle * $cflow->{'stepsize'};
 
@@ -166,9 +164,9 @@ sub paint {
     $code .= '$ry *= $ydamp;'  if $ydamp;
     $code .= '$rz *= $zdamp;'  if $zdamp;
     $code .= '$dtr *= $rdamp;' if $rdamp;
-    $code .= '$progress->set_percentage( $_ / $t_iter * 100 ) unless $_ % $color_change_time;' unless defined $self->{'data'}{'sketch'};
-    $code .= '$dc->SetPen( Wx::Pen->new( Wx::Colour->new( @{$color[$color_index++]} ),'.
+    $code .= '$dc->SetPen( Wx::Pen->new( Wx::Colour->new( @{$color[++$color_index]} ),'.
              ' $self->{data}{line}{thickness}, &Wx::wxPENSTYLE_SOLID)) unless $_ % $color_change_time;' if $cflow->{'type'} ne 'no' and @color;
+    $code .= '$progress->add_percentage( $_ / $t_iter * 100, $color[$color_index] ) unless $_ % $step_in_circle;' unless defined $self->{'data'}{'sketch'};
     $code .= '}';
     
     eval $code;

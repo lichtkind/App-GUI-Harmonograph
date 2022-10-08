@@ -163,9 +163,9 @@ sub new {
     $image_format_menu->Check( 12203, 1 ) if $self->{'config'}->get_value('file_base_ending') eq 'svg';
     
     my $image_menu = Wx::Menu->new();
+    $image_menu->Append( 12300, "&Draw\tCtrl+D", "complete a sketch drawing" );
     $image_menu->Append( 12100, "S&ize",  $image_size_menu,   "set image size" );
     $image_menu->Append( 12200, "&Format",  $image_format_menu, "set default image formate" );
-    $image_menu->Append( 12300, "&Draw\tCtrl+D", "complete a sketch drawing" );
     $image_menu->Append( 12400, "&Save\tCtrl+S", "save currently displayed image" );
 
     
@@ -365,7 +365,7 @@ sub set_data {
 sub draw {
     my ($self) = @_;
     $self->SetStatusText( "drawing .....", 0 );
-    $self->{'progress'}->set_percentage( 0 );
+    $self->{'progress'}->reset;
     $self->{'progress'}->set_color( $self->{'color'}{'start'}->get_data );
     $self->{'board'}->set_data( $self->get_data );
     $self->{'board'}->Refresh;
@@ -375,7 +375,7 @@ sub draw {
 sub sketch {
     my ($self) = @_;
     $self->SetStatusText( "sketching a preview .....", 0 );
-    $self->{'progress'}->set_percentage( 0 );
+    $self->{'progress'}->reset;
     $self->{'board'}->set_data( $self->get_data );
     $self->{'board'}->set_sketch_flag( );
     $self->{'board'}->Refresh;
