@@ -4,7 +4,7 @@
 
 ### VERSION
  
-    0.43
+    0.45
 
 [Home on CPAN](https://metacpan.org/pod/App-Harmonograph)
 
@@ -59,6 +59,7 @@
 
     Perl 5.12 including some core Modules.
     WxPerl 0.9 or higher
+    Graphics::Toolkit::Color
     FindBin 1
     File::Spec 3
     File::HomeDir 1

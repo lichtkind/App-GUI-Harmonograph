@@ -1,7 +1,8 @@
-0.45  2022-10-09  lichtkind
+0.45  2022-10-08  lichtkind
 -------
-    * = 
+    * = maintenance
     * + display color flow in progress bar
+    * - clean some dead code
     * ? push color code into module Graphics::Toolkit::Color  
 
 0.44  2022-10-02  lichtkind

@@ -277,6 +277,12 @@ submenu for setting the image size.
 The third menu has some dialogs with documentation and additional information.
 
 
+=head1 SEE ALSO
+
+L<App::GUI::Cellgraph>
+
+L<App::GUI::Dynagraph>
+
 =head1 AUTHOR
 
 Herbert Breunung (lichtkind@cpan.org)

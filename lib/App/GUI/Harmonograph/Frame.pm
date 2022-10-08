@@ -54,14 +54,13 @@ sub new {
     $self->{'color_flow'}       = App::GUI::Harmonograph::Frame::Part::ColorFlow->new( $self->{'tab'}{'pen'}, $self );
     $self->{'line'}             = App::GUI::Harmonograph::Frame::Part::PenLine->new( $self->{'tab'}{'pen'} );
                                
-    $self->{'progress'}            = App::GUI::Harmonograph::ProgressBar->new( $self, 450, 5, { red => 20, green => 20, blue => 110 });
+    $self->{'progress'}            = App::GUI::Harmonograph::ProgressBar->new( $self, 450, 10, { red => 20, green => 20, blue => 110 });
     $self->{'board'}               = App::GUI::Harmonograph::Frame::Part::Board->new( $self , 600, 600 );
     $self->{'dialog'}{'about'}     = App::GUI::Harmonograph::Dialog::About->new();
     $self->{'dialog'}{'interface'} = App::GUI::Harmonograph::Dialog::Interface->new();
     $self->{'dialog'}{'function'}  = App::GUI::Harmonograph::Dialog::Function->new();
 
     my $btnw = 50; my $btnh     = 40;# button width and height
-    #Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'exit'},  sub { $self->Close; } );
     $self->{'btn'}{'dir'}       = Wx::Button->new( $self, -1, 'Dir',   [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'write_next'}= Wx::Button->new( $self, -1, 'INI',   [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'draw'}      = Wx::Button->new( $self, -1, '&Draw', [-1,-1],[$btnw, $btnh] );
@@ -77,11 +76,6 @@ sub new {
     $self->{'txt'}{'file_bname'}->SetToolTip("file base name (without ending) for a series of files you save (settings and images)");
     $self->{'txt'}{'file_bnr'}->SetToolTip("index of file base name,\nwhen pushing Next button, image or settings are saved under Dir + File + Index + Ending");
 
-
-    #Wx::Event::EVT_TOGGLEBUTTON( $self, $self->{'btn'}{'tips'},  sub { 
-    #    Wx::ToolTip::Enable( $_[1]->IsChecked );
-    #    $self->{'config'}->set_value('tips', $_[1]->IsChecked ? 1 : 0 );
-    #});
     Wx::Event::EVT_TEXT_ENTER( $self, $self->{'txt'}{'file_bname'}, sub { $self->update_base_name });
     Wx::Event::EVT_KILL_FOCUS(        $self->{'txt'}{'file_bname'}, sub { $self->update_base_name });
     
@@ -482,10 +476,4 @@ sub write_image {
     $self->SetStatusText( "saved image under: $file", 0 );
 }
 
-
-
 1;
-
-__END__
-
-# Wx::Event::EVT_LEFT_DOWN( $self->{'board'}, sub {});
