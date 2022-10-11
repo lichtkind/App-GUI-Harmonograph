@@ -196,7 +196,7 @@ as fast. The second combo control adds decimals for more complex drawings.
 The third row starts with a selector that if maybe the most advanced
 setting. It defines an factor with which the previously set frequency
 gets multiplied. Default is one which does nothing at all. The next are
-math constant like Pi, Phi (gib and small) and eulars constant e. 
+math constant like Pi, Phi (big and small) and eulars constant e. 
 After that are the names of the pendula. With that you can define relative
 frequencies. This is especially handy when brwosing the classic shapes 
 with three pendula. For these the frequency of X and Y has to be the same -
@@ -297,12 +297,12 @@ L<App::GUI::Dynagraph>
 
 Herbert Breunung (lichtkind@cpan.org)
 
-=head1 COPYRIGHT
+=head1 COPYRIGHT & LICENSE
 
 Copyright(c) 2022 by Herbert Breunung
 
 All rights reserved. 
-This program is free software and can be used and distributed
+This program is free software and can be used, changed and distributed
 under the GPL 3 licence.
 
 =cut

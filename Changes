@@ -1,7 +1,7 @@
 0.50  2022-10-10  lichtkind
 -------
     * = maintenance and one planned major feature
-    * * frequency base factors for relative values to other pendula and natural constants
+    * * frequency base factors for relative values to other pendula and math constants
     * ? added and rewrote some docs
     * ! save frequency decimals in INI
     * ! fixed tests srezic++
