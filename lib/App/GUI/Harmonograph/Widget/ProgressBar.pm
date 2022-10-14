@@ -2,7 +2,7 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::GUI::Harmonograph::ProgressBar;
+package App::GUI::Harmonograph::Widget::ProgressBar;
 use base qw/Wx::Panel/;
 
 sub new {

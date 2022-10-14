@@ -5,7 +5,7 @@ use Wx;
 
 package App::GUI::Harmonograph::Frame::Part::Pendulum;
 use base qw/Wx::Panel/;
-use App::GUI::Harmonograph::SliderCombo;
+use App::GUI::Harmonograph::Widget::SliderCombo;
 
 sub new {
     my ( $class, $parent, $label, $help, $on, $max,  ) = @_;
@@ -22,9 +22,9 @@ sub new {
     
     my $lbl  = Wx::StaticText->new($self, -1, uc($label) );
 
-    $self->{'frequency'}  = App::GUI::Harmonograph::SliderCombo->new
+    $self->{'frequency'}  = App::GUI::Harmonograph::Widget::SliderCombo->new
                         ( $self, 100, 'f', 'frequency of '.$help, 1, $max, 1 );
-    $self->{'freq_dez'} = App::GUI::Harmonograph::SliderCombo->new
+    $self->{'freq_dez'} = App::GUI::Harmonograph::Widget::SliderCombo->new
                         ( $self, 100, 'f dec.', 'decimals of frequency at '.$help, 0, 1000, 0);
     $self->{'freq_factor'} = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[70, -1], [1, 'π', 'Φ', 'φ', 'e', 'X','Y','Z','R'], 1);
     $self->{'freq_factor'}->SetToolTip('base factor of frequency: one, math constants or frequency of other pendula');
@@ -36,12 +36,11 @@ sub new {
     $self->{'half_off'}->SetToolTip('pendulum starts with offset of half rotation');
     $self->{'quarter_off'} = Wx::CheckBox->new( $self, -1, ' 4');
     $self->{'quarter_off'}->SetToolTip('pendulum starts with offset of quater rotation');
-    $self->{'offset'} = App::GUI::Harmonograph::SliderCombo->new
+    $self->{'offset'} = App::GUI::Harmonograph::Widget::SliderCombo->new
                             ($self, 110, 'Offset', 'additional offset pendulum starts with (0 - quater rotation)', 0, 100, 0);
                             
-                            
-    $self->{'radius'} = App::GUI::Harmonograph::SliderCombo->new( $self, 100, 'r', 'radius or amplitude of pendulum swing', 0, 150, 100);
-    $self->{'damp'} = App::GUI::Harmonograph::SliderCombo->new( $self, 100, 'Damp', 'damping factor (diminishes amplitude over time)', 0, 1000, 0);
+    $self->{'radius'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'r', 'radius or amplitude of pendulum swing', 0, 150, 100);
+    $self->{'damp'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Damp', 'damping factor (diminishes amplitude over time)', 0, 1000, 0);
 
 
     Wx::Event::EVT_CHECKBOX( $self, $self->{'on'},          sub { $self->update_enable(); $self->{'callback'}->() });

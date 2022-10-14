@@ -15,10 +15,10 @@ use App::GUI::Harmonograph::Frame::Part::ColorBrowser;
 use App::GUI::Harmonograph::Frame::Part::ColorPicker;
 use App::GUI::Harmonograph::Frame::Part::PenLine;
 use App::GUI::Harmonograph::Frame::Part::Board;
+use App::GUI::Harmonograph::Widget::ProgressBar;
 use App::GUI::Harmonograph::Dialog::Function;
 use App::GUI::Harmonograph::Dialog::Interface;
 use App::GUI::Harmonograph::Dialog::About;
-use App::GUI::Harmonograph::ProgressBar;
 use App::GUI::Harmonograph::Settings;
 use App::GUI::Harmonograph::Config;
 
@@ -55,7 +55,7 @@ sub new {
     $self->{'color_flow'}       = App::GUI::Harmonograph::Frame::Part::ColorFlow->new( $self->{'tab'}{'pen'}, $self );
     $self->{'line'}             = App::GUI::Harmonograph::Frame::Part::PenLine->new( $self->{'tab'}{'pen'} );
                                
-    $self->{'progress'}            = App::GUI::Harmonograph::ProgressBar->new( $self, 450, 10, { red => 20, green => 20, blue => 110 });
+    $self->{'progress'}            = App::GUI::Harmonograph::Widget::ProgressBar->new( $self, 450, 10, { red => 20, green => 20, blue => 110 });
     $self->{'board'}               = App::GUI::Harmonograph::Frame::Part::Board->new( $self , 600, 600 );
     $self->{'dialog'}{'about'}     = App::GUI::Harmonograph::Dialog::About->new();
     $self->{'dialog'}{'interface'} = App::GUI::Harmonograph::Dialog::Interface->new();
@@ -138,7 +138,6 @@ sub new {
         Wx::Event::EVT_MENU( $self, 12100 + $_, sub { 
             my $size = 100 * ($_[1]->GetId - 12100); 
             $self->{'config'}->set_value('image_size', $size);
-            $self->{'board'}->set_size( $size );
         });
         
     }
