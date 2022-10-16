@@ -18,7 +18,7 @@ sub new {
     $self->{'delta'} = $delta // 1;
     $self->{'callback'} = sub {};
   
-    $self->{'txt'}      = Wx::TextCtrl->new( $self, -1, $init_value, [-1,-1], [26 + 4 * int(log $max),-1], &Wx::wxTE_RIGHT);
+    $self->{'txt'}      = Wx::TextCtrl->new( $self, -1, $init_value, [-1,-1], [26 + 6 * length($max),-1], &Wx::wxTE_RIGHT);
     $self->{'btn'}{'-'} = Wx::Button->new( $self, -1, '-', [-1,-1],[30, 30] );
     $self->{'btn'}{'+'} = Wx::Button->new( $self, -1, '+', [-1,-1],[30, 30] );
 
@@ -78,7 +78,9 @@ sub new {
 sub GetValue { $_[0]->{'value'} }
     
 sub SetValue { 
-    my ( $self, $value, $passive) = @_;
+    my $self = shift;
+    my $value = shift // 0;
+    my $passive = shift;
     $value = $self->{'min'} if $value < $self->{'min'};
     $value = $self->{'max'} if $value > $self->{'max'};
     return if $self->{'value'} == $value;

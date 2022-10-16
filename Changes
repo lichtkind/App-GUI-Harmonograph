@@ -1,6 +1,15 @@
-0.52  2022-10-14  lichtkind
+0.55  2022-10-15  lichtkind
 -------
-    * = maintenance
+    * = feature enhancement and refinement
+    * * draw lines (connect dots) (good vor vector graphics)
+    * + radius damping acceleration
+    * + frequency damping acceleration
+    * ~ change dot density to quadratic behaviour
+    * / ranemed all damping related setting keys
+    * " separate linear and circular pendula in two tabs
+    * " cleaner GUI
+    * ! fixed tests srezic++
+    * ! bug in rotation matrix
 
 0.51  2022-10-14  lichtkind
 -------
@@ -59,6 +68,6 @@
     *   - offset, checks for 90 and 180 degree
     * + line length, dot denisty and dot size
     * + color flow: no, linear, alternating, circular
-    * save images as SVG, JPEG and PNG
-    * save and load settings in INI files
-    * quick save of images and settings for series of files
+    * + save images as SVG, JPEG and PNG
+    * + save and load settings in INI files
+    * + quick save of images and settings for series of files
