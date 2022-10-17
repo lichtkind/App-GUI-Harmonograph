@@ -3,7 +3,7 @@
     * = feature enhancement and refinement
     * * draw lines (connect dots) (good vor vector graphics)
     * + radius damping acceleration
-    * + frequency damping acceleration
+    * + independent frequency damping
     * ~ change dot density to quadratic behaviour
     * / ranemed all damping related setting keys
     * " separate linear and circular pendula in two tabs

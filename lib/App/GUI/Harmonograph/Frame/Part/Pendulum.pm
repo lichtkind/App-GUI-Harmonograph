@@ -26,7 +26,7 @@ sub new {
     $self->{'radius_damp'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Damp  ', 'damping factor (diminishes amplitude over time)', 0, 800, 0);
     $self->{'radius_damp_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '*', '-']);
     $self->{'radius_damp_acc'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Acceleration ', 'accelaration of damping factor', 0, 100, 0);
-    $self->{'radius_damp_acc_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '+', '-', '*', '/']);
+    $self->{'radius_damp_acc_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '*', '/', '+', '-']);
     $self->{'frequency'}  = App::GUI::Harmonograph::Widget::SliderCombo->new
                         ( $self, 100, 'Frequency', 'frequency of '.$help, 1, $max, 1 );
     $self->{'freq_dez'} = App::GUI::Harmonograph::Widget::SliderCombo->new
