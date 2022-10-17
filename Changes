@@ -4,6 +4,7 @@
     * * draw lines (connect dots) (good vor vector graphics)
     * + radius damping acceleration
     * + independent frequency damping
+    * + added Gamma(1/2) to frequency factor constants
     * ~ change dot density to quadratic behaviour
     * / ranemed all damping related setting keys
     * " separate linear and circular pendula in two tabs

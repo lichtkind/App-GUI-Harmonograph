@@ -82,7 +82,7 @@ sub paint {
     my $fz = $self->{'data'}{'z'}{'frequency'};
     my $fr = $self->{'data'}{'r'}{'frequency'};
     
-    my $base_factor = { X => $fx, Y => $fy, Z => $fz, R => $fr, e => $e, 'π' => $PI, 'Φ' => $PHI, 'φ' => $phi };
+    my $base_factor = { X => $fx, Y => $fy, Z => $fz, R => $fr, e => $e, 'π' => $PI, 'Φ' => $PHI, 'φ' => $phi, 'Γ' => $GAMMA };
     
     $fx *= ($base_factor->{ $self->{'data'}{'x'}{'freq_factor'} } // 1);
     $fy *= ($base_factor->{ $self->{'data'}{'y'}{'freq_factor'} } // 1);

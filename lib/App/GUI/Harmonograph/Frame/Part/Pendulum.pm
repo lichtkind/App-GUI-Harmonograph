@@ -31,7 +31,7 @@ sub new {
                         ( $self, 100, 'Frequency', 'frequency of '.$help, 1, $max, 1 );
     $self->{'freq_dez'} = App::GUI::Harmonograph::Widget::SliderCombo->new
                         ( $self, 100, 'Decimals', 'decimals of frequency at '.$help, 0, 1000, 0);
-    my @factor = grep {lc $_ ne lc $self->{'name'}} qw/1 π Φ φ e X Y Z R/;
+    my @factor = grep {lc $_ ne lc $self->{'name'}} qw/1 π Φ φ Γ e X Y Z R/;
     $self->{'freq_factor'} = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[70, 20], \@factor);
     $self->{'freq_factor'}->SetToolTip('base factor frequency will be multiplied with: one (no), math constants or frequency of other pendula');
     $self->{'freq_damp'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Damp  ', 'damping factor (diminishes frequency over time)', 0, 400, 0);
