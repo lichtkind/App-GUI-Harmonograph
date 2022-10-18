@@ -4,7 +4,7 @@
 
 ### VERSION
  
-    0.55
+    0.56
 
 [Home on CPAN](https://metacpan.org/pod/App-Harmonograph)
 
@@ -62,7 +62,7 @@
     File::Spec
     File::HomeDir
     Graphics::Toolkit::Color
-    WxPerl 0.9 or higher
+    WxPerl (Wx) 0.9 or higher
    
 
 

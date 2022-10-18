@@ -6,7 +6,7 @@ use FindBin;
 
 package App::GUI::Harmonograph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.56';
+our $VERSION = '0.57';
 
 use base qw/Wx::App/;
 use App::GUI::Harmonograph::Frame;
@@ -99,15 +99,15 @@ third pendulum can rotate
 
 =item *
 
-pendula can oscillate at none integer frequencies
+pendula can oscillate at none integer frequencies with frequency damping
 
 =item *
 
-changeable amplitude and damping
+changeable amplitude and complex amplitude damping
 
 =item *
 
-changeable dot density and dot size
+draw lines or dots with changeable density and size
 
 =item *
 

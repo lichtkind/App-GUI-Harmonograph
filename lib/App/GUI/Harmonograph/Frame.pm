@@ -76,6 +76,7 @@ sub new {
     $self->{'txt'}{'file_bname'}->SetToolTip("file base name (without ending) for a series of files you save (settings and images)");
     $self->{'txt'}{'file_bnr'}->SetToolTip("index of file base name,\nwhen pushing Next button, image or settings are saved under Dir + File + Index + Ending");
 
+    # Events
     Wx::Event::EVT_TEXT_ENTER( $self, $self->{'txt'}{'file_bname'}, sub { $self->update_base_name });
     Wx::Event::EVT_KILL_FOCUS(        $self->{'txt'}{'file_bname'}, sub { $self->update_base_name });
     
@@ -119,16 +120,13 @@ sub new {
         $_[1]->Skip(1) 
     });
 
-
-    # GUI layout assembly
-    
+    # Menu
     my $settings_menu = $self->{'setting_menu'} = Wx::Menu->new();
     $settings_menu->Append( 11100, "&Init\tCtrl+I", "put all settings to default" );
     $settings_menu->Append( 11200, "&Open\tCtrl+O", "load settings from an INI file" );
     $settings_menu->Append( 11400, "&Write\tCtrl+W", "store curent settings into an INI file" );
     $settings_menu->AppendSeparator();
     $settings_menu->Append( 11500, "&Quit\tAlt+Q", "save configs and close program" );
-
 
     my $image_size_menu = Wx::Menu->new();
     for (1 .. 20) {
@@ -160,7 +158,6 @@ sub new {
     $image_menu->Append( 12100, "S&ize",  $image_size_menu,   "set image size" );
     $image_menu->Append( 12200, "&Format",  $image_format_menu, "set default image formate" );
     $image_menu->Append( 12400, "&Save\tCtrl+S", "save currently displayed image" );
-
     
     my $help_menu = Wx::Menu->new();
     $help_menu->Append( 13100, "&Function\tAlt+F", "Dialog with information how an Harmonograph works" );
@@ -183,6 +180,7 @@ sub new {
     Wx::Event::EVT_MENU( $self, 13200, sub { $self->{'dialog'}{'interface'}->ShowModal });
     Wx::Event::EVT_MENU( $self, 13300, sub { $self->{'dialog'}{'about'}->ShowModal });
 
+    # GUI layout assembly
     my $std_attr = &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxALIGN_CENTER_HORIZONTAL;
     my $vert_attr = $std_attr | &Wx::wxTOP;
     my $vset_attr = $std_attr | &Wx::wxTOP| &Wx::wxBOTTOM;
@@ -190,7 +188,7 @@ sub new {
     my $all_attr    = $std_attr | &Wx::wxALL;
     my $line_attr    = $std_attr | &Wx::wxLEFT | &Wx::wxRIGHT ;
  
-     my $linear_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
+    my $linear_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $linear_sizer->AddSpacer(5);
     $linear_sizer->Add( $self->{'pendulum'}{'x'},   0, $vert_attr| &Wx::wxLEFT, 15);
     $linear_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'linear'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
@@ -199,7 +197,7 @@ sub new {
     $linear_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->{'tab'}{'linear'}->SetSizer( $linear_sizer );
 
-     my $circular_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
+    my $circular_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $circular_sizer->AddSpacer(5);
     $circular_sizer->Add( $self->{'pendulum'}{'z'},   0, $vert_attr| &Wx::wxLEFT, 15);
     $circular_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'circular'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
