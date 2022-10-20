@@ -229,20 +229,22 @@ sub new {
     my $cmdi_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     my $image_lbl = Wx::StaticText->new( $self, -1, 'Image:' );
     $cmdi_sizer->Add( $image_lbl,     0, $all_attr, 15 );
-    $cmdi_sizer->Add( $self->{'progress'},         0, &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL| &Wx::wxALL, 10 );
+    $cmdi_sizer->Add( $self->{'progress'},         1, &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL| &Wx::wxALL, 10 );
     $cmdi_sizer->AddSpacer(5);
     $cmdi_sizer->Add( $self->{'btn'}{'draw'},      0, $all_attr, 5 );
-    $cmdi_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $cmds_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     my $series_lbl = Wx::StaticText->new( $self, -1, 'Series:' );
     $cmds_sizer->Add( $series_lbl,     0, $all_attr, 15 );
+    $cmds_sizer->AddSpacer( 5 );
     $cmds_sizer->Add( $self->{'btn'}{'dir'},         0, $all_attr, 5 );
     $cmds_sizer->Add( $self->{'txt'}{'file_bdir'},   0, $all_attr, 5 );
     $cmds_sizer->Add( $self->{'txt'}{'file_bname'},  0, $all_attr, 5 );
     $cmds_sizer->Add( $self->{'txt'}{'file_bnr'},    0, $all_attr, 5 );
-    $cmds_sizer->Add( $self->{'btn'}{'save_next'},   0, $all_attr, 5 );
+    $cmds_sizer->AddSpacer( 10 );
     $cmds_sizer->Add( $self->{'btn'}{'write_next'},  0, $all_attr, 5 );
+    $cmds_sizer->AddSpacer( 10 );
+    $cmds_sizer->Add( $self->{'btn'}{'save_next'},   0, $all_attr, 5 );
     $cmds_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $board_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
