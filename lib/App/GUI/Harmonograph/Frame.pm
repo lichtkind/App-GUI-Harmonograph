@@ -5,16 +5,17 @@ use Wx::AUI;
 
 package App::GUI::Harmonograph::Frame;
 use base qw/Wx::Frame/;
-use App::GUI::Harmonograph::Frame::Part::Pendulum;
-use App::GUI::Harmonograph::Frame::Part::ColorFlow;
-use App::GUI::Harmonograph::Frame::Part::ColorBrowser;
-use App::GUI::Harmonograph::Frame::Part::ColorPicker;
-use App::GUI::Harmonograph::Frame::Part::PenLine;
-use App::GUI::Harmonograph::Frame::Part::Board;
-use App::GUI::Harmonograph::Widget::ProgressBar;
 use App::GUI::Harmonograph::Dialog::Function;
 use App::GUI::Harmonograph::Dialog::Interface;
 use App::GUI::Harmonograph::Dialog::About;
+use App::GUI::Harmonograph::Frame::Part::Board;
+use App::GUI::Harmonograph::Frame::Part::ColorBrowser;
+use App::GUI::Harmonograph::Frame::Part::ColorFlow;
+use App::GUI::Harmonograph::Frame::Part::ColorPicker;
+use App::GUI::Harmonograph::Frame::Part::Pendulum;
+use App::GUI::Harmonograph::Frame::Part::PenLine;
+use App::GUI::Harmonograph::Frame::Part::ModMatrix;
+use App::GUI::Harmonograph::Widget::ProgressBar;
 use App::GUI::Harmonograph::Settings;
 use App::GUI::Harmonograph::Config;
 
@@ -33,6 +34,7 @@ sub new {
     $self->{'tabs'}             = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
     $self->{'tab'}{'linear'}    = Wx::Panel->new($self->{'tabs'});
     $self->{'tab'}{'circular'}  = Wx::Panel->new($self->{'tabs'});
+    $self->{'tab'}{'mod'}       = Wx::Panel->new($self->{'tabs'});
     $self->{'tab'}{'pen'}       = Wx::Panel->new($self->{'tabs'});
     $self->{'tabs'}->AddPage( $self->{'tab'}{'linear'},   'Lateral Pendulum Settings');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'circular'}, 'Rotary Pendulum Settings');

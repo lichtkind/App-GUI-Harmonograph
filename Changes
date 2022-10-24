@@ -1,6 +1,7 @@
 0.57  2022-10-18  lichtkind
 -------
     * = maintenance
+    * ? cleanep up POD from incorrect leftover bits
     * ? added some POD
     * " cleaned left lower corner of GUI
 
