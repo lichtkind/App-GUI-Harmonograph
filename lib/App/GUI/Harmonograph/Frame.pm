@@ -163,8 +163,8 @@ sub new {
     $image_menu->Append( 12400, "&Save\tCtrl+S", "save currently displayed image" );
     
     my $help_menu = Wx::Menu->new();
-    $help_menu->Append( 13100, "&Function\tAlt+F", "Dialog with information how an Harmonograph works" );
-    $help_menu->Append( 13200, "&Knobs\tAlt+K", "Dialog explaining the layout and function of knobs" );
+    #$help_menu->Append( 13100, "&Function\tAlt+F", "Dialog with information how an Harmonograph works" );
+    #$help_menu->Append( 13200, "&Knobs\tAlt+K", "Dialog explaining the layout and function of knobs" );
     $help_menu->Append( 13300, "&About\tAlt+A", "Dialog with general information about the program" );
 
     my $menu_bar = Wx::MenuBar->new();

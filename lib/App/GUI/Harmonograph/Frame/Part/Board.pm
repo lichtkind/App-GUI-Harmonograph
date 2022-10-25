@@ -14,7 +14,7 @@ my $GAMMA = 1.7724538509055160;
 
 use Graphics::Toolkit::Color;
 use App::GUI::Harmonograph::Function;
-use Benchmark;
+# use Benchmark;
 
 sub new {
     my ( $class, $parent, $x, $y ) = @_;
@@ -63,9 +63,11 @@ sub set_data {
 sub set_sketch_flag { $_[0]->{'data'}{'sketch'} = 1 }
 
 sub paint {
-    my( $self, $dc, $width, $height ) = @_;
-my $t = Benchmark->new;
+    my( $self, $dc, $width, $height ) = @_; # my $t = Benchmark->new;
     my $progress = $self->GetParent->{'progress'};
+    my $precision = App::GUI::Harmonograph::Function::factor;
+    my $max_time = int $precision * $TAU;
+
     my $start_color = Wx::Colour->new( $self->{'data'}{'start_color'}{'red'}, 
                                        $self->{'data'}{'start_color'}{'green'}, 
                                        $self->{'data'}{'start_color'}{'blue'} );
@@ -144,21 +146,17 @@ my $t = Benchmark->new;
 #        or $self->{'data'}{'x'}{'radius_damp_acc_type'} eq '/') ? 1 - ($self->{'data'}{'r'}{'radius_damp_acc'}/ 1000 / $step_in_circle) 
 #                                                                : $rr * $self->{'data'}{'r'}{'radius_damp_acc'}/20000 / $step_in_circle;
 
-    my $dtx =   $fx * $TAU / $step_in_circle;
-    my $dty =   $fy * $TAU / $step_in_circle;
-    my $dtz =   $fz * $TAU / $step_in_circle;
-    my $dtr = - $fr * $TAU / $step_in_circle;
-    $dtx =      0 unless $self->{'data'}{'x'}{'on'};
-    $dty =      0 unless $self->{'data'}{'y'}{'on'};
-    $dtz =      0 unless $self->{'data'}{'z'}{'on'};
-    $dtr =      0 unless $self->{'data'}{'r'}{'on'};
+    my $dtx = $self->{'data'}{'x'}{'on'} ? (  $fx * $TAU * $precision / $step_in_circle) : 0;
+    my $dty = $self->{'data'}{'y'}{'on'} ? (  $fy * $TAU * $precision / $step_in_circle) : 0;
+    my $dtz = $self->{'data'}{'z'}{'on'} ? (  $fz * $TAU / $step_in_circle) : 0;
+    my $dtr = $self->{'data'}{'r'}{'on'} ? (- $fr * $TAU / $step_in_circle) : 0;
 
     my $fxdamp  = (not $self->{'data'}{'x'}{'freq_damp'}) ? 0 : 
           ($self->{'data'}{'x'}{'freq_damp_type'} eq '*') ? 1 - ($self->{'data'}{'x'}{'freq_damp'}  / 40_000 / $step_in_circle) 
-                                                          : $dtx * $self->{'data'}{'x'}{'freq_damp'}/ 40_000 / $step_in_circle;
+                                                          : $dtx * $self->{'data'}{'x'}{'freq_damp'} * $precision / 40_000 / $step_in_circle;
     my $fydamp  = (not $self->{'data'}{'y'}{'freq_damp'}) ? 0 : 
           ($self->{'data'}{'y'}{'freq_damp_type'} eq '*') ? 1 - ($self->{'data'}{'y'}{'freq_damp'}  / 40_000 / $step_in_circle) 
-                                                          : $dty * $self->{'data'}{'y'}{'freq_damp'}/ 40_000 / $step_in_circle;
+                                                          : $dty * $self->{'data'}{'y'}{'freq_damp'} * $precision / 40_000 / $step_in_circle;
     my $fzdamp  = (not $self->{'data'}{'z'}{'freq_damp'}) ? 0 : 
           ($self->{'data'}{'z'}{'freq_damp_type'} eq '*') ? 1 - ($self->{'data'}{'z'}{'freq_damp'}  / 20_000 / $step_in_circle) 
                                                           : $dtz * $self->{'data'}{'z'}{'freq_damp'}/ 20_000 / $step_in_circle;
@@ -167,10 +165,12 @@ my $t = Benchmark->new;
                                                           : $dtr * $self->{'data'}{'r'}{'freq_damp'}/ 20_000 / $step_in_circle;
 
     my $tx = my $ty = my $tz = my $tr = 0;
-    $tx += $TAU * $self->{'data'}{'x'}{'offset'} if $self->{'data'}{'x'}{'offset'};
-    $ty += $TAU * $self->{'data'}{'y'}{'offset'} if $self->{'data'}{'y'}{'offset'};
+    $tx += $TAU * $precision * $self->{'data'}{'x'}{'offset'} if $self->{'data'}{'x'}{'offset'};
+    $ty += $TAU * $precision * $self->{'data'}{'y'}{'offset'} if $self->{'data'}{'y'}{'offset'};
     $tz += $TAU * $self->{'data'}{'z'}{'offset'} if $self->{'data'}{'z'}{'offset'};
     $tr += $TAU * $self->{'data'}{'r'}{'offset'} if $self->{'data'}{'r'}{'offset'};
+    $tx -= $max_time while $tx >= $max_time;
+    $ty -= $max_time while $ty >= $max_time;
     my ($x, $y);
     my $cflow = $self->{'data'}{'color_flow'};
     my $color_change_time;
@@ -211,17 +211,13 @@ my $t = Benchmark->new;
     ($x, $y) = (($x * cos($rz) ) - ($y * sin($tr) ), ($x * sin($tr) ) + ($y * cos($tr) ) ) if $dtr;
     my ($x_old, $y_old) = ($x, $y);
 
-say "prep: ",timestr( timediff( Benchmark->new, $t) );
-
-$t = Benchmark->new;
-
     my $code = 'for (1 .. $t_iter){';
     
-    if ($dtx){ $code .= '$x = $rx * App::GUI::Harmonograph::Function::'.$self->{'data'}{'mod'}{'x_function'}.'($tx);' }
-    else     { $code .= '$x = 0;' }
+    $code .= $dtx ? '$x = $rx * App::GUI::Harmonograph::Function::'.$self->{'data'}{'mod'}{'x_function'}.'($tx);'
+                  : '$x = 0;';
     
-    if ($dty){ $code .= '$y = $ry * App::GUI::Harmonograph::Function::'.$self->{'data'}{'mod'}{'y_function'}.'($ty);' }
-    else     { $code .= '$y = 0;' }
+    $code .= $dty ? '$y = $ry * App::GUI::Harmonograph::Function::'.$self->{'data'}{'mod'}{'y_function'}.'($ty);'
+                  : '$y = 0;';
 
     $code .= '$x -= $rz * cos $tz;' if $dtz;
     $code .= '$y -= $rz * sin $tz;' if $dtz;
@@ -230,10 +226,23 @@ $t = Benchmark->new;
     $code .= ($self->{'data'}{'line'}{'connect'} or exists $self->{'data'}{'sketch'})
            ? '$dc->DrawLine( $cx + $x_old, $cy + $y_old, $cx + $x, $cy + $y);' 
            : '$dc->DrawPoint( $cx + $x, $cy + $y );';
-    $code .= '$tx += $dtx;'         if $dtx;
-    $code .= '$ty += $dty;'         if $dty;
-    $code .= '$tz += $dtz;'         if $dtz;
-    $code .= '$tr += $dtr;'         if $dtr;
+    $code .= '$tx += $dtx;'                          if $dtx;
+    $code .= '$ty += $dty;'                          if $dty;
+    $code .= '$tz += $dtz;'                          if $dtz;
+    $code .= '$tr += $dtr;'                          if $dtr;
+    $code .= '$tx -= $max_time if $tx >= $max_time;' if $dtx;
+    $code .= '$ty -= $max_time if $ty >= $max_time;' if $dtx;
+
+    $code .= '$dtx *= $fxdamp;'             if $fxdamp and $self->{'data'}{'x'}{'freq_damp_type'} eq '*';
+    $code .= '$dty *= $fydamp;'             if $fydamp and $self->{'data'}{'y'}{'freq_damp_type'} eq '*';
+    $code .= '$dtz *= $fzdamp;'             if $fzdamp and $self->{'data'}{'z'}{'freq_damp_type'} eq '*';
+    $code .= '$dtr *= $frdamp;'             if $frdamp and $self->{'data'}{'r'}{'freq_damp_type'} eq '*';
+    $code .= '$dtx -= $fxdamp if $dtx > 0;' if $fxdamp and $self->{'data'}{'x'}{'freq_damp_type'} eq '-';
+    $code .= '$dty -= $fydamp if $dty > 0;' if $fydamp and $self->{'data'}{'y'}{'freq_damp_type'} eq '-';
+    $code .= '$dtz -= $fzdamp if $dtz > 0;' if $fzdamp and $self->{'data'}{'z'}{'freq_damp_type'} eq '-';
+    $code .= '$dtr -= $frdamp if $dtr < 0;' if $frdamp and $self->{'data'}{'r'}{'freq_damp_type'} eq '-';
+
+    
     $code .= '$rx *= $rxdamp;'            if $rxdamp and $self->{'data'}{'x'}{'radius_damp_type'} eq '*';
     $code .= '$ry *= $rydamp;'            if $rydamp and $self->{'data'}{'y'}{'radius_damp_type'} eq '*';
     $code .= '$rz *= $rzdamp;'            if $rzdamp and $self->{'data'}{'z'}{'radius_damp_type'} eq '*';
@@ -257,14 +266,6 @@ $t = Benchmark->new;
 #    $code .= '$rxdamp -= $rxdacc;'  if $rrdacc and $rrdamp and $self->{'data'}{'r'}{'radius_damp_acc_type'} eq '-';
 #    $code .= '$rxdamp *= $rxdacc;'  if $rrdacc and $rrdamp and $self->{'data'}{'r'}{'radius_damp_acc_type'} eq '*';
 #    $code .= '$rxdamp *= $rxdacc;'  if $rrdacc and $rrdamp and $self->{'data'}{'r'}{'radius_damp_acc_type'} eq '/';
-    $code .= '$dtx *= $fxdamp;'             if $fxdamp and $self->{'data'}{'x'}{'freq_damp_type'} eq '*';
-    $code .= '$dty *= $fydamp;'             if $fydamp and $self->{'data'}{'y'}{'freq_damp_type'} eq '*';
-    $code .= '$dtz *= $fzdamp;'             if $fzdamp and $self->{'data'}{'z'}{'freq_damp_type'} eq '*';
-    $code .= '$dtr *= $frdamp;'             if $frdamp and $self->{'data'}{'r'}{'freq_damp_type'} eq '*';
-    $code .= '$dtx -= $fxdamp if $dtx > 0;' if $fxdamp and $self->{'data'}{'x'}{'freq_damp_type'} eq '-';
-    $code .= '$dty -= $fydamp if $dty > 0;' if $fydamp and $self->{'data'}{'y'}{'freq_damp_type'} eq '-';
-    $code .= '$dtz -= $fzdamp if $dtz > 0;' if $fzdamp and $self->{'data'}{'z'}{'freq_damp_type'} eq '-';
-    $code .= '$dtr -= $frdamp if $dtr < 0;' if $frdamp and $self->{'data'}{'r'}{'freq_damp_type'} eq '-';
     
     $code .= '$dc->SetPen( Wx::Pen->new( Wx::Colour->new( @{$color[++$color_index]} ),'.
              ' $thickness, &Wx::wxPENSTYLE_SOLID)) unless $_ % $color_change_time;' if $cflow->{'type'} ne 'no' and @color;
@@ -273,8 +274,7 @@ $t = Benchmark->new;
     $code .= '}';
     
     eval $code;
-    die "bad iter code - $@ : $code" if $@;
-say "comp: ",timestr( timediff( Benchmark->new(), $t) );
+    die "bad iter code - $@ : $code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
 
     delete $self->{'data'}{'new'};
     delete $self->{'data'}{'sketch'};
