@@ -6,7 +6,8 @@
     * ? cleanep up POD from incorrect leftover bits
     * ? added some POD
     * " cleaned left lower corner of GUI
-    * " made all comboboxes readonly
+    * " made all comboboxes readonly (were never meant to be editable, but select only)
+    * " deactivated help dialogs
 
 0.56  2022-10-18  lichtkind
 -------
