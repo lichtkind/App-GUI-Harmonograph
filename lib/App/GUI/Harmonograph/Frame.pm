@@ -34,7 +34,7 @@ sub new {
     $self->{'tabs'}             = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
     $self->{'tab'}{'linear'}    = Wx::Panel->new($self->{'tabs'});
     $self->{'tab'}{'circular'}  = Wx::Panel->new($self->{'tabs'});
-    $self->{'tab'}{'mod'}       = Wx::Panel->new($self->{'tabs'});
+    $self->{'tab'}{'mod'}       = App::GUI::Harmonograph::Frame::Part::ModMatrix->new( $self->{'tabs'} );
     $self->{'tab'}{'pen'}       = Wx::Panel->new($self->{'tabs'});
     $self->{'tabs'}->AddPage( $self->{'tab'}{'linear'},   'Lateral Pendulum Settings');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'circular'}, 'Rotary Pendulum Settings');
@@ -46,6 +46,7 @@ sub new {
     $self->{'pendulum'}{'z'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'circular'}, 'z','circular pendulum',        0, 100);
     $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'circular'}, 'R','rotating pendulum',        0, 100);
     $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/x y z r/;
+    $self->{'tab'}{'mod'}->SetCallBack( sub { $self->sketch( ) } );
                                 
     $self->{'color'}{'start'}   = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'start', { red => 20, green => 20, blue => 110 } );
     $self->{'color'}{'end'}     = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'end',  { red => 110, green => 20, blue => 20 } );
@@ -268,7 +269,6 @@ sub new {
 
     $self->SetSizer($main_sizer);
     $self->SetAutoLayout( 1 );
-    $self->{'btn'}{'draw'}->SetFocus;
     my $size = [1260, 820];
     $self->SetSize($size);
     $self->SetMinSize($size);
@@ -276,6 +276,7 @@ sub new {
   
     $self->update_recent_settings_menu();
     $self->init();
+    $self->{'btn'}{'draw'}->SetFocus;
     $self->{'last_file_settings'} = get_data( $self );
     $self;
 }
@@ -348,6 +349,7 @@ sub get_data {
         y => $self->{'pendulum'}{'y'}->get_data,
         z => $self->{'pendulum'}{'z'}->get_data,
         r => $self->{'pendulum'}{'r'}->get_data,
+        mod => $self->{'tab'}{'mod'}->get_data,
         start_color => $self->{'color'}{'start'}->get_data,
         end_color => $self->{'color'}{'end'}->get_data,
         color_flow => $self->{'color_flow'}->get_data,

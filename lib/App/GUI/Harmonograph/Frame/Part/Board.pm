@@ -13,10 +13,14 @@ my $e   = 2.718281828;
 my $GAMMA = 1.7724538509055160;
 
 use Graphics::Toolkit::Color;
+use App::GUI::Harmonograph::Function;
+use Benchmark;
 
 sub new {
     my ( $class, $parent, $x, $y ) = @_;
     my $self = $class->SUPER::new( $parent, -1, [-1,-1], [$x, $y] );
+    $self->{'precision'} = 4;
+    App::GUI::Harmonograph::Function::init( $self->{'precision'} );
     $self->{'menu_size'} = 27;
     $self->{'size'}{'x'} = $x;
     $self->{'size'}{'y'} = $y;
@@ -58,20 +62,17 @@ sub set_data {
 
 sub set_sketch_flag { $_[0]->{'data'}{'sketch'} = 1 }
 
-
 sub paint {
     my( $self, $dc, $width, $height ) = @_;
-    my $background_color = Wx::Colour->new( 255, 255, 255 );
-    $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );     # $dc->SetBrush( $fgb );
-    $dc->Clear();
-    
+my $t = Benchmark->new;
     my $progress = $self->GetParent->{'progress'};
-
     my $start_color = Wx::Colour->new( $self->{'data'}{'start_color'}{'red'}, 
                                        $self->{'data'}{'start_color'}{'green'}, 
                                        $self->{'data'}{'start_color'}{'blue'} );
-
+    my $background_color = Wx::Colour->new( 255, 255, 255 );
     my $thickness = $self->{'data'}{'line'}{'thickness'} == 0 ? 1 / 2 : $self->{'data'}{'line'}{'thickness'};
+    $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );     # $dc->SetBrush( $fgb );
+    $dc->Clear();
     $dc->SetPen( Wx::Pen->new( $start_color, $thickness, &Wx::wxPENSTYLE_SOLID) );
 
     my $cx = (defined $width) ? $width / 2 : $self->{'center'}{'x'};
@@ -95,7 +96,7 @@ sub paint {
     $max_freq = abs $fr if $max_freq < abs $fr;
     
     my $step_in_circle = exists $self->{'data'}{'sketch'} 
-                       ? 300 * $max_freq
+                       ? 50 * $max_freq
                        : $self->{'data'}{'line'}{'density'} * $self->{'data'}{'line'}{'density'} * $max_freq;
     my $t_iter =         exists $self->{'data'}{'sketch'} 
                ? 5 * $step_in_circle
@@ -210,15 +211,25 @@ sub paint {
     ($x, $y) = (($x * cos($rz) ) - ($y * sin($tr) ), ($x * sin($tr) ) + ($y * cos($tr) ) ) if $dtr;
     my ($x_old, $y_old) = ($x, $y);
 
+say "prep: ",timestr( timediff( Benchmark->new, $t) );
+
+$t = Benchmark->new;
+
     my $code = 'for (1 .. $t_iter){';
-    $code .= ( $dtx ? '$x = $rx * cos $tx;' : '$x = 0;');
-    $code .= ( $dty ? '$y = $ry * sin $ty;' : '$y = 0;');
+    
+    if ($dtx){ $code .= '$x = $rx * App::GUI::Harmonograph::Function::'.$self->{'data'}{'mod'}{'x_function'}.'($tx);' }
+    else     { $code .= '$x = 0;' }
+    
+    if ($dty){ $code .= '$y = $ry * App::GUI::Harmonograph::Function::'.$self->{'data'}{'mod'}{'y_function'}.'($ty);' }
+    else     { $code .= '$y = 0;' }
+
     $code .= '$x -= $rz * cos $tz;' if $dtz;
     $code .= '$y -= $rz * sin $tz;' if $dtz;
     $code .= '($x, $y) = (($x * cos($tr) ) - ($y * sin($tr) ), ($x * sin($tr) ) + ($y * cos($tr) ) );' if $dtr;
-    $code .= ($self->{'data'}{'line'}{'connect'} 
+    
+    $code .= ($self->{'data'}{'line'}{'connect'} or exists $self->{'data'}{'sketch'})
            ? '$dc->DrawLine( $cx + $x_old, $cy + $y_old, $cx + $x, $cy + $y);' 
-           : '$dc->DrawPoint( $cx + $x, $cy + $y );');
+           : '$dc->DrawPoint( $cx + $x, $cy + $y );';
     $code .= '$tx += $dtx;'         if $dtx;
     $code .= '$ty += $dty;'         if $dty;
     $code .= '$tz += $dtz;'         if $dtz;
@@ -258,11 +269,13 @@ sub paint {
     $code .= '$dc->SetPen( Wx::Pen->new( Wx::Colour->new( @{$color[++$color_index]} ),'.
              ' $thickness, &Wx::wxPENSTYLE_SOLID)) unless $_ % $color_change_time;' if $cflow->{'type'} ne 'no' and @color;
     $code .= '$progress->add_percentage( $_ / $t_iter * 100, $color[$color_index] ) unless $_ % $step_in_circle;' unless defined $self->{'data'}{'sketch'};
-    $code .= '($x_old, $y_old) = ($x, $y);' if $self->{'data'}{'line'}{'connect'};
+    $code .= '($x_old, $y_old) = ($x, $y);' if ($self->{'data'}{'line'}{'connect'} or exists $self->{'data'}{'sketch'});
     $code .= '}';
     
     eval $code;
     die "bad iter code - $@ : $code" if $@;
+say "comp: ",timestr( timediff( Benchmark->new(), $t) );
+
     delete $self->{'data'}{'new'};
     delete $self->{'data'}{'sketch'};
     $dc;
@@ -302,5 +315,3 @@ sub save_bmp_file {
 }
 
 1;
-
-# https://developer.mozilla.org/en-US/docs/Web/SVG/Element#shape_elements <polyline>
