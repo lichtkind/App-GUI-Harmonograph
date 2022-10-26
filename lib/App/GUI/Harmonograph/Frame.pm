@@ -284,11 +284,36 @@ sub new {
 sub init {
     my ($self) = @_;
     $self->{'pendulum'}{$_}->init() for qw/x y z r/;
+    $self->{'tab'}{'mod'}->init();
     $self->{'color'}{$_}->init() for qw/start end/;
     $self->{ $_ }->init() for qw/color_flow line/;
     $self->{'progress'}->set_color( { red => 20, green => 20, blue => 110 } );
     $self->sketch( );
     $self->SetStatusText( "all settings are set to default", 1);
+}
+
+sub get_data {
+    my $self = shift;
+    { 
+        x => $self->{'pendulum'}{'x'}->get_data,
+        y => $self->{'pendulum'}{'y'}->get_data,
+        z => $self->{'pendulum'}{'z'}->get_data,
+        r => $self->{'pendulum'}{'r'}->get_data,
+        mod => $self->{'tab'}{'mod'}->get_data,
+        start_color => $self->{'color'}{'start'}->get_data,
+        end_color => $self->{'color'}{'end'}->get_data,
+        color_flow => $self->{'color_flow'}->get_data,
+        line => $self->{'line'}->get_data,
+    }
+}
+
+sub set_data {
+    my ($self, $data) = @_;
+    return unless ref $data eq 'HASH';
+    $self->{'pendulum'}{$_}->set_data( $data->{$_} ) for qw/x y z r/;
+    $self->{'tab'}{'mod'}->set_data( $data->{'mod'} );
+    $self->{'color'}{$_}->set_data( $data->{ $_.'_color' } ) for qw/start end/;
+    $self->{ $_ }->set_data( $data->{ $_ } ) for qw/color_flow line/;
 }
 
 sub open_settings_dialog {
@@ -340,29 +365,6 @@ sub save_image_dialog {
     my $ret = $self->write_image( $path );
     if ($ret){ $self->SetStatusText( $ret, 0 ) }
     else     { $self->{'config'}->set_value('save_dir', App::GUI::Harmonograph::Settings::extract_dir( $path )) }
-}
-
-sub get_data {
-    my $self = shift;
-    { 
-        x => $self->{'pendulum'}{'x'}->get_data,
-        y => $self->{'pendulum'}{'y'}->get_data,
-        z => $self->{'pendulum'}{'z'}->get_data,
-        r => $self->{'pendulum'}{'r'}->get_data,
-        mod => $self->{'tab'}{'mod'}->get_data,
-        start_color => $self->{'color'}{'start'}->get_data,
-        end_color => $self->{'color'}{'end'}->get_data,
-        color_flow => $self->{'color_flow'}->get_data,
-        line => $self->{'line'}->get_data,
-    }
-}
-
-sub set_data {
-    my ($self, $data) = @_;
-    return unless ref $data eq 'HASH';
-    $self->{'pendulum'}{$_}->set_data( $data->{$_} ) for qw/x y z r/;
-    $self->{'color'}{$_}->set_data( $data->{ $_.'_color' } ) for qw/start end/;
-    $self->{ $_ }->set_data( $data->{ $_ } ) for qw/color_flow line/;
 }
 
 sub draw {
