@@ -25,20 +25,20 @@ sub new {
     $row1->AddSpacer( 210 );
     $row1->Add( $self->{'length'},  0, &Wx::wxALIGN_LEFT| &Wx::wxGROW | &Wx::wxALL, 5);
     $row1->Add( 0, 0, &Wx::wxEXPAND);
-    
+
     my $row2 = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $row2->Add( $self->{'density'}, 0, &Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxGROW| &Wx::wxLEFT, 10);
     # $row2->Add( Wx::StaticText->new($self, -1, 'Thickness'), 0, &Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxGROW|&Wx::wxALL, 10);
     $row2->Add( $self->{'thickness'},  0, &Wx::wxALIGN_LEFT| &Wx::wxGROW | &Wx::wxALL, 5);
     # $row2->Add( Wx::StaticText->new($self, -1, 'Px'), 0, &Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxGROW|&Wx::wxALL, 10);
     $row2->Add( 0, 0, &Wx::wxEXPAND);
-    
+
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $sizer->Add( $row1, 0, &Wx::wxEXPAND );
     $sizer->AddSpacer(15);
     $sizer->Add( $row2, 0, &Wx::wxEXPAND );
     $sizer->AddSpacer(5);
-    
+
     $self->SetSizer($sizer);
     $self->init();
     $self;
@@ -55,14 +55,14 @@ sub get_data {
         'length'    => $self->{ 'length' }->GetValue,
         'density'   => $self->{ 'density' }->GetValue,
         'thickness' => $self->{ 'thickness' }->GetValue,
-        'connect'   => $self->{ 'connect' }->GetValue,
+        'connect'   => $self->{ 'connect' }->GetValue ? 1 : 0,
     }
 }
 
 sub set_data {
     my ( $self, $data ) = @_;
     return unless ref $data eq 'HASH';
-    $self->{$_}->SetValue( $data->{$_} ) for qw/length density thickness connect/, 
+    $self->{$_}->SetValue( $data->{$_} ) for qw/length density thickness connect/,
 }
 
 1;

@@ -6,7 +6,7 @@ use FindBin;
 
 package App::GUI::Harmonograph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.58';
+our $VERSION = '0.59';
 
 use base qw/Wx::App/;
 use App::GUI::Harmonograph::Frame;
@@ -321,6 +321,8 @@ The third menu has some dialogs with documentation and additional information.
 
 
 =head1 SEE ALSO
+
+L<App::GUI::Chaosgraph>
 
 L<App::GUI::Cellgraph>
 
