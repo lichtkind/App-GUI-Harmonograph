@@ -1,6 +1,8 @@
 0.60  2023-03-26  lichtkind
 -------
-    * =
+    * = enhancements and fixes
+
+    * ! using other trig function in mod matrix section does no more crash (div 0)
 
 0.59  2023-03-26  lichtkind
 -------
