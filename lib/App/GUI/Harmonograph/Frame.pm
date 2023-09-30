@@ -210,7 +210,7 @@ sub new {
     $self->{'tab'}{'circular'}->SetSizer( $circular_sizer );
 
     my $pen_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $pen_sizer->AddSpacer(5);
+    $pen_sizer->AddSpacer( 5);
     $pen_sizer->Add( $self->{'line'},             0, $vert_attr, 10);
     $pen_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pen'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
     $pen_sizer->Add( $self->{'color_flow'},       0, $vert_attr, 15);
@@ -222,7 +222,7 @@ sub new {
     $pen_sizer->Add( Wx::StaticText->new( $self->{'tab'}{'pen'}, -1, 'End Color', [-1,-1], [-1,-1], &Wx::wxALIGN_CENTRE_HORIZONTAL), 0, &Wx::wxALIGN_CENTER_HORIZONTAL|&Wx::wxGROW|&Wx::wxALL, 5);
     $pen_sizer->Add( $self->{'color'}{'end'},     0, $vert_attr, 0);
     $pen_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pen'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
-    $pen_sizer->AddSpacer(10);
+    $pen_sizer->AddSpacer( 3);
     $pen_sizer->Add( $self->{'color'}{'startio'}, 0, $vert_attr,  5);
     $pen_sizer->Add( $self->{'color'}{'endio'},   0, $vert_attr,  5);
 
@@ -269,7 +269,7 @@ sub new {
 
     $self->SetSizer($main_sizer);
     $self->SetAutoLayout( 1 );
-    my $size = [1260, 820];
+    my $size = [1260, 823];
     $self->SetSize($size);
     $self->SetMinSize($size);
     $self->SetMaxSize($size);

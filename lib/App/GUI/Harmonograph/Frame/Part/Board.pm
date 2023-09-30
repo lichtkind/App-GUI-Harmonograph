@@ -182,10 +182,10 @@ sub paint {
     my $endc = Graphics::Toolkit::Color->new( @{$self->{'data'}{'end_color'}}{'red', 'green', 'blue'} );
     if ($cflow->{'type'} eq 'linear'){
         my $color_count = int ($self->{'data'}{'line'}{'length'} / $cflow->{'stepsize'});
-        @color = map {[$_->rgb] } $startc->gradient_to( $endc, $color_count + 1, $cflow->{'dynamic'} );
+        @color = map {[$_->rgb] } $startc->gradient( to => $endc, steps => $color_count + 1, dynamic => $cflow->{'dynamic'} );
     } elsif ($cflow->{'type'} eq 'alternate'){
         return unless exists $cflow->{'period'} and $cflow->{'period'} > 1;
-        @color = map {[$_->rgb]} $startc->gradient_to( $endc, $cflow->{'period'}, $cflow->{'dynamic'} );
+        @color = map {[$_->rgb]} $startc->gradient( to => $endc, steps => $cflow->{'period'}, dynamic => $cflow->{'dynamic'} );
         my @tc = reverse @color;
         pop @tc;
         shift @tc;
@@ -195,9 +195,9 @@ sub paint {
         push @color, @tc for 0 .. int ($self->{'data'}{'line'}{'length'} / $color_circle_length);
     } elsif ($cflow->{'type'} eq 'circular'){
         return unless exists $cflow->{'period'} and $cflow->{'period'} > 1;
-        @color = map {[$_->rgb]} $startc->complementary( $cflow->{'period'},
-                                                         $endc->saturation - $startc->saturation,
-                                                         $endc->lightness - $startc->lightness);
+        @color = map {[$_->rgb]} $startc->complement( steps => $cflow->{'period'},
+                                                      saturation_tilt => $endc->saturation - $startc->saturation,
+                                                      lightness_tilt => $endc->lightness - $startc->lightness);
         my @tc = @color;
         push @color, @tc for 0 .. int ($self->{'data'}{'line'}{'length'} / $cflow->{'period'} / $cflow->{'stepsize'});
     } else { @color = ([$self->{'data'}{'start_color'}{'red'},
