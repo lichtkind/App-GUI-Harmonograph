@@ -5,6 +5,7 @@ use Wx;
 
 package App::GUI::Harmonograph::Frame::Part::Board;
 use base qw/Wx::Panel/;
+
 my $TAU = 6.283185307;
 my $PI  = 3.1415926535;
 my $PHI = 1.618033988;
@@ -67,6 +68,10 @@ sub paint {
     my $progress = $self->GetParent->{'progress'};
     my $precision = App::GUI::Harmonograph::Function::factor;
     my $max_time = $TAU;
+    my %var_names = ( x_time => '$tx', y_time => '$ty', z_time => '$tz', r_time => '$tr',
+                      x_freq => '$dtx', y_freq => '$dty', z_freq => '$dtz', r_freq => '$dtr',
+                      x_radius => '$rx', y_radius => '$ry', z_radius => '$rz', r_radius => '$rr',
+                      zero => '0', one => '1');
 
     my $start_color = Wx::Colour->new( $self->{'data'}{'start_color'}{'red'},
                                        $self->{'data'}{'start_color'}{'green'},
@@ -107,6 +112,7 @@ sub paint {
     my $rx = $self->{'data'}{'x'}{'radius'} * $raster_radius;
     my $ry = $self->{'data'}{'y'}{'radius'} * $raster_radius;
     my $rz = $self->{'data'}{'z'}{'radius'} * $raster_radius;
+    my $rr = $self->{'data'}{'r'}{'radius'} * $raster_radius;
     if ($self->{'data'}{'z'}{'on'}){
         $rx *= $self->{'data'}{'z'}{'radius'} / 2;
         $ry *= $self->{'data'}{'z'}{'radius'} / 2;
@@ -126,9 +132,9 @@ sub paint {
     my $rzdamp  = (not $self->{'data'}{'z'}{'radius_damp'}) ? 0 :
           ($self->{'data'}{'z'}{'radius_damp_type'} eq '*') ? 1 - ($self->{'data'}{'z'}{'radius_damp'} / 1500 / $step_in_circle)
                                                             : $rz * $self->{'data'}{'z'}{'radius_damp'}/ 3000 / $step_in_circle;
-#    my $rrdamp  = (not $self->{'data'}{'r'}{'radius_damp'}) ? 0 :
-#         ($self->{'data'}{'r'}{'radius_damp_type'} eq '*') ? 1 - ($self->{'data'}{'r'}{'radius_damp'} / 1000 / $step_in_circle)
-#                                                           : $rr * $self->{'data'}{'r'}{'radius_damp'}/ 2000 / $step_in_circle;
+    my $rrdamp  = (not $self->{'data'}{'r'}{'radius_damp'}) ? 0 :
+         ($self->{'data'}{'r'}{'radius_damp_type'} eq '*') ? 1 - ($self->{'data'}{'r'}{'radius_damp'} / 1000 / $step_in_circle)
+                                                           : $rr * $self->{'data'}{'r'}{'radius_damp'}/ 2000 / $step_in_circle;
     my $rxdacc  = (not $self->{'data'}{'x'}{'radius_damp_acc'}) ? 0 :
           ($self->{'data'}{'x'}{'radius_damp_acc_type'} eq '*') ? 1 - ($self->{'data'}{'x'}{'radius_damp_acc'} / 1_000_000 / $step_in_circle) :
           ($self->{'data'}{'x'}{'radius_damp_acc_type'} eq '/') ? 1 + ($self->{'data'}{'x'}{'radius_damp_acc'} / 1_000_000 / $step_in_circle)
@@ -141,10 +147,10 @@ sub paint {
           ($self->{'data'}{'z'}{'radius_damp_acc_type'} eq '*') ? 1 - ($self->{'data'}{'z'}{'radius_damp_acc'} / 2_000_000 / $step_in_circle) :
           ($self->{'data'}{'z'}{'radius_damp_acc_type'} eq '/') ? 1 + ($self->{'data'}{'z'}{'radius_damp_acc'} / 2_000_000 / $step_in_circle)
                                                                 : $rz * $self->{'data'}{'z'}{'radius_damp_acc'}/ 200_000_000 / $step_in_circle;
-#    my $rrdacc  = (not $self->{'data'}{'r'}{'radius_damp_acc'}) ? 0 :
-#          ($self->{'data'}{'r'}{'radius_damp_acc_type'} eq '*'
-#        or $self->{'data'}{'x'}{'radius_damp_acc_type'} eq '/') ? 1 - ($self->{'data'}{'r'}{'radius_damp_acc'}/ 1000 / $step_in_circle)
-#                                                                : $rr * $self->{'data'}{'r'}{'radius_damp_acc'}/20000 / $step_in_circle;
+    my $rrdacc  = (not $self->{'data'}{'r'}{'radius_damp_acc'}) ? 0 :
+          ($self->{'data'}{'r'}{'radius_damp_acc_type'} eq '*'
+        or $self->{'data'}{'x'}{'radius_damp_acc_type'} eq '/') ? 1 - ($self->{'data'}{'r'}{'radius_damp_acc'}/ 1000 / $step_in_circle)
+                                                                : $rr * $self->{'data'}{'r'}{'radius_damp_acc'}/20000 / $step_in_circle;
 
     my $dtx = $self->{'data'}{'x'}{'on'} ? (  $fx * $TAU / $step_in_circle) : 0;
     my $dty = $self->{'data'}{'y'}{'on'} ? (  $fy * $TAU / $step_in_circle) : 0;
@@ -215,15 +221,27 @@ sub paint {
 
     my $code = 'for (1 .. $t_iter){'."\n";
 
-    $code .= $dtx ? '  $x = $rx * App::GUI::Harmonograph::Function::'.$self->{'data'}{'mod'}{'x_function'}.'($tx);'."\n"
+    $code .= $dtx ? '  $x = $rx * App::GUI::Harmonograph::Function::'.$self->{'data'}{'mod'}{'x_function'}.
+                            '('.$var_names{ $self->{'data'}{'mod'}{'x_var'} }.');'."\n"
                   : '  $x = 0;'."\n";
-    # $code .= 'say "tx: $tx, rx: $rx,  ".(App::GUI::Harmonograph::Function::cos($tx));'."\n";
-    $code .= $dty ? '  $y = $ry * App::GUI::Harmonograph::Function::'.$self->{'data'}{'mod'}{'y_function'}.'($ty);'."\n"
+
+    $code .= $dty ? '  $y = $ry * App::GUI::Harmonograph::Function::'.$self->{'data'}{'mod'}{'y_function'}.
+                            '('.$var_names{ $self->{'data'}{'mod'}{'y_var'} }.');'."\n"
                   : '  $y = 0;'."\n";
 
-    $code .= '  $x -= $rz * cos $tz;'."\n" if $dtz;
-    $code .= '  $y -= $rz * sin $tz;'."\n" if $dtz;
-    $code .= '  ($x, $y) = (($x * cos($tr) ) - ($y * sin($tr) ), ($x * sin($tr) ) + ($y * cos($tr) ) );'."\n" if $dtr;
+    $code .= '  $x -= $rz * App::GUI::Harmonograph::Function::'.$self->{'data'}{'mod'}{'zx_function'}.
+                           '('.$var_names{ $self->{'data'}{'mod'}{'zx_var'} }.');'."\n" if $dtz;
+    $code .= '  $y -= $rz * App::GUI::Harmonograph::Function::'.$self->{'data'}{'mod'}{'zy_function'}.
+                           '('.$var_names{ $self->{'data'}{'mod'}{'zy_var'} }.');'."\n" if $dtz;
+
+    $code .= '  ($x, $y) = (($x * App::GUI::Harmonograph::Function::'.$self->{'data'}{'mod'}{'r11_function'}.
+                            '('.$var_names{ $self->{'data'}{'mod'}{'r11_var'} }.'))'.
+                        ' - ($y * App::GUI::Harmonograph::Function::'.$self->{'data'}{'mod'}{'r12_function'}.
+                            '('.$var_names{ $self->{'data'}{'mod'}{'r12_var'} }.')),'.
+                          ' ($x * App::GUI::Harmonograph::Function::'.$self->{'data'}{'mod'}{'r21_function'}.
+                            '('.$var_names{ $self->{'data'}{'mod'}{'r21_var'} }.'))'.
+                        ' + ($y * App::GUI::Harmonograph::Function::'.$self->{'data'}{'mod'}{'r22_function'}.
+                            '('.$var_names{ $self->{'data'}{'mod'}{'r22_var'} }.')));'."\n" if $dtr;
 
     $code .= ($self->{'data'}{'line'}{'connect'} or exists $self->{'data'}{'sketch'})
            ? '  $dc->DrawLine( $cx + $x_old, $cy + $y_old, $cx + $x, $cy + $y);'."\n"
@@ -251,7 +269,7 @@ sub paint {
     $code .= '  $rx -= $rxdamp if $rx > 0;'."\n" if $rxdamp and $self->{'data'}{'x'}{'radius_damp_type'} eq '-';
     $code .= '  $ry -= $rydamp if $ry > 0;'."\n" if $rydamp and $self->{'data'}{'y'}{'radius_damp_type'} eq '-';
     $code .= '  $rz -= $rzdamp if $rz > 0;'."\n" if $rzdamp and $self->{'data'}{'z'}{'radius_damp_type'} eq '-';
-    # $code .= '  $dtr *= $rdamp;' if $rrdamp;
+    $code .= '  $dtr *= $rrdamp;' if $rrdamp;
     $code .= '  $rxdamp += $rxdacc;'."\n"  if $rxdacc and $rxdamp and $self->{'data'}{'x'}{'radius_damp_acc_type'} eq '+';
     $code .= '  $rxdamp -= $rxdacc;'."\n"  if $rxdacc and $rxdamp and $self->{'data'}{'x'}{'radius_damp_acc_type'} eq '-';
     $code .= '  $rxdamp *= $rxdacc;'."\n"  if $rxdacc and $rxdamp and $self->{'data'}{'x'}{'radius_damp_acc_type'} eq '*';
