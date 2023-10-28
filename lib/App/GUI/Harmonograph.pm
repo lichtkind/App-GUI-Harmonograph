@@ -6,7 +6,7 @@ use FindBin;
 
 package App::GUI::Harmonograph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.65';
+our $VERSION = '0.67';
 
 use base qw/Wx::App/;
 use App::GUI::Harmonograph::Frame;
@@ -65,8 +65,8 @@ INI file for tweaking them later
 
 =back
 
-Please note that quick preview gets only triggered by the pendulum
-controls (section X, Y, Z and R).
+Please note that quick preview gets not triggered by GUI elements in the
+PEN SETTINGS section (last tab).
 
 After first use of the program, a config file will be created under
 I<~/.config/harmonograph> in your home directory. It contains mainly
@@ -183,46 +183,49 @@ the keyboard. Just hold Alt and use the direction keys (up, down, left
 and right) or the highlighted letters. When holding the Alt key you can
 also see which Alt + letter combinations trigger which button.
 
+
 =head2 Pendulum
 
-The first tab contains the settings that define the properties of the
-lateral pendula (X and Y), which move along the x and y axis in a straight
-manner. On the second tab are identical controls for the pendula Z and R
-which together with X and Y determine the shape of the drawing.
-Z does a circling movement, R is a rotation (around Z's axis or origin).
+Each of the first two tabs contains the settings of two pendula.
+The first tab has the lateral pendula: X (left right movement) and
+Y (up and down). The second tab has Z (wobble - moving the center of the
+paper in rotating movement around the center of the space without rotating
+the paper) and R (actual rotation around center of the pater).
+Most settings can be changed with a combo-slider which allows input by
+typing, moving the slider or fine tuning the value by pushing the minus
+and plus buttons. The settings for each pendulum are identical and are as follow:
 
-All controls from top to bottom and left to right are:
-an on/off switch which activates the whole pendulum with all settings.
-After that follows the pendulum's amplitude (here called radius).
-This determines the size in the direction the pendulum moves.
-Below that follows amplitude damping, which reduces the amplitude over time,
-so that the drawing will spiral toward the center. Since this is all
-computed, time refers to the line length. Damping can take place in a steady
-(minus '-') or in a slowing, procentual manner ('*').
-The third row is labeled acceleration, which refers to an additional
-dynamic of the amplitude damping.
-
-The forth row lets you dial in the speed (frequency). This is the most
-fundamental to the shape. For instance 2 means that the pendulum swings
-back and fourth twice as fast. To the right you can choose an additional
-factor the frequency gets multiplied with. This can be a constant like
+Each pendulum section starts with the name of the pendulum, but in front
+of that (tothe right) is a checkbox to (de-)activate the entire pendulum.
+The first row lets you dial in the speed (frequency). This is most
+fundamental to the shape of the drawing. For instance 2 means that the
+pendulum swings back and fourth twice as fast. To the right you can choose
+an additional factor the frequency gets multiplied with. This can be a constant like
 Pi or Phi or the frequency of another pendulum or just simply one.
 This is especially handy when browsing the classic shapes
 with three pendula. For these the frequency of X and Y has to be the same -
 which will be ensured when you set the frequency factor of Y to X
-(or vice versa) and keep the frequency of Y to one.
+(or vice versa) and keep the frequency of the connected pendulum to one.
 The next combo control below adds decimals  to the frequency value
 for more complex rotating drawings. Behind that are two check boxes to
 invert the final frequency value to 1/x or to flip the direction of
-the pendulum. Below that follows a frequency damping, which works
+the pendulum. Below that follows a frequency damping, which will change
+the frequency over time. To the right of that value you can set the damping
+mode. Set it to minus for linear damping or to "*" for accelerated damping.
 the same as the second row only with slightly different optical results.
 
-The last row starts with a slider to fine tune the starting point of the
+The fourth row starts with a slider to fine tune the starting point of the
 pendulum. It can be chosen between zero and a quater rotation. This can
 have great effects on the shape. Because of the special desirability
 offsets of an half (180 degree) or quarter (90 degree) rotation can be
 activated by checkbox (to the right of the slider). The final offset is
-the sum of the checked.
+the sum of the checked with the slider value.
+
+The fifth row is the amplitude size, which simple allows to make the
+picture larger or smaller depending if the pendulum left the frame or
+doesn't move enough. As with reqency, also the amplitude can be damped
+over time and this damping can accelerated.
+
 
 =head2 Mod Matrix
 
@@ -230,14 +233,21 @@ the sum of the checked.
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/GUI3.png"    alt=""  width="630" height="410">
 </p>
 
-The third tab allows the deepest alterations to the drawing, which leave
+The third tab allows the deepest alterations to the drawing, which leaves
 the original concept of a Harmonograph. For instance the X - Pendulum
 is basically a little more than the a cosine function to the time variable.
-Here you can change that to sine, tangent or other trigonometric functions.
-Same goes for Y and Z. R is a function of an rotation matrix. Here you
-can change every of its four elements.
+The time variable represents the frequency since we simulate a double
+frequency by doubling the speed time passes for this pendulum.
+If you change the function from cosine (cos) to tangent or other
+trigonometric functions the shapes will change redically.
+Same goes for Y and Z which is computation wise just a combination of
+X and Y applied to a offset. R is different since its computed with a
+rotation matrix. But in same manner as X or Y you can change here for
+each cell of the matrix the variable and the function that computes
+on that variable. Please note the most beautiful examples were computed
+by changing the variable of just one cell of the rotation matrix.
 
-=head2 Line
+=head2 Pen Settings
 
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/GUI2.png"   alt=""  width="630" height="410">
@@ -255,8 +265,8 @@ but very airy.
 
 =head2 Colors
 
-Below that on the last tab are the options for colorization and this
-has in itself three parts.
+On the lower part of the pen settings tab are the are the options for
+colorization and this has in itself three parts.
 Topmost are the settings for the color change, which is set on default to I<no>.
 In that case only the upper I<start color> (below the color change section)
 will be used, and not the I<end color> (target - which is even below that).
@@ -331,6 +341,8 @@ L<App::GUI::Cellgraph>
 L<App::GUI::Chaosgraph>
 
 L<App::GUI::Dynagraph>
+
+L<App::GUI::Juliagraph>
 
 L<App::GUI::Sierpingraph>
 

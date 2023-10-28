@@ -1,4 +1,14 @@
-0.65  2023-10-30  lichtkind
+0.67  2023-10-28  lichtkind
+-------
+    * = GUI tuning
+    * " shorten tab label
+    * " put frequency settings above amplitude
+    * ~ insert .ini file ending on settings files when missing
+    * ~ insert selected image file ending when missing
+    * ? adapted documentation to GUI changes
+    * ? extended documentation
+
+0.66  2023-10-08  lichtkind
 -------
     * = mid feature release
     * configurable R pendulum rotation matrix

@@ -49,9 +49,9 @@ sub new {
     $self->{'y_function'}->SetToolTip('function that computes pendulum Y');
     $self->{'y_var'}->SetToolTip('variable on which the function of pendulum Y is computed upon');
     $self->{'zx_function'}->SetToolTip('function that computes pendulum Z in x direction');
-    $self->{'zx_var'}->SetToolTip('variable on which the function of pendulum Z is computed upon');
-    $self->{'zy_function'}->SetToolTip('function that computes pendulum Z');
-    $self->{'zy_var'}->SetToolTip('variable on which the function of pendulum Z is computed upon');
+    $self->{'zx_var'}->SetToolTip('variable on which the function for x-direction of pendulum Z is computed upon');
+    $self->{'zy_function'}->SetToolTip('function that computes pendulum Z in y direction');
+    $self->{'zy_var'}->SetToolTip('variable on which the function for y-direction of pendulum Z is computed upon');
     $self->{'r11_function'}->SetToolTip('left upper function in rotation matrix of pendulum R');
     $self->{'r12_function'}->SetToolTip('right upper function in rotation matrix of pendulum R');
     $self->{'r21_function'}->SetToolTip('left lower function in rotation matrix of pendulum R');
