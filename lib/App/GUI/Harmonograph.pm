@@ -6,7 +6,7 @@ use FindBin;
 
 package App::GUI::Harmonograph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.67';
+our $VERSION = '0.68';
 
 use base qw/Wx::App/;
 use App::GUI::Harmonograph::Frame;
@@ -65,8 +65,8 @@ INI file for tweaking them later
 
 =back
 
-Please note that quick preview gets not triggered by GUI elements in the
-PEN SETTINGS section (last tab).
+Please note that quick preview changes two PEN SETTINGS (last tab)
+to produce always something visible.
 
 After first use of the program, a config file will be created under
 I<~/.config/harmonograph> in your home directory. It contains mainly
@@ -130,14 +130,16 @@ Because when X goes right Y goes up and vice versa.
 But if we start one pendulum at the center and the other
 at the upmost position we get a circle.
 In other words: we added an offset of 90 degrees to Y (or X).
-Our third pendulum Z moves the paper and does exactly
-the already described circular movement without rotating around its center.
+Our third pendulum Z moves the paper in circulating manner and
+but not rotating the paper around its center.
 If both circular movements (of X, Y and Z) are concurrent -
-the pen just stays at one point over the paper, If both are countercurrent -
-we get a circle. Interesting things start to happen, if we alter
-the speed of of X, Y and Z. Than famous harmonic pattern appear.
+the pen just stays at one point over the paper.
+If both are countercurrent - we get a circle.
+Interesting things start to happen, if we alter the speed of of X, Y and Z.
+Than famous harmonic pattern appear.
 And for even more complex drawings I added R, which is not really
-a pendulum, but an additional rotary movement of Z around its center.
+a pendulum and not part of the original harmonograph,
+but an additional rotary movement of Z around its center.
 The pendula out of metal do of course fizzle out over time,
 which you can see in the drawing, in a spiraling movement toward the center.
 We emulate this with two damping factors: one for amplitude and one for
@@ -166,18 +168,17 @@ These are divided into four tabs - roughly devided in form (3) and decoration (l
 
 =item 3
 
-The lower left side contains buttons which trigger a few commands,
-mostly for mass productions of image files. All the other commands are
-only reachable in the main menu or by keyboard
-(key combinations are displayed in the menu).
-
 =back
 
 Please mind the tool tips - short help texts which appear if the mouse
-stands still over a button or slider. Also helpful are messages in the
-status bar at the bottom - on bottom left regarding images and bottom
-right about settings.
-When brwosing the main menu, help texts about the highlighted item
+stands still over most widgets. Also helpful are messages in the
+status bar at the bottom - on bottom left regarding current state of the image
+and bottom right about state of the settings. Settings are all the
+parameters of the image, that are dialed in via widget in the tabs.
+Configuration are the general settings of this program, which are mostly
+saved colors and paths were to store images and settings.
+
+When browsing the main menu, help texts about the highlighted item
 also appears in the status bar. The Menu can be completely navigated with
 the keyboard. Just hold Alt and use the direction keys (up, down, left
 and right) or the highlighted letters. When holding the Alt key you can
@@ -291,24 +292,35 @@ with the I<start color> and the lower with the I<end color>.
 In the lower left corner are two rows of command buttons. All other
 commands are in the menu.
 
-The upper row has only one button for making a full drawing. This
-might take some time if line length and dot density are high.
-For that reason - only changes on the pendulum settings (first two tabs)
-produce an sketch drawing, helping the user understand the nature his
-changes. A sketch contains only the first five pendulum swings,
-so it can be drawn fast enough for almost immediate interactions.
-For a full drawing that takes all settings into account you need to push
-I<Draw> button or Press C<Ctrl + D>.
+The lower left part of the window contains buttons in two rows.
+The upper row is just for drawing the complete image. It has a progress
+bar and the draw button. If the progress bar is white, you see just a sketch
+drawing - a preview of the full image that can be computed fast enought
+to react to all setting changes. If you push the draw button (or <Ctrl>+<S>),
+you will get a full image and the progress bar has the color of the drawing
+and also can show you the color progression over time, so you can see,
+which are the early and the later parts of the drawing.
 
-The second row has commands to quickly save many files.
-First push I<Dir> to select the directory and then type directly into the
-second text field the file base name. The index in the next one
-is found automatically. Every time you now press I<Save> a file with the
-current image is saved under the path: dir + base name + index + ending
-(set in Menu: Image &gt; Format and saved in configs).
-The index automatically autoincrements when producing a file.
-Push button I<INI> next to it to also save the settings of the current
-state under same file name, but with the ending C<.ini>.
+The second button row is for easy mass production of drawings.
+The three text fields are combined the parts of the file path.
+The first text field is naturally the directory where the files get saved.
+You can change it by pushing the I<Dir> in front (left) of the text button
+and use the then opening  Dir-Dialog to select another directory.
+The second text field holds the base file name, which has to be inserted
+by clicking on in and typing. The third text field is the file number and
+is readonly. That counter increments automatically when a file is generated.
+The complete file path is <dir>+<base name>+'_'+<counter>+<file ending>.
+The file ending is I<.ini> for setting files and I<.jpg> or I<.png> or I<.svg>
+for image files. The exact ending depends on what is the current configuration
+set in the image > format menu. Lets say your directory is
+"/home/user/images/h" and the base file name is beauty. If there is already
+a file "/home/user/images/h/beauty_4.png" - the program will detect that
+and set the counter to 5. You can play with the settings and than (no matter
+if there is currently a complete drawing or not) push the I<Save> button
+to produce a complete drawing into "/home/user/images/h/beauty_5.png".
+If you push the I<INI> button you safe the current settings into
+"/home/user/images/h/beauty_5.ini". This file can later be loaded via
+settings menu to restore the current state of all buttons in the tabs.
 
 
 =head2 Menu
@@ -331,7 +343,8 @@ of the serially save images by the command buttons in the left lower corner.
 The preferred file format is also the first wild card in the save dialog.
 Above that is another submenu for setting the image size.
 
-The third menu has some dialogs with documentation and additional information.
+The third menu has only one item to oben the I<about> - dialog,
+where you can see which perl, Wx and other versions you are currently using.
 
 
 =head1 SEE ALSO

@@ -45,8 +45,6 @@ sub new {
     $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'}, 'y','pendulum in y direction (left to right)', 1, 100);
     $self->{'pendulum'}{'z'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'circular'}, 'z','circular pendulum',        0, 100);
     $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'circular'}, 'R','rotating pendulum',        0, 100);
-    $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/x y z r/;
-    $self->{'tab'}{'mod'}->SetCallBack( sub { $self->sketch( ) } );
 
     $self->{'color'}{'start'}   = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'start', { red => 20, green => 20, blue => 110 } );
     $self->{'color'}{'end'}     = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'end',  { red => 110, green => 20, blue => 20 } );
@@ -56,6 +54,11 @@ sub new {
 
     $self->{'color_flow'}       = App::GUI::Harmonograph::Frame::Part::ColorFlow->new( $self->{'tab'}{'pen'}, $self );
     $self->{'line'}             = App::GUI::Harmonograph::Frame::Part::PenLine->new( $self->{'tab'}{'pen'} );
+
+    $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/x y z r/;
+    $self->{'line'}->SetCallBack( sub { $self->sketch( ) } );
+    $self->{'color_flow'}->SetCallBack( sub { $self->sketch( ) } );
+    $self->{'tab'}{'mod'}->SetCallBack( sub { $self->sketch( ) } );
 
     $self->{'progress'}            = App::GUI::Harmonograph::Widget::ProgressBar->new( $self, 450,  10, { red => 20, green => 20, blue => 110 });
     $self->{'board'}               = App::GUI::Harmonograph::Frame::Part::Board->new( $self , 600, 600 );
@@ -163,8 +166,6 @@ sub new {
     $image_menu->Append( 12400, "&Save\tCtrl+S", "save currently displayed image" );
 
     my $help_menu = Wx::Menu->new();
-    #$help_menu->Append( 13100, "&Function\tAlt+F", "Dialog with information how an Harmonograph works" );
-    #$help_menu->Append( 13200, "&Knobs\tAlt+K", "Dialog explaining the layout and function of knobs" );
     $help_menu->Append( 13300, "&About\tAlt+A", "Dialog with general information about the program" );
 
     my $menu_bar = Wx::MenuBar->new();
