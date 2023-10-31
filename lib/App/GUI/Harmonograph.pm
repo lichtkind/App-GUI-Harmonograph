@@ -6,7 +6,7 @@ use FindBin;
 
 package App::GUI::Harmonograph;
 our $NAME = __PACKAGE__;
-our $VERSION = '0.68';
+our $VERSION = '0.69';
 
 use base qw/Wx::App/;
 use App::GUI::Harmonograph::Frame;
@@ -167,6 +167,10 @@ The whole right half of the window contains the settings, which guide the drawin
 These are divided into four tabs - roughly devided in form (3) and decoration (last one).
 
 =item 3
+
+In the lower left corner are two rows of command buttons. All other
+commands are in the menu. The upper row is just for drawing and the lower
+for image mass production more under L</Commands>.
 
 =back
 
