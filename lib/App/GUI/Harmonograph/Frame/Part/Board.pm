@@ -241,7 +241,7 @@ sub paint {
                         ' + ($y * App::GUI::Harmonograph::Function::'.$self->{'data'}{'mod'}{'r22_function'}.
                             '('.$var_names{ $self->{'data'}{'mod'}{'r22_var'} }.')));'."\n" if $dtr;
 
-    $code .= ($self->{'data'}{'line'}{'connect'} or exists $self->{'data'}{'sketch'})
+    $code .= $self->{'data'}{'line'}{'connect'}
            ? '  $dc->DrawLine( $cx + $x_old, $cy + $y_old, $cx + $x, $cy + $y);'."\n"
            : '  $dc->DrawPoint( $cx + $x, $cy + $y );'."\n";
     $code .= '  $tx += $dtx;'."\n"                          if $dtx;
