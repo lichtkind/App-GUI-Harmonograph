@@ -1,3 +1,15 @@
+0.71  2023-11-17  lichtkind
+-------
+    * = minor fix
+    * / simplified API to drawing board
+    * ! fix link in about dialog
+    * ! tiny bug in save status
+
+0.70  2023-11-05  lichtkind
+-------
+    * = minor fix
+    * ! append image file ending only if it really missing
+
 0.70  2023-11-05  lichtkind
 -------
     * = cleanup cleanup release

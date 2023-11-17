@@ -14,8 +14,8 @@ use App::GUI::Harmonograph::Frame::Part::Pendulum;
 use App::GUI::Harmonograph::Frame::Part::PenLine;
 use App::GUI::Harmonograph::Frame::Part::ModMatrix;
 use App::GUI::Harmonograph::Widget::ProgressBar;
-use App::GUI::Harmonograph::Settings;
-use App::GUI::Harmonograph::Config;
+use App::GUI::Harmonograph::Settings; # file IO for parameters of image
+use App::GUI::Harmonograph::Config;   # file IO for program config: dirs, color set store
 
 sub new {
     my ( $class, $parent, $title ) = @_;
@@ -276,6 +276,23 @@ sub new {
     $self;
 }
 
+sub update_recent_settings_menu {
+    my ($self) = @_;
+    my $recent = $self->{'config'}->get_value('last_settings');
+    return unless ref $recent eq 'ARRAY';
+    my $set_menu_ID = 11300;
+    $self->{'setting_menu'}->Destroy( $set_menu_ID );
+    my $Recent_ID = $set_menu_ID + 1;
+    $self->{'recent_menu'} = Wx::Menu->new();
+    for (reverse @$recent){
+        my $path = $_;
+        $self->{'recent_menu'}->Append($Recent_ID, $path);
+        Wx::Event::EVT_MENU( $self, $Recent_ID++, sub { $self->open_setting_file( $path ) });
+    }
+    $self->{'setting_menu'}->Insert( 2, $set_menu_ID, '&Recent', $self->{'recent_menu'}, 'recently saved settings' );
+
+}
+
 sub init {
     my ($self) = @_;
     $self->{'pendulum'}{$_}->init() for qw/x y z r/;
@@ -315,20 +332,15 @@ sub set_data {
 sub draw {
     my ($self) = @_;
     $self->SetStatusText( "drawing .....", 0 );
-    $self->{'progress'}->reset;
     $self->{'progress'}->set_color( $self->{'color'}{'start'}->get_data );
-    $self->{'board'}->set_data( $self->get_data );
-    $self->{'board'}->Refresh;
+    $self->{'board'}->draw( $self->get_data );
     $self->SetStatusText( "done complete drawing", 0 );
 }
 
 sub sketch {
     my ($self) = @_;
     $self->SetStatusText( "sketching a preview .....", 0 );
-    $self->{'progress'}->reset;
-    $self->{'board'}->set_data( $self->get_data );
-    $self->{'board'}->set_sketch_flag( );
-    $self->{'board'}->Refresh;
+    $self->{'board'}->sketch( $self->get_data );
     $self->SetStatusText( "done sketching a preview", 0 );
     if ($self->{'saved'}){
         $self->inc_base_counter();
@@ -447,7 +459,7 @@ sub save_image_dialog {
               Wx::MessageDialog->new( $self, "\n\nReally overwrite the image file?", 'Confirmation Question',
                                       &Wx::wxYES_NO | &Wx::wxICON_QUESTION )->ShowModal() != &Wx::wxID_YES;
     my $file_ending = lc substr ($path, -4);
-    unless ($dialog->GetFilterIndex == 3 and # filter set to all endings
+    unless ($dialog->GetFilterIndex == 3 or # filter set to all endings
             ($file_ending eq '.jpg' or $file_ending eq '.png' or $file_ending eq '.svg')){
             $path .= '.' . $wildcard_ending[$dialog->GetFilterIndex];
     }
@@ -482,26 +494,8 @@ sub write_settings_file {
         $self->{'config'}->add_setting_file( $file );
         $self->update_recent_settings_menu();
         $self->SetStatusText( "saved settings into file $file", 1 );
+        $self->set_settings_save( 1 );
     }
-    $self->{'saved'} = 1;
-    $self->SetTitle( $self->{'title'} );
-}
-
-sub update_recent_settings_menu {
-    my ($self) = @_;
-    my $recent = $self->{'config'}->get_value('last_settings');
-    return unless ref $recent eq 'ARRAY';
-    my $set_menu_ID = 11300;
-    $self->{'setting_menu'}->Destroy( $set_menu_ID );
-    my $Recent_ID = $set_menu_ID + 1;
-    $self->{'recent_menu'} = Wx::Menu->new();
-    for (reverse @$recent){
-        my $path = $_;
-        $self->{'recent_menu'}->Append($Recent_ID, $path);
-        Wx::Event::EVT_MENU( $self, $Recent_ID++, sub { $self->open_setting_file( $path ) });
-    }
-    $self->{'setting_menu'}->Insert( 2, $set_menu_ID, '&Recent', $self->{'recent_menu'}, 'recently saved settings' );
-
 }
 
 1;

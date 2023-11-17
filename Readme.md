@@ -4,7 +4,7 @@
 
 ### VERSION
 
-    0.70
+    0.71
 
 [Home on CPAN](https://metacpan.org/pod/App-Harmonograph)
 
@@ -57,12 +57,12 @@
 
 ### PREREQUISITES
 
-    Perl 5.12 including some core Modules.
-    FindBin
-    File::Spec
-    File::HomeDir
-    Graphics::Toolkit::Color
-    WxPerl (Wx) 0.9 or higher
+    Perl 5.12 including some core modules
+    FindBin 1
+    File::Spec 3
+    File::HomeDir 1
+    Graphics::Toolkit::Color 1.71
+    WxPerl (Wx) 0.9
 
 
 
@@ -72,7 +72,7 @@
 
 ### COPYRIGHT
 
-    Copyright(c) 2022 Herbert Breunung,
+    Copyright(c) 2022-23 Herbert Breunung,
 
     All rights reserved.  This program is free software; you can
     redistribute it and/or modify it under GPL version 3
