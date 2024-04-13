@@ -3,7 +3,7 @@ use utf8;
 use warnings;
 use Wx;
 
-package App::GUI::Harmonograph::Frame::Part::ModMatrix;
+package App::GUI::Harmonograph::Frame::Panel::ModMatrix;
 use base qw/Wx::Panel/;
 use App::GUI::Harmonograph::Widget::SliderCombo;
 

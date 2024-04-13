@@ -12,7 +12,7 @@ use App::GUI::Harmonograph::Frame::Part::ColorFlow;
 use App::GUI::Harmonograph::Frame::Part::ColorPicker;
 use App::GUI::Harmonograph::Frame::Part::Pendulum;
 use App::GUI::Harmonograph::Frame::Part::PenLine;
-use App::GUI::Harmonograph::Frame::Part::ModMatrix;
+use App::GUI::Harmonograph::Frame::Panel::ModMatrix;
 use App::GUI::Harmonograph::Widget::ProgressBar;
 use App::GUI::Harmonograph::Settings; # file IO for parameters of image
 use App::GUI::Harmonograph::Config;   # file IO for program config: dirs, color set store
@@ -33,7 +33,7 @@ sub new {
     $self->{'tabs'}             = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
     $self->{'tab'}{'linear'}    = Wx::Panel->new($self->{'tabs'});
     $self->{'tab'}{'circular'}  = Wx::Panel->new($self->{'tabs'});
-    $self->{'tab'}{'mod'}       = App::GUI::Harmonograph::Frame::Part::ModMatrix->new( $self->{'tabs'} );
+    $self->{'tab'}{'mod'}       = App::GUI::Harmonograph::Frame::Panel::ModMatrix->new( $self->{'tabs'} );
     $self->{'tab'}{'pen'}       = Wx::Panel->new($self->{'tabs'});
     $self->{'tabs'}->AddPage( $self->{'tab'}{'linear'},   'Lateral Pendulum');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'circular'}, 'Rotary Pendulum');
