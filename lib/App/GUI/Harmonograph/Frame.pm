@@ -432,6 +432,7 @@ sub write_settings_dialog {
     return if $dialog->ShowModal == &Wx::wxID_CANCEL;
     my $path = $dialog->GetPath;
     $path .= '.ini' unless lc substr ($path, -4) eq '.ini';
+    $path = substr ($path, 0, -4) if lc substr ($path, -4) eq '.ini';
     return if -e $path and
               Wx::MessageDialog->new( $self, "\n\nReally overwrite the settings file?", 'Confirmation Question',
                                       &Wx::wxYES_NO | &Wx::wxICON_QUESTION )->ShowModal() != &Wx::wxID_YES;
