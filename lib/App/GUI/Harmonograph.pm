@@ -84,12 +84,12 @@ creating together spiraling pictures :
 
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/baum.png"      alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/wirbel.jpg"    alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/hose.png"      alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/wirbel_4.png"  alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/wolke.png"     alt=""  width="300" height="300">
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/df.png"        alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/POD/baum.png"      alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/POD/wirbel.jpg"    alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/POD/hose.png"      alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/POD/wirbel_4.png"  alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/POD/wolke.png"     alt=""  width="300" height="300">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/POD/df.png"        alt=""  width="300" height="300">
 </p>
 
 
@@ -152,7 +152,7 @@ the frequency (speed).
 =head1 GUI
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/GUI.png"    alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/POD/GUI.png"    alt=""  width="630" height="410">
 </p>
 
 The general layout of the program has three parts,
@@ -238,7 +238,7 @@ over time and this damping can accelerated.
 =head2 Mod Matrix
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/GUI3.png"    alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/POD/GUI3.png"    alt=""  width="630" height="410">
 </p>
 
 The third tab allows the deepest alterations to the drawing, which leaves
@@ -258,7 +258,7 @@ by changing the variable of just one cell of the rotation matrix.
 =head2 Pen Settings
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/GUI2.png"   alt=""  width="630" height="410">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/POD/GUI2.png"   alt=""  width="630" height="410">
 </p>
 
 The last tab on the right contains the visual properties (of the pen).
