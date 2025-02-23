@@ -59,28 +59,13 @@ sub new {
 
     my $base_attr = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW;
     my $box_attr = $base_attr | &Wx::wxTOP | &Wx::wxBOTTOM;
-    my $r_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-    $r_sizer->Add( $self->{'radius'},   0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT,  50);
-    $r_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
-
-    my $rd_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $rd_sizer->Add( $self->{'radius_damp'},     0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT, 62);
-    $rd_sizer->AddSpacer( 17 );
-    $rd_sizer->Add( $self->{'radius_damp_type'}, 0, $box_attr |&Wx::wxLEFT,  7);
-    $rd_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
-
-    my $ra_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $ra_sizer->Add( $self->{'radius_damp_acc'}, 0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT, 25);
-    $ra_sizer->AddSpacer( 18 );
-    $ra_sizer->Add( $self->{'radius_damp_acc_type'}, 0, $box_attr |&Wx::wxLEFT,  7);
-    $ra_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $f_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $f_sizer->Add( $self->{'on'},       0, $base_attr| &Wx::wxLEFT, 0);
-    $f_sizer->Add( $lbl,                0, &Wx::wxALIGN_LEFT|&Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxGROW|&Wx::wxTOP|&Wx::wxLEFT, 12);
-    $f_sizer->Add( $self->{'frequency'}, 0, $base_attr|&Wx::wxLEFT, 3);
+    $f_sizer->Add( $self->{'on'},       0, $base_attr | &Wx::wxALIGN_CENTER_VERTICAL, 0);
+    $f_sizer->Add( $lbl,                0, &Wx::wxALIGN_LEFT|&Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxGROW|&Wx::wxTOP|&Wx::wxLEFT, 6);
+    $f_sizer->Add( $self->{'frequency'}, 0, $base_attr|&Wx::wxLEFT, 8);
     $f_sizer->AddSpacer( 18 );
-    $f_sizer->Add( $self->{'freq_factor'}, 0, $box_attr |&Wx::wxLEFT,  7);
+    $f_sizer->Add( $self->{'freq_factor'}, 0, $box_attr |&Wx::wxLEFT,  0);
     $f_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $fd_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
@@ -89,10 +74,26 @@ sub new {
     $fd_sizer->Add( $self->{'direction'},   0, $base_attr|&Wx::wxLEFT, 7);
     $fd_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
+    my $r_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
+    $r_sizer->Add( $self->{'radius'},   0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT,  50);
+    $r_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
+
+    my $rd_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $rd_sizer->Add( $self->{'radius_damp'},     0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT, 62);
+    $rd_sizer->AddSpacer( 17 );
+    $rd_sizer->Add( $self->{'radius_damp_type'}, 0, $box_attr |&Wx::wxLEFT,  0);
+    $rd_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
+
+    my $ra_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $ra_sizer->Add( $self->{'radius_damp_acc'}, 0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT, 25);
+    $ra_sizer->AddSpacer( 18 );
+    $ra_sizer->Add( $self->{'radius_damp_acc_type'}, 0, $box_attr |&Wx::wxLEFT,  0);
+    $ra_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
+
     my $f_damp_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $f_damp_sizer->Add( $self->{'freq_damp'},     0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT, 62);
     $f_damp_sizer->AddSpacer( 17 );
-    $f_damp_sizer->Add( $self->{'freq_damp_type'}, 0, $box_attr |&Wx::wxLEFT, 7);
+    $f_damp_sizer->Add( $self->{'freq_damp_type'}, 0, $box_attr |&Wx::wxLEFT, 0);
     $f_damp_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $o_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
@@ -103,13 +104,15 @@ sub new {
     $o_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $sizer->Add( $f_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 2);
-    $sizer->Add( $fd_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 6);
-    $sizer->Add( $f_damp_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 6);
-    $sizer->Add( $o_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 0);
-    $sizer->Add( $r_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 0);
-    $sizer->Add( $rd_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 6);
-    $sizer->Add( $ra_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 6);
+    $sizer->AddSpacer( 5 );
+    $sizer->Add( $f_sizer,      0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 0);
+    $sizer->Add( $fd_sizer,     0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 15);
+    $sizer->Add( $f_damp_sizer, 0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 15);
+    $sizer->Add( $o_sizer,      0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 10);
+    $sizer->Add( $r_sizer,      0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 10);
+    $sizer->Add( $rd_sizer,     0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 15);
+    $sizer->Add( $ra_sizer,     0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 15);
+    $sizer->AddSpacer( 10 );
     $self->SetSizer($sizer);
 
     $self->init();

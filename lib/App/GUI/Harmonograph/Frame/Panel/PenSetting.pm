@@ -1,7 +1,7 @@
 
 #
 
-package App::GUI::Harmonograph::Frame::Part::PenLine;
+package App::GUI::Harmonograph::Frame::Panel::PenSettings;
 use v5.12;
 use warnings;
 use Wx;

@@ -74,9 +74,10 @@ sub new {
 
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $sizer->Add( $rh_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW, 0);
-    $sizer->Add( $gs_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW, 0);
-    $sizer->Add( $bl_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW, 0);
+    $sizer->Add( $rh_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxTOP,  5);
+    $sizer->Add( $gs_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxTOP, 15);
+    $sizer->Add( $bl_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxTOP, 15);
+    $sizer->AddSpacer(5);;
 
     $self->SetSizer($sizer);
     $self;

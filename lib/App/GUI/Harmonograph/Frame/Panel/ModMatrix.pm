@@ -103,13 +103,15 @@ sub new {
     $y_sizer->Add( $self->{'y_var'},  0, $box_attr, 5);
     $y_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
+    my $z1_sizer = Wx::BoxSizer->new( &Wx::wxVERTICAL);
+    $z1_sizer->Add( $self->{'zx_function'},  0, $box_attr, 5);
+    $z1_sizer->Add( $self->{'zy_function'},  0, $box_attr, 5);
+
+    my $z2_sizer = Wx::BoxSizer->new( &Wx::wxVERTICAL);
+    $z2_sizer->Add( $self->{'zx_var'},  0, $box_attr, 5);
+    $z2_sizer->Add( $self->{'zy_var'},  0, $box_attr, 5);
+
     my $z_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL);
-      my $z1_sizer = Wx::BoxSizer->new( &Wx::wxVERTICAL);
-      $z1_sizer->Add( $self->{'zx_function'},  0, $box_attr, 5);
-      $z1_sizer->Add( $self->{'zy_function'},  0, $box_attr, 5);
-      my $z2_sizer = Wx::BoxSizer->new( &Wx::wxVERTICAL);
-      $z2_sizer->Add( $self->{'zx_var'},  0, $box_attr, 5);
-      $z2_sizer->Add( $self->{'zy_var'},  0, $box_attr, 5);
     $z_sizer->AddSpacer( 15 );
     $z_sizer->Add( $self->{'lbl'}{'z'},    0, $box_attr, 10);
     $z_sizer->AddSpacer( 25 );
@@ -120,18 +122,19 @@ sub new {
 
 
     my $r_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL);
-      my $r1_sizer = Wx::BoxSizer->new( &Wx::wxVERTICAL);
-      $r1_sizer->Add( $self->{'r11_function'},  0, $box_attr, 5);
-      $r1_sizer->Add( $self->{'r21_function'},  0, $box_attr, 5);
-      my $r2_sizer = Wx::BoxSizer->new( &Wx::wxVERTICAL);
-      $r2_sizer->Add( $self->{'r11_var'},  0, $box_attr, 5);
-      $r2_sizer->Add( $self->{'r21_var'},  0, $box_attr, 5);
-      my $r3_sizer = Wx::BoxSizer->new( &Wx::wxVERTICAL);
-      $r3_sizer->Add( $self->{'r12_function'},  0, $box_attr, 5);
-      $r3_sizer->Add( $self->{'r22_function'},  0, $box_attr, 5);
-      my $r4_sizer = Wx::BoxSizer->new( &Wx::wxVERTICAL);
-      $r4_sizer->Add( $self->{'r12_var'},  0, $box_attr, 5);
-      $r4_sizer->Add( $self->{'r22_var'},  0, $box_attr, 5);
+    my $r1_sizer = Wx::BoxSizer->new( &Wx::wxVERTICAL);
+    $r1_sizer->Add( $self->{'r11_function'},  0, $box_attr, 5);
+    $r1_sizer->Add( $self->{'r21_function'},  0, $box_attr, 5);
+    my $r2_sizer = Wx::BoxSizer->new( &Wx::wxVERTICAL);
+    $r2_sizer->Add( $self->{'r11_var'},  0, $box_attr, 5);
+    $r2_sizer->Add( $self->{'r21_var'},  0, $box_attr, 5);
+    my $r3_sizer = Wx::BoxSizer->new( &Wx::wxVERTICAL);
+    $r3_sizer->Add( $self->{'r12_function'},  0, $box_attr, 5);
+    $r3_sizer->Add( $self->{'r22_function'},  0, $box_attr, 5);
+    my $r4_sizer = Wx::BoxSizer->new( &Wx::wxVERTICAL);
+    $r4_sizer->Add( $self->{'r12_var'},  0, $box_attr, 5);
+    $r4_sizer->Add( $self->{'r22_var'},  0, $box_attr, 5);
+
     $r_sizer->AddSpacer( 15 );
     $r_sizer->Add( $self->{'lbl'}{'r'},    0, $box_attr, 10);
     $r_sizer->AddSpacer( 25 );
@@ -165,10 +168,7 @@ sub SetCallBack {
     $self->{'callback'} = $code;
 }
 
-sub init {
-    my ( $self ) = @_;
-    $self->set_data ( $default );
-}
+sub init { $_[0]->set_data ( $default ) }
 
 sub set_data {
     my ( $self, $data ) = @_;
@@ -178,7 +178,6 @@ sub set_data {
     }
     1;
 }
-
 sub get_data {
     my ( $self ) = @_;
     return { map { $_, $self->{$_}->GetValue; } keys %$default };

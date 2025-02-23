@@ -21,16 +21,16 @@ sub new {
     $self->{'browser'}     = $frame->{'color'}{ $self->{'target'} };
 
 
-    my $btnw = 50; my $btnh = 40;# button width and height
+    my $btnw = 50; my $btnh = 35;# button width and height
     $self->{'label'}  = Wx::StaticText->new($self, -1, $label );
     $self->{'select'} = Wx::ComboBox->new( $self, -1, $self->current_color_name, [-1,-1], [$length, -1], $self->{'color_names'});
-    $self->{'<'}    = Wx::Button->new( $self, -1, '<',       [-1,-1], [ 30, 20] );
-    $self->{'>'}    = Wx::Button->new( $self, -1, '>',       [-1,-1], [ 30, 20] );
+    $self->{'<'}    = Wx::Button->new( $self, -1, '<',       [-1,-1], [ 30, 18] );
+    $self->{'>'}    = Wx::Button->new( $self, -1, '>',       [-1,-1], [ 30, 18] );
     $self->{'load'} = Wx::Button->new( $self, -1, 'Load',    [-1,-1], [$btnw, $btnh] );
     $self->{'del'}  = Wx::Button->new( $self, -1, 'Del',     [-1,-1], [$btnw, $btnh] );
     $self->{'save'} = Wx::Button->new( $self, -1, 'Save',    [-1,-1], [$btnw, $btnh] );
     $self->{'display'} = App::GUI::Harmonograph::Widget::ColorDisplay->new( $self, 25, 10, $self->current_color );
-    
+
     $self->{'label'}->SetToolTip("access to internal color storage for $self->{'target'} color");
     $self->{'select'}->SetToolTip("select color in list directly");
     $self->{'<'}->SetToolTip("go to previous color in list");
@@ -49,7 +49,7 @@ sub new {
         delete $self->{'colors'}{ $self->current_color_name };
         $self->update_select();
     });
-    Wx::Event::EVT_BUTTON( $self, $self->{'save'}, sub { 
+    Wx::Event::EVT_BUTTON( $self, $self->{'save'}, sub {
         my $dialog = Wx::TextEntryDialog->new ( $self, "Please insert the color name", 'Request Dialog');
         return if $dialog->ShowModal == &Wx::wxID_CANCEL;
         my $name = $dialog->GetValue();
@@ -63,20 +63,23 @@ sub new {
         $self->update_display();
     });
 
-    my $vset_attr = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxGROW | &Wx::wxTOP| &Wx::wxBOTTOM;
-    my $all_attr  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxGROW | &Wx::wxALL;
+    my $vset_attr = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW | &Wx::wxTOP| &Wx::wxBOTTOM;
+    my $all_attr  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW | &Wx::wxALL;
     my $sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $sizer->Add( $self->{'label'},              0, $all_attr,  20 );
-    $sizer->AddSpacer( $space );
-    $sizer->Add( $self->{'select'}, 0, $vset_attr, 10 );
-    $sizer->Add( $self->{'<'},      0, $vset_attr, 10 );
-    $sizer->Add( $self->{'>'},      0, $vset_attr, 10 );
-    $sizer->AddSpacer( 20 );
-    $sizer->Add( $self->{'display'},  0, $vset_attr, 15);
     $sizer->AddSpacer( 10 );
-    $sizer->Add( $self->{'load'}, 0, $all_attr,  10 );
-    $sizer->Add( $self->{'del'},  0, $all_attr,  10 );
-    $sizer->Add( $self->{'save'}, 0, $all_attr,  10 );
+    $sizer->Add( $self->{'label'},  0, $all_attr,  9 );
+    $sizer->AddSpacer( $space + 3 );
+    $sizer->Add( $self->{'select'}, 0, $vset_attr, 0 );
+    $sizer->Add( $self->{'<'},      0, $vset_attr, 0 );
+    $sizer->Add( $self->{'>'},      0, $vset_attr, 0 );
+    $sizer->AddSpacer( 20 );
+    $sizer->Add( $self->{'display'},0, $vset_attr, 0);
+    $sizer->AddSpacer( 20 );
+    $sizer->Add( $self->{'load'},   0, $all_attr,  0 );
+    $sizer->AddSpacer( 10 );
+    $sizer->Add( $self->{'save'},   0, $all_attr,  0 );
+    $sizer->AddSpacer( 10 );
+    $sizer->Add( $self->{'del'},    0, $all_attr,  0 );
     $sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->SetSizer($sizer);
 

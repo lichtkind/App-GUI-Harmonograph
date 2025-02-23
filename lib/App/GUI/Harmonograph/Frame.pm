@@ -48,8 +48,8 @@ sub new {
     $self->{'color'}{'start'}   = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'start', { red => 20, green => 20, blue => 110 } );
     $self->{'color'}{'end'}     = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self->{'tab'}{'pen'}, 'end',  { red => 110, green => 20, blue => 20 } );
 
-    $self->{'color'}{'startio'} = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self->{'tab'}{'pen'}, $self, 'Start Color IO', $self->{'config'}->get_value('color') , 162, 1);
-    $self->{'color'}{'endio'}   = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self->{'tab'}{'pen'}, $self, 'End Color IO', $self->{'config'}->get_value('color') , 162, 7);
+    $self->{'color'}{'startio'} = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self->{'tab'}{'pen'}, $self, 'Start Color IO:', $self->{'config'}->get_value('color') , 150, 0);
+    $self->{'color'}{'endio'}   = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self->{'tab'}{'pen'}, $self, 'End Color IO:', $self->{'config'}->get_value('color') , 150, 5);
 
     $self->{'color_flow'}       = App::GUI::Harmonograph::Frame::Part::ColorFlow->new( $self->{'tab'}{'pen'}, $self );
     $self->{'line'}             = App::GUI::Harmonograph::Frame::Part::PenLine->new( $self->{'tab'}{'pen'} );
@@ -59,16 +59,16 @@ sub new {
     $self->{'color_flow'}->SetCallBack( sub { $self->sketch( ) } );
     $self->{'tab'}{'mod'}->SetCallBack( sub { $self->sketch( ) } );
 
-    $self->{'progress'}            = App::GUI::Harmonograph::Widget::ProgressBar->new( $self, 450,  10, { red => 20, green => 20, blue => 110 });
+    $self->{'progress'}            = App::GUI::Harmonograph::Widget::ProgressBar->new( $self, 465,  10, { red => 20, green => 20, blue => 110 });
     $self->{'board'}               = App::GUI::Harmonograph::Frame::Part::Board->new( $self , 600, 600 );
     $self->{'dialog'}{'about'}     = App::GUI::Harmonograph::Dialog::About->new();
 
-    my $btnw = 50; my $btnh     = 40;# button width and height
+    my $btnw = 44; my $btnh     = 30;# button width and height
     $self->{'btn'}{'dir'}       = Wx::Button->new( $self, -1, 'Di&r',   [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'write_next'}= Wx::Button->new( $self, -1, '&INI',   [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'draw'}      = Wx::Button->new( $self, -1, '&Draw', [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'save_next'} = Wx::Button->new( $self, -1, '&Save', [-1,-1],[$btnw, $btnh] );
-    $self->{'txt'}{'file_bdir'} = Wx::TextCtrl->new( $self,-1, $self->{'config'}->get_value('file_base_dir'), [-1,-1],  [170, -1] );
+    $self->{'txt'}{'file_bdir'} = Wx::TextCtrl->new( $self,-1, $self->{'config'}->get_value('file_base_dir'), [-1,-1],  [185, -1] );
     $self->{'txt'}{'file_bname'}= Wx::TextCtrl->new( $self,-1, $self->{'config'}->get_value('file_base_name'), [-1,-1],   [100, -1] );
     $self->{'txt'}{'file_bnr'}  = Wx::TextCtrl->new( $self,-1, $self->{'config'}->get_value('file_base_counter'), [-1,-1], [ 36, -1], &Wx::wxTE_READONLY );
 
@@ -186,7 +186,7 @@ sub new {
     my $line_attr    = $std_attr | &Wx::wxLEFT | &Wx::wxRIGHT ;
 
     my $linear_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $linear_sizer->AddSpacer(5);
+    $linear_sizer->AddSpacer(0);
     $linear_sizer->Add( $self->{'pendulum'}{'x'},   0, $vert_attr| &Wx::wxLEFT, 15);
     $linear_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'linear'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
     $linear_sizer->AddSpacer(5);
@@ -195,7 +195,7 @@ sub new {
     $self->{'tab'}{'linear'}->SetSizer( $linear_sizer );
 
     my $circular_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $circular_sizer->AddSpacer(5);
+    $circular_sizer->AddSpacer(0);
     $circular_sizer->Add( $self->{'pendulum'}{'z'},   0, $vert_attr| &Wx::wxLEFT, 15);
     $circular_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'circular'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
     $circular_sizer->AddSpacer(5);
@@ -216,8 +216,9 @@ sub new {
     $pen_sizer->Add( Wx::StaticText->new( $self->{'tab'}{'pen'}, -1, 'End Color', [-1,-1], [-1,-1], &Wx::wxALIGN_CENTRE_HORIZONTAL), 0, &Wx::wxALIGN_CENTER_HORIZONTAL|&Wx::wxGROW|&Wx::wxALL, 5);
     $pen_sizer->Add( $self->{'color'}{'end'},     0, $vert_attr, 0);
     $pen_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'pen'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
-    $pen_sizer->AddSpacer( 3);
+    $pen_sizer->AddSpacer( 15);
     $pen_sizer->Add( $self->{'color'}{'startio'}, 0, $vert_attr,  5);
+    $pen_sizer->AddSpacer( 10);
     $pen_sizer->Add( $self->{'color'}{'endio'},   0, $vert_attr,  5);
 
     $pen_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
@@ -227,13 +228,13 @@ sub new {
     my $image_lbl = Wx::StaticText->new( $self, -1, 'Image:' );
     $cmdi_sizer->Add( $image_lbl,     0, $all_attr, 15 );
     $cmdi_sizer->Add( $self->{'progress'},         0, $vset_attr, 20 );
-    $cmdi_sizer->AddSpacer(5);
+    $cmdi_sizer->AddSpacer(10);
     $cmdi_sizer->Add( $self->{'btn'}{'draw'},      0, $all_attr, 5 );
 
     my $cmds_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     my $series_lbl = Wx::StaticText->new( $self, -1, 'Series:' );
     $cmds_sizer->Add( $series_lbl,     0, $all_attr, 15 );
-    $cmds_sizer->AddSpacer( 5 );
+    $cmds_sizer->AddSpacer( 0 );
     $cmds_sizer->Add( $self->{'btn'}{'dir'},         0, $all_attr, 5 );
     $cmds_sizer->Add( $self->{'txt'}{'file_bdir'},   0, $all_attr, 5 );
     $cmds_sizer->Add( $self->{'txt'}{'file_bname'},  0, $all_attr, 5 );
@@ -247,7 +248,7 @@ sub new {
     my $board_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $board_sizer->Add( $self->{'board'}, 1, $all_attr,  5);
     $board_sizer->Add( $cmdi_sizer,      0, $vert_attr, 5);
-    $board_sizer->Add( 0, 5);
+    $board_sizer->Add( 0, 9);
     $board_sizer->Add( Wx::StaticLine->new( $self, -1, [-1,-1], [ 125, 2] ),  0, $line_attr, 20);
     $board_sizer->Add( 0, 5);
     $board_sizer->Add( $cmds_sizer,      0, $vert_attr, 5);
@@ -263,7 +264,7 @@ sub new {
 
     $self->SetSizer($main_sizer);
     $self->SetAutoLayout( 1 );
-    my $size = [1230, 823];
+    my $size = [1200, 823];
     $self->SetSize($size);
     $self->SetMinSize($size);
     $self->SetMaxSize($size);

@@ -43,10 +43,10 @@ sub new {
     my $sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     my $attr = &Wx::wxLEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxALIGN_LEFT;
     $sizer->Add( $lbl,  0, $attr, 5);
-    $sizer->Add( $self->{'widget'}{'txt'}, 0, $attr, 5);
+    $sizer->Add( $self->{'widget'}{'txt'}, 0, $attr, 10);
     $sizer->Add( $self->{'widget'}{'button'}{'-'}, 0, $attr, 0);
     $sizer->Add( $self->{'widget'}{'button'}{'+'}, 0, $attr, 0);
-    $sizer->Add( $self->{'widget'}{'slider'}, 0, $attr, 8);
+    $sizer->Add( $self->{'widget'}{'slider'}, 0, $attr, 10);
     $sizer->Add( 0,     1, &Wx::wxEXPAND|&Wx::wxGROW);
     $self->SetSizer($sizer);
 
