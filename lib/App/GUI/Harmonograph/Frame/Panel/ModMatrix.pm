@@ -1,9 +1,11 @@
+
+#
+
+package App::GUI::Harmonograph::Frame::Panel::ModMatrix;
 use v5.12;
 use utf8;
 use warnings;
 use Wx;
-
-package App::GUI::Harmonograph::Frame::Panel::ModMatrix;
 use base qw/Wx::Panel/;
 use App::GUI::Harmonograph::Widget::SliderCombo;
 
@@ -162,15 +164,9 @@ sub new {
     $self;
 }
 
-sub SetCallBack {
-    my ( $self, $code) = @_;
-    return unless ref $code eq 'CODE';
-    $self->{'callback'} = $code;
-}
+sub init { $_[0]->set_settings ( $default ) }
 
-sub init { $_[0]->set_data ( $default ) }
-
-sub set_data {
+sub set_settings {
     my ( $self, $data ) = @_;
     return unless ref $data eq 'HASH' and exists $data->{'x_function'};
     for my $key (keys %$default){
@@ -178,10 +174,15 @@ sub set_data {
     }
     1;
 }
-sub get_data {
+sub get_settings {
     my ( $self ) = @_;
     return { map { $_, $self->{$_}->GetValue; } keys %$default };
 }
 
+sub SetCallBack {
+    my ( $self, $code) = @_;
+    return unless ref $code eq 'CODE';
+    $self->{'callback'} = $code;
+}
 
 1;

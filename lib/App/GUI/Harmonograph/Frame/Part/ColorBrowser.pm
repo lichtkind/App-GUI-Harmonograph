@@ -85,12 +85,12 @@ sub new {
 
 sub init {
     my ($self) = @_;
-    $self->set_data( $self->{'init'} );
+    $self->set_settings( $self->{'init'} );
 }
 
-sub get_data { $_[0]->{'display'}->get_color( ) }
+sub get_settings { $_[0]->{'display'}->get_color( ) }
 
-sub set_data {
+sub set_settings {
     my ( $self, $data ) = @_;
     return unless ref $data eq 'HASH'
         and exists $data->{'red'} and exists $data->{'green'} and exists $data->{'blue'};
@@ -99,5 +99,10 @@ sub set_data {
     $self->{'blue'}->SetValue( $data->{'blue'} );
 }
 
+sub SetCallBack {
+    my ( $self, $code) = @_;
+    return unless ref $code eq 'CODE';
+    $self->{'callback'} = $code;
+}
 
 1;

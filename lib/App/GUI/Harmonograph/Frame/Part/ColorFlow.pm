@@ -7,11 +7,11 @@ use base qw/Wx::Panel/;
 use App::GUI::Harmonograph::Widget::SliderCombo;
 
 sub new {
-    my ( $class, $parent, $frame ) = @_;
+    my ( $class, $parent, $end_color) = @_;
     my $self = $class->SUPER::new( $parent, -1 );
+    $self->{'end_color'} = $end_color;
 
     my $flow_label = Wx::StaticText->new( $self, -1, 'Color Change');
-    $self->{'frame'} = $frame;
     $self->{'type'}    = Wx::ComboBox->new( $self, -1, 'linear', [-1,-1], [115, -1], [qw/no linear alternate circular/], &Wx::wxTE_READONLY );
     $self->{'type'}->SetToolTip("type of color flow: - linear - from start to end color \n  - alter(nate) - linearly between start and end color \n   - cicular - around the rainbow from start color visiting end color");
     $self->{'dynlabel'} = Wx::StaticText->new( $self, -1, 'Dynamics');
@@ -59,10 +59,10 @@ sub SetCallBack {
 
 sub init {
     my ( $self ) = @_;
-    $self->set_data ({ type => 'no', dynamic => 1, period => 10, stepsize => 1 } );
+    $self->set_settings ({ type => 'no', dynamic => 1, period => 10, stepsize => 1 } );
 }
 
-sub get_data {
+sub get_settings {
     my ( $self ) = @_;
     {
         type     => $self->{'type'}->GetValue,
@@ -72,7 +72,7 @@ sub get_data {
     }
 }
 
-sub set_data {
+sub set_settings {
     my ( $self, $data ) = @_;
     return unless ref $data eq 'HASH';
     $self->{$_}->SetValue( $data->{$_} ) for qw/type stepsize period/,
@@ -90,7 +90,7 @@ sub update_enable {
     $self->{'dynamic'}->Enable( $type eq 'alternate' or $type eq 'linear' );
     $self->{'direction'}->Enable( $type eq 'alternate' or $type eq 'linear' );
     $self->{'period'}->Enable( $type eq 'alternate' or $type eq 'circular' );
-    $self->{'frame'}{'color'}{'end'}->Enable( $type ne 'no' );
+    $self->{'end_color'}->Enable( $type ne 'no' );
 }
 
 1;

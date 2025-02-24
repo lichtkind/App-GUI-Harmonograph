@@ -128,11 +128,11 @@ sub SetCallBack {
 
 sub init {
     my ( $self ) = @_;
-    $self->set_data ({ on => $self->{'initially_on'}, radius => 1, frequency => 1, freq_factor => 1, offset => 0,
+    $self->set_settings ({ on => $self->{'initially_on'}, radius => 1, frequency => 1, freq_factor => 1, offset => 0,
         freq_damp => 0, freq_damp_type => '*', radius_damp => 0, radius_damp_acc => 0, radius_damp_type => '*', radius_damp_acc_type => '*' } );
 }
 
-sub get_data {
+sub get_settings {
     my ( $self ) = @_;
     my $f = $self->{'frequency'}->GetValue + $self->{'freq_dez'}->GetValue/1000;
     $f = 1 / $f if $self->{ 'invert_freq' }->IsChecked;
@@ -154,7 +154,7 @@ sub get_data {
     }
 }
 
-sub set_data {
+sub set_settings {
     my ( $self, $data ) = @_;
     return unless ref $data eq 'HASH' and exists $data->{'frequency'}
         and exists $data->{'offset'} and exists $data->{'radius'} and exists $data->{'radius_damp'};

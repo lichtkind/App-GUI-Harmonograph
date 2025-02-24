@@ -6,24 +6,38 @@ package App::GUI::Harmonograph::Frame::Part::ColorPicker;
 use base qw/Wx::Panel/;
 use App::GUI::Harmonograph::Widget::ColorDisplay;
 
+my %colors;
+my @color_names;
+my @color_update_callbacks;
+
+sub get_colors { \%colors }
+sub set_colors {
+    my $colors = shift;
+    return unless ref $colors eq 'HASH';
+    %colors = %$colors;
+    colors_changed();
+}
+sub colors_changed {
+    @color_names = sort keys %colors;
+    $_->() for @color_update_callbacks;
+}
+
+
 sub new {
-    my ( $class, $parent, $frame, $label, $data, $length, $space ) = @_;
-    #return unless defined $max;
+    my ( $class, $parent, $browser, $label, $length, $space ) = @_;
+    return unless defined $label;
+
+    my $self = $class->SUPER::new( $parent, -1 );
+    $self->{'browser'}     = $browser; # picker is connected to color $browser
+    $self->{'color_index'} = 0;
+    $self->{'target'}      = lc ((split ' ', $label)[0]);
     $length //= 170;
     $space //= 0;
-    my $self = $class->SUPER::new( $parent, -1 );
-
-    $self->{'colors'} = { %{$frame->{'config'}->get_value('color')} };
-    $self->{'color_names'} = [ sort keys %{$self->{'colors'}} ];
-    $self->{'color_index'} = 0;
-    my @np = split ' ', $label;
-    $self->{'target'}      = lc $np[0];
-    $self->{'browser'}     = $frame->{'color'}{ $self->{'target'} };
-
+    push @color_update_callbacks, sub { $self->update_color_list };
 
     my $btnw = 50; my $btnh = 35;# button width and height
-    $self->{'label'}  = Wx::StaticText->new($self, -1, $label );
-    $self->{'select'} = Wx::ComboBox->new( $self, -1, $self->current_color_name, [-1,-1], [$length, -1], $self->{'color_names'});
+    $self->{'label'}  = Wx::StaticText->new( $self, -1, $label );
+    $self->{'select'} = Wx::ComboBox->new( $self, -1, $self->current_color_name, [-1,-1], [$length, -1], [@color_names]);
     $self->{'<'}    = Wx::Button->new( $self, -1, '<',       [-1,-1], [ 30, 18] );
     $self->{'>'}    = Wx::Button->new( $self, -1, '>',       [-1,-1], [ 30, 18] );
     $self->{'load'} = Wx::Button->new( $self, -1, 'Load',    [-1,-1], [$btnw, $btnh] );
@@ -41,26 +55,21 @@ sub new {
     $self->{'display'}->SetToolTip("color monitor");
 
     Wx::Event::EVT_COMBOBOX( $self, $self->{'select'}, sub {
-        my ($win, $evt) = @_;                            $self->{'color_index'} = $evt->GetInt; $self->update_display });
-    Wx::Event::EVT_BUTTON( $self, $self->{'<'},    sub { $self->{'color_index'}--;  $self->update_display });
-    Wx::Event::EVT_BUTTON( $self, $self->{'>'},    sub { $self->{'color_index'}++;  $self->update_display });
-    Wx::Event::EVT_BUTTON( $self, $self->{'load'}, sub { $self->{'browser'}->set_data( $self->current_color ) });
-    Wx::Event::EVT_BUTTON( $self, $self->{'del'},  sub {
-        delete $self->{'colors'}{ $self->current_color_name };
-        $self->update_select();
-    });
+        my ($win, $evt) = @_;                            $self->{'color_index'} = $evt->GetInt; $self->update_displayed_color });
+    Wx::Event::EVT_BUTTON( $self, $self->{'<'},    sub { $self->{'color_index'}--;              $self->update_displayed_color });
+    Wx::Event::EVT_BUTTON( $self, $self->{'>'},    sub { $self->{'color_index'}++;              $self->update_displayed_color });
+    Wx::Event::EVT_BUTTON( $self, $self->{'load'}, sub { $self->{'browser'}->set_settings( $self->current_color ) });
+    Wx::Event::EVT_BUTTON( $self, $self->{'del'},  sub { delete $colors{ $self->current_color_name }; colors_changed();       });
     Wx::Event::EVT_BUTTON( $self, $self->{'save'}, sub {
         my $dialog = Wx::TextEntryDialog->new ( $self, "Please insert the color name", 'Request Dialog');
         return if $dialog->ShowModal == &Wx::wxID_CANCEL;
-        my $name = $dialog->GetValue();
-        return $self->GetParent->SetStatusText( "color name '$name' already taken ") if exists $self->{'colors'}{ $name };
-        my $cval = $self->{'browser'}->get_data;
-        $self->{'colors'}{ $name } = [ $cval->{'red'}, $cval->{'green'}, $cval->{'blue'} ];
-        $self->update_select();
-        for (0 .. $#{$self->{'color_names'}}){
-            $self->{'color_index'} = $_ if $name eq $self->{'color_names'}[$_];
-        }
-        $self->update_display();
+        my $color_name = $dialog->GetValue();
+        return $self->GetParent->SetStatusText( "color name '$color_name' already taken ") if exists $colors{ $color_name };
+        my $current_color = $self->{'browser'}->get_settings;
+        $colors{ $color_name } = [ $current_color->{'red'}, $current_color->{'green'}, $current_color->{'blue'} ];
+        colors_changed();
+        for (0 .. $#color_names ){  $self->{'color_index'} = $_ if $color_name eq $color_names[$_] }
+        $self->update_displayed_color;
     });
 
     my $vset_attr = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW | &Wx::wxTOP| &Wx::wxBOTTOM;
@@ -86,28 +95,22 @@ sub new {
     $self;
 }
 
-sub get_data { $_[0]->{'colors'} }
-
-sub current_color_name { $_[0]->{'color_names'}->[ $_[0]->{'color_index'} ] }
-
+sub current_color_name { $color_names[ $_[0]->{'color_index'} ] }
 sub current_color {
     my ( $self ) = @_;
-    my $cc = $self->{'colors'}->{ $self->current_color_name };
-    {red=> $cc->[0], green=> $cc->[1], blue=> $cc->[2] };
+    my $values = $colors{ $self->current_color_name };
+    { red=> $values->[0], green=> $values->[1], blue=> $values->[2] };
 }
 
-sub update_select {
-    my ( $self ) = @_;
-    $self->{'color_names'} = [ sort keys %{$self->{'colors'}} ];
-    $self->{'select'}->Clear ();
-    $self->{'select'}->Append( $_) for @{$self->{'color_names'}};
-    $self->update_display();
+sub update_color_list {
+    $_[0]->{'select'}->Set( [@color_names] );
+    $_[0]->update_displayed_color();
 }
 
-sub update_display {
+sub update_displayed_color {
     my ( $self ) = @_;
-    $self->{'color_index'} = $#{$self->{'color_names'}} if $self->{'color_index'} < 0;
-    $self->{'color_index'} = 0                          if $self->{'color_index'} > $#{$self->{'color_names'}};
+    $self->{'color_index'} = $#color_names if $self->{'color_index'} < 0;
+    $self->{'color_index'} = 0             if $self->{'color_index'} > $#color_names;
     $self->{'select'}->SetSelection( $self->{'color_index'} );
     $self->{'display'}->set_color( $self->current_color );
 }

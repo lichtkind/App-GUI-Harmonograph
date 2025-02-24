@@ -47,8 +47,8 @@ sub new {
     $self;
 }
 
-sub init { $_[0]->set_data ( { length => 30, density => 10, thickness => 0, connect => 1 } ) }
-sub get_data {
+sub init { $_[0]->set_settings ( { length => 30, density => 10, thickness => 0, connect => 1 } ) }
+sub get_settings {
     my ( $self ) = @_;
     {
         'length'    => $self->{ 'length' }->GetValue,
@@ -58,11 +58,12 @@ sub get_data {
     }
 }
 
-sub set_data {
+sub set_settings {
     my ( $self, $data ) = @_;
     return unless ref $data eq 'HASH';
     $self->{$_}->SetValue( $data->{$_} ) for qw/length density thickness connect/,
 }
+
 
 sub SetCallBack {
     my ( $self, $code) = @_;
