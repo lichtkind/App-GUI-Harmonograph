@@ -159,8 +159,6 @@ sub new {
     $sizer->Add( $r_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 15);
     $sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->SetSizer( $sizer );
-
-    $self->init();
     $self;
 }
 

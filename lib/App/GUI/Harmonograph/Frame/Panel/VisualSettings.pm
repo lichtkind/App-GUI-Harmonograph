@@ -14,8 +14,8 @@ use App::GUI::Harmonograph::Frame::Part::ColorPicker;
 
 sub new {
     my ( $class, $parent, $colors ) = @_;
-say '---', $colors;
     return unless ref $colors eq 'HASH';
+
     my $self = $class->SUPER::new( $parent, -1 );
     App::GUI::Harmonograph::Frame::Part::ColorPicker::set_colors( $colors );
 
@@ -51,9 +51,6 @@ say '---', $colors;
     $sizer->Add( $self->{'part'}{'end_color_picker'},     0, $below_attr,  5);
     $sizer->Add( 0, 1, $std_attr );
     $self->SetSizer( $sizer );
-
-    $self->init();
-say $self;
     $self;
 }
 
