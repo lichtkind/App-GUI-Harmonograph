@@ -19,7 +19,7 @@ sub new {
     my $self = $class->SUPER::new( $parent, -1, $title );
     $self->SetIcon( Wx::GetWxPerlIcon() );
     $self->CreateStatusBar( 2 );
-    $self->SetStatusWidths(2, 800, 100);
+    $self->SetStatusWidths( 620, -1);
     $self->SetStatusText( "no file loaded", 1 );
     $self->{'title'} = $title;
     $self->{'config'} = App::GUI::Harmonograph::Config->new();
@@ -212,10 +212,13 @@ sub new {
 
     $self->SetSizer($main_sizer);
     $self->SetAutoLayout( 1 );
-    my $size = [1200, 823];
+    my $size = [1200, 781];
     $self->SetSize($size);
     $self->SetMinSize($size);
     $self->SetMaxSize($size);
+
+say $self->{'board'}->GetSize->GetHeight;
+say $self->{'board'}->GetSize->GetWidth;
 
     $self->update_recent_settings_menu();
     $self->init();

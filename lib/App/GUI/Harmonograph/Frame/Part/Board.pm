@@ -77,18 +77,17 @@ sub set_settings {
 sub paint {
     my( $self, $dc, $width, $height ) = @_; # my $t = Benchmark->new;
     my $progress = $self->GetParent->{'progress'};
-    my $precision = App::GUI::Harmonograph::Function::factor;
+   # my $precision = App::GUI::Harmonograph::Function::factor;
+    my $val = $self->{'settings'};
     my $max_time = $TAU;
     my %var_names = ( x_time => '$tx', y_time => '$ty', z_time => '$tz', r_time => '$tr',
                       x_freq => '$dtx', y_freq => '$dty', z_freq => '$dtz', r_freq => '$dtr',
                       x_radius => '$rx', y_radius => '$ry', z_radius => '$rz', r_radius => '$rr',
                       zero => '0', one => '1');
 
-    my $start_color = Wx::Colour->new( $self->{'settings'}{'start_color'}{'red'},
-                                       $self->{'settings'}{'start_color'}{'green'},
-                                       $self->{'settings'}{'start_color'}{'blue'} );
+    my $start_color = Wx::Colour->new( $val->{'start_color'}{'red'}, $val->{'start_color'}{'green'}, $val->{'start_color'}{'blue'} );
     my $background_color = Wx::Colour->new( 255, 255, 255 );
-    my $thickness = $self->{'settings'}{'line'}{'thickness'} == 0 ? 1 / 2 : $self->{'settings'}{'line'}{'thickness'};
+    my $thickness = $val->{'line'}{'thickness'} == 0 ? 1 / 2 : $val->{'line'}{'thickness'};
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );     # $dc->SetBrush( $fgb );
     $dc->Clear();
     $dc->SetPen( Wx::Pen->new( $start_color, $thickness, &Wx::wxPENSTYLE_SOLID) );
@@ -96,17 +95,17 @@ sub paint {
     my $cx = (defined $width) ? $width / 2 : $self->{'center'}{'x'};
     my $cy = (defined $height) ? $height / 2 : $self->{'center'}{'y'};
     my $raster_radius = (defined $height) ? (($width > $height ? $cy : $cx) - 25) : $self->{'hard_radius'};
-    my $fx = $self->{'settings'}{'x'}{'frequency'};
-    my $fy = $self->{'settings'}{'y'}{'frequency'};
-    my $fz = $self->{'settings'}{'z'}{'frequency'};
-    my $fr = $self->{'settings'}{'r'}{'frequency'};
+    my $fx = $val->{'x'}{'frequency'};
+    my $fy = $val->{'y'}{'frequency'};
+    my $fz = $val->{'z'}{'frequency'};
+    my $fr = $val->{'r'}{'frequency'};
 
     my $base_factor = { X => $fx, Y => $fy, Z => $fz, R => $fr, e => $e, 'π' => $PI, 'Φ' => $PHI, 'φ' => $phi, 'Γ' => $GAMMA };
 
-    $fx *= ($base_factor->{ $self->{'settings'}{'x'}{'freq_factor'} } // 1);
-    $fy *= ($base_factor->{ $self->{'settings'}{'y'}{'freq_factor'} } // 1);
-    $fz *= ($base_factor->{ $self->{'settings'}{'z'}{'freq_factor'} } // 1);
-    $fr *= ($base_factor->{ $self->{'settings'}{'r'}{'freq_factor'} } // 1);
+    $fx *= ($base_factor->{ $val->{'x'}{'freq_factor'} } // 1);
+    $fy *= ($base_factor->{ $val->{'y'}{'freq_factor'} } // 1);
+    $fz *= ($base_factor->{ $val->{'z'}{'freq_factor'} } // 1);
+    $fr *= ($base_factor->{ $val->{'r'}{'freq_factor'} } // 1);
 
     my $max_freq = abs $fx;
     $max_freq = abs $fy if $max_freq < abs $fy ;
@@ -161,23 +160,23 @@ sub paint {
         or $self->{'settings'}{'x'}{'radius_damp_acc_type'} eq '/') ? 1 - ($self->{'settings'}{'r'}{'radius_damp_acc'}/ 1000 / $step_in_circle)
                                                                 : $rr * $self->{'settings'}{'r'}{'radius_damp_acc'}/20000 / $step_in_circle;
 
-    my $dtx = $self->{'settings'}{'x'}{'on'} ? (  $fx * $TAU / $step_in_circle) : 0;
-    my $dty = $self->{'settings'}{'y'}{'on'} ? (  $fy * $TAU / $step_in_circle) : 0;
-    my $dtz = $self->{'settings'}{'z'}{'on'} ? (  $fz * $TAU / $step_in_circle) : 0;
-    my $dtr = $self->{'settings'}{'r'}{'on'} ? (- $fr * $TAU / $step_in_circle) : 0;
+    my $dtx = $val->{'x'}{'on'} ? (  $fx * $TAU / $step_in_circle) : 0;
+    my $dty = $val->{'y'}{'on'} ? (  $fy * $TAU / $step_in_circle) : 0;
+    my $dtz = $val->{'z'}{'on'} ? (  $fz * $TAU / $step_in_circle) : 0;
+    my $dtr = $val->{'r'}{'on'} ? (- $fr * $TAU / $step_in_circle) : 0;
 
-    my $fxdamp  = (not $self->{'settings'}{'x'}{'freq_damp'}) ? 0 :
-          ($self->{'settings'}{'x'}{'freq_damp_type'} eq '*') ? 1 - ($self->{'settings'}{'x'}{'freq_damp'}  / 40_000 / $step_in_circle)
-                                                          : $dtx * $self->{'settings'}{'x'}{'freq_damp'} / 40 / $step_in_circle;
-    my $fydamp  = (not $self->{'settings'}{'y'}{'freq_damp'}) ? 0 :
-          ($self->{'settings'}{'y'}{'freq_damp_type'} eq '*') ? 1 - ($self->{'settings'}{'y'}{'freq_damp'}  / 40_000 / $step_in_circle)
-                                                          : $dty * $self->{'settings'}{'y'}{'freq_damp'} / 40 / $step_in_circle;
-    my $fzdamp  = (not $self->{'settings'}{'z'}{'freq_damp'}) ? 0 :
-          ($self->{'settings'}{'z'}{'freq_damp_type'} eq '*') ? 1 - ($self->{'settings'}{'z'}{'freq_damp'}  / 20_000 / $step_in_circle)
-                                                          : $dtz * $self->{'settings'}{'z'}{'freq_damp'}/ 20_000 / $step_in_circle;
+    my $fxdamp  = (not $val->{'x'}{'freq_damp'}) ? 0 :
+          ($val->{'x'}{'freq_damp_type'} eq '*') ? 1 - ($val->{'x'}{'freq_damp'}  / 40_000 / $step_in_circle)
+                                                 : $dtx * $val->{'x'}{'freq_damp'} / 40 / $step_in_circle;
+    my $fydamp  = (not $val->{'y'}{'freq_damp'}) ? 0 :
+          ($val->{'y'}{'freq_damp_type'} eq '*') ? 1 - ($val->{'y'}{'freq_damp'}  / 40_000 / $step_in_circle)
+                                                 : $dty * $val->{'y'}{'freq_damp'} / 40 / $step_in_circle;
+    my $fzdamp  = (not $val->{'z'}{'freq_damp'}) ? 0 :
+          ($val->{'z'}{'freq_damp_type'} eq '*') ? 1 - ($val->{'z'}{'freq_damp'}  / 20_000 / $step_in_circle)
+                                                 : $dtz * $val->{'z'}{'freq_damp'}/ 20_000 / $step_in_circle;
     my $frdamp  = (not $self->{'settings'}{'r'}{'freq_damp'}) ? 0 :
-          ($self->{'settings'}{'r'}{'freq_damp_type'} eq '*') ? 1 - ($self->{'settings'}{'r'}{'freq_damp'}  / 20_000 / $step_in_circle)
-                                                          : $dtr * $self->{'settings'}{'r'}{'freq_damp'}/ 20_000 / $step_in_circle;
+          ($val->{'r'}{'freq_damp_type'} eq '*') ? 1 - ($val->{'r'}{'freq_damp'}  / 20_000 / $step_in_circle)
+                                                 : $dtr * $val->{'r'}{'freq_damp'}/ 20_000 / $step_in_circle;
 
     my $tx = my $ty = my $tz = my $tr = 0;
     $tx += $TAU * $self->{'settings'}{'x'}{'offset'} if $self->{'settings'}{'x'}{'offset'};
@@ -302,7 +301,8 @@ sub paint {
     $code .= '  ($x_old, $y_old) = ($x, $y);'."\n" if ($self->{'settings'}{'line'}{'connect'} or exists $self->{'flag'}{'sketch'});
     $code .= '}';
 
-    eval $code; # say $code;
+    eval $code;
+say $code;
     die "bad iter code - $@ : $code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
 
     delete $self->{'flag'};
