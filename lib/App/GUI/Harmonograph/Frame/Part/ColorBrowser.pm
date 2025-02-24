@@ -16,9 +16,7 @@ sub new {
     return unless ref $init eq 'HASH' and exists $init->{'red'}and exists $init->{'green'}and exists $init->{'blue'};
 
     my $self = $class->SUPER::new( $parent, -1);
-
     $self->{'init'} = $init;
-
     $self->{'red'}   =  App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, ' R  ', "red part of $type color",    0, 255,  0);
     $self->{'green'} =  App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, ' G  ', "green part of $type color",  0, 255,  0);
     $self->{'blue'}  =  App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, ' B  ', "blue part of $type color",   0, 255,  0);

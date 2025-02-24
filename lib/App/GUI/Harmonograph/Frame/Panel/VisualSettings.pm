@@ -85,6 +85,7 @@ sub SetCallBack {
     $_[0]->{'part'}{ $_ }->SetCallBack( $code ) for qw/pen_settings color_change start_color end_color/
 }
 
+sub get_start_color { $_[0]->{'part'}{'start_color'}->get_settings }
 sub get_colors { App::GUI::Harmonograph::Frame::Part::ColorPicker::get_colors() }
 
 1;

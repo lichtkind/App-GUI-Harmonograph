@@ -4,7 +4,7 @@
 
 ### VERSION
 
-    0.71
+    0.72
 
 [Home on CPAN](https://metacpan.org/pod/App-GUI-Harmonograph)
 
@@ -72,7 +72,7 @@
 
 ### COPYRIGHT
 
-    Copyright(c) 2022-23 Herbert Breunung,
+    Copyright(c) 2022-25 Herbert Breunung,
 
     All rights reserved.  This program is free software; you can
     redistribute it and/or modify it under GPL version 3

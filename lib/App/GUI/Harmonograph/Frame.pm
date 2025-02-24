@@ -32,8 +32,6 @@ sub new {
     $self->{'tab'}{'circular'}  = Wx::Panel->new($self->{'tabs'});
     $self->{'tab'}{'mod'}       = App::GUI::Harmonograph::Frame::Panel::ModMatrix->new( $self->{'tabs'} );
     $self->{'tab'}{'visual'}    = App::GUI::Harmonograph::Frame::Panel::VisualSettings->new( $self->{'tabs'}, $self->{'config'}->get_value('color') );
-say '---',$self->{'tab'}{'mod'};
-say '---',$self->{'tab'}{'visual'};
     $self->{'tabs'}->AddPage( $self->{'tab'}{'linear'},   'Lateral Pendulum');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'circular'}, 'Rotary Pendulum');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'mod'},      'Modulation Matrix');
@@ -271,7 +269,7 @@ sub set_settings {
 sub draw {
     my ($self) = @_;
     $self->SetStatusText( "drawing .....", 0 );
-    $self->{'progress'}->set_color( $self->{'color'}{'start'}->get_settings );
+    $self->{'progress'}->set_color( $self->{'tab'}{'visual'}->get_start_color );
     $self->{'board'}->draw( $self->get_settings );
     $self->SetStatusText( "done complete drawing", 0 );
 }
