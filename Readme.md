@@ -6,9 +6,9 @@
 
     0.72
 
-[Home on CPAN](https://metacpan.org/pod/App-GUI-Harmonograph)
+[Home on CPAN](https://metacpan.org/pod/App::GUI::Harmonograph)
 
-    This is the landing page for the user documentation.
+    This is the landing page for the user documentation on github.
     There is also a download link on the left side under "Tools".
 
 

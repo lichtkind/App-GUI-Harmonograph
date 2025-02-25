@@ -14,7 +14,7 @@ my $e   = 2.718281828;
 my $GAMMA = 1.7724538509055160;
 
 use Graphics::Toolkit::Color;
-use App::GUI::Harmonograph::Function;
+use App::GUI::Harmonograph::Compute::Function;
 # use Benchmark;
 
 sub new {
