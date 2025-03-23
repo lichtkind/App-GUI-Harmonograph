@@ -4,6 +4,11 @@ use warnings;
 package App::GUI::Harmonograph::Compute::Drawing;
 use Benchmark;
 my $TAU = 6.283185307;
+
+
+1;
+__END__
+
 my $factor = 0;
 
 my $sin  = [];
@@ -70,5 +75,3 @@ sub tanh { my $ep = exp($_[0]); my $em = exp(-$_[0]); ($ep - $em) / ($ep + $em) 
 sub coth { my $ep = exp($_[0]); my $em = exp(-$_[0]); ($ep + $em) / ($ep - $em) } # coth / sinh
 sub sech { 1 / (exp($_[0]) + exp(-$_[0])) } # 1 / cosh
 sub csch { my $e = (exp($_[0]) - exp(-$_[0])); $e ? 1 / $e : 10 } # 1 / sinh
-
-1;

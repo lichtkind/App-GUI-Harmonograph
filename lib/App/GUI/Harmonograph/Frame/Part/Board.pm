@@ -85,7 +85,7 @@ sub paint {
                       x_radius => '$rx', y_radius => '$ry', z_radius => '$rz', r_radius => '$rr',
                       zero => '0', one => '1');
 
-    my $start_color = Wx::Colour->new( $val->{'start_color'}{'red'}, $val->{'start_color'}{'green'}, $val->{'start_color'}{'blue'} );
+    my $start_color = Wx::Colour->new( @{$val->{'start_color'}}{'red', 'green', 'blue'} );
     my $background_color = Wx::Colour->new( 255, 255, 255 );
     my $thickness = $val->{'line'}{'thickness'} == 0 ? 1 / 2 : $val->{'line'}{'thickness'};
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );     # $dc->SetBrush( $fgb );
@@ -101,6 +101,61 @@ sub paint {
     my $fr = $val->{'r'}{'frequency'};
 
     my $base_factor = { X => $fx, Y => $fy, Z => $fz, R => $fr, e => $e, 'π' => $PI, 'Φ' => $PHI, 'φ' => $phi, 'Γ' => $GAMMA };
+    my $t_iter = $val->{'pen_settings'}{'length'} * 10;
+    my $dtx = $TAU * $fx / $val->{'pen_settings'}{'density'}**2;
+    my $dty = $TAU * $fx / $val->{'pen_settings'}{'density'}**2;
+
+    my $code = 'for (1 .. $t_iter){'."\n";
+
+  #  $code .= ' $dc->SetPen( Wx::Pen->new( $start_color ), 1, &Wx::wxPENSTYLE_SOLID);';
+   # $code .= ' $dc->DrawLine( $cx + $x_old, $cy + $y_old, $cx + $x, $cy + $y);';
+   # $code .= '$progress->add_percentage( $_ / $t_iter * 100, $color[$color_index] ) unless $_ % $step_in_circle;'."\n" unless defined $self->{'flag'}{'sketch'};
+  #  $code .= '  ($x_old, $y_old) = ($x, $y);'."\n";
+    $code .= '}';
+    eval $code;
+#say $code;
+    die "bad iter code - $@ : $code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
+
+    delete $self->{'flag'};
+    $dc;
+}
+
+sub save_file {
+    my( $self, $file_name, $width, $height ) = @_;
+    my $file_end = lc substr( $file_name, -3 );
+    if ($file_end eq 'svg') { $self->save_svg_file( $file_name, $width, $height ) }
+    elsif ($file_end eq 'png' or $file_end eq 'jpg') { $self->save_bmp_file( $file_name, $file_end, $width, $height ) }
+    else { return "unknown file ending: '$file_end'" }
+}
+
+sub save_svg_file {
+    my( $self, $file_name, $width, $height ) = @_;
+    $width  //= $self->GetParent->{'config'}->get_value('image_size');
+    $height //= $self->GetParent->{'config'}->get_value('image_size');
+    $width  //= $self->{'size'}{'x'};
+    $height //= $self->{'size'}{'y'};
+    my $dc = Wx::SVGFileDC->new( $file_name, $width, $height, 250 );  #  250 dpi
+    $self->paint( $dc, $width, $height );
+}
+
+sub save_bmp_file {
+    my( $self, $file_name, $file_end, $width, $height ) = @_;
+    $width  //= $self->GetParent->{'config'}->get_value('image_size');
+    $height //= $self->GetParent->{'config'}->get_value('image_size');
+    $width  //= $self->{'size'}{'x'};
+    $height //= $self->{'size'}{'y'};
+    my $bmp = Wx::Bitmap->new( $width, $height, 24); # bit depth
+    my $dc = Wx::MemoryDC->new( );
+    $dc->SelectObject( $bmp );
+    $self->paint( $dc, $width, $height);
+    # $dc->Blit (0, 0, $width, $height, $self->{'dc'}, 10, 10 + $self->{'menu_size'});
+    $dc->SelectObject( &Wx::wxNullBitmap );
+    $bmp->SaveFile( $file_name, $file_end eq 'png' ? &Wx::wxBITMAP_TYPE_PNG : &Wx::wxBITMAP_TYPE_JPEG );
+}
+
+1;
+
+__END__
 
     $fx *= ($base_factor->{ $val->{'x'}{'freq_factor'} } // 1);
     $fy *= ($base_factor->{ $val->{'y'}{'freq_factor'} } // 1);
@@ -224,52 +279,6 @@ sub paint {
     ($x, $y) = (($x * cos($rz) ) - ($y * sin($tr) ), ($x * sin($tr) ) + ($y * cos($tr) ) ) if $dtr;
     my ($x_old, $y_old) = ($x, $y);
 
-    my $code = '';
-
-    eval $code;
-#say $code;
-    die "bad iter code - $@ : $code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
-
-    delete $self->{'flag'};
-    $dc;
-}
-
-sub save_file {
-    my( $self, $file_name, $width, $height ) = @_;
-    my $file_end = lc substr( $file_name, -3 );
-    if ($file_end eq 'svg') { $self->save_svg_file( $file_name, $width, $height ) }
-    elsif ($file_end eq 'png' or $file_end eq 'jpg') { $self->save_bmp_file( $file_name, $file_end, $width, $height ) }
-    else { return "unknown file ending: '$file_end'" }
-}
-
-sub save_svg_file {
-    my( $self, $file_name, $width, $height ) = @_;
-    $width  //= $self->GetParent->{'config'}->get_value('image_size');
-    $height //= $self->GetParent->{'config'}->get_value('image_size');
-    $width  //= $self->{'size'}{'x'};
-    $height //= $self->{'size'}{'y'};
-    my $dc = Wx::SVGFileDC->new( $file_name, $width, $height, 250 );  #  250 dpi
-    $self->paint( $dc, $width, $height );
-}
-
-sub save_bmp_file {
-    my( $self, $file_name, $file_end, $width, $height ) = @_;
-    $width  //= $self->GetParent->{'config'}->get_value('image_size');
-    $height //= $self->GetParent->{'config'}->get_value('image_size');
-    $width  //= $self->{'size'}{'x'};
-    $height //= $self->{'size'}{'y'};
-    my $bmp = Wx::Bitmap->new( $width, $height, 24); # bit depth
-    my $dc = Wx::MemoryDC->new( );
-    $dc->SelectObject( $bmp );
-    $self->paint( $dc, $width, $height);
-    # $dc->Blit (0, 0, $width, $height, $self->{'dc'}, 10, 10 + $self->{'menu_size'});
-    $dc->SelectObject( &Wx::wxNullBitmap );
-    $bmp->SaveFile( $file_name, $file_end eq 'png' ? &Wx::wxBITMAP_TYPE_PNG : &Wx::wxBITMAP_TYPE_JPEG );
-}
-
-1;
-
-__END__
     my $code = 'for (1 .. $t_iter){'."\n";
 
     $code .= $dtx ? '  $x = $rx * App::GUI::Harmonograph::Function::'.$val->{'mod'}{'x_function'}.
