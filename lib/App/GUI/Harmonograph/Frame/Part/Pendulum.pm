@@ -22,15 +22,10 @@ sub new {
 
     my $lbl  = Wx::StaticText->new($self, -1, uc($label) );
 
-    $self->{'radius'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Radius %', 'radius or amplitude of pendulum swing', 0, 150, 100);
-    $self->{'radius_damp'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Damp  ', 'damping factor (diminishes amplitude over time)', 0, 800, 0);
-    $self->{'radius_damp_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '*', '-']);
-    $self->{'radius_damp_acc'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Acceleration ', 'accelaration of damping factor', 0, 100, 0);
-    $self->{'radius_damp_acc_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '*', '/', '+', '-']);
     $self->{'frequency'}  = App::GUI::Harmonograph::Widget::SliderCombo->new
                         ( $self, 100, 'Frequency', 'frequency of '.$help, 1, $max, 1 );
     $self->{'freq_dez'} = App::GUI::Harmonograph::Widget::SliderCombo->new
-                        ( $self, 100, 'Decimals', 'decimals of frequency at '.$help, 0, 1000, 0);
+                        ( $self, 100, 'Precise   ', 'decimals of frequency at '.$help, 0, 1000, 0);
     my @factor = grep {lc $_ ne lc $self->{'name'}} qw/1 π Φ φ Γ e X Y Z R/;
     $self->{'freq_factor'} = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[70, 20], \@factor);
     $self->{'freq_factor'}->SetToolTip('base factor frequency will be multiplied with: one (no), math constants or frequency of other pendula');
@@ -46,6 +41,11 @@ sub new {
     $self->{'quarter_off'}->SetToolTip('pendulum starts with offset of quater rotation');
     $self->{'offset'} = App::GUI::Harmonograph::Widget::SliderCombo->new
                             ($self, 110, 'Offset', 'additional offset pendulum starts with (0 - quater rotation)', 0, 100, 0);
+    $self->{'radius'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Radius %', 'radius or amplitude of pendulum swing', 0, 150, 100);
+    $self->{'radius_damp'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Damp  ', 'damping factor (diminishes amplitude over time)', 0, 800, 0);
+    $self->{'radius_damp_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '*', '-']);
+    $self->{'radius_damp_acc'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Acceleration ', 'accelaration of damping factor', 0, 100, 0);
+    $self->{'radius_damp_acc_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '*', '/', '+', '-']);
 
     Wx::Event::EVT_CHECKBOX( $self, $self->{'on'},          sub { $self->update_enable(); $self->{'callback'}->() });
     Wx::Event::EVT_CHECKBOX( $self, $self->{'invert_freq'}, sub {                         $self->{'callback'}->() });

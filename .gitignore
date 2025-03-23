@@ -6,6 +6,7 @@
 *.o
 *.pm.tdy
 *.bs
+*.komodoproject
 
 /img/
 

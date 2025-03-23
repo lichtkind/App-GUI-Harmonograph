@@ -13,7 +13,7 @@ my $phi = 0.618033988;
 my $e   = 2.718281828;
 my $GAMMA = 1.7724538509055160;
 
-use Graphics::Toolkit::Color;
+use Graphics::Toolkit::Color qw/color/;
 use App::GUI::Harmonograph::Compute::Function;
 # use Benchmark;
 
@@ -21,7 +21,7 @@ sub new {
     my ( $class, $parent, $x, $y ) = @_;
     my $self = $class->SUPER::new( $parent, -1, [-1,-1], [$x, $y] );
     $self->{'precision'} = 4;
-    App::GUI::Harmonograph::Function::init( $self->{'precision'} );
+    #App::GUI::Harmonograph::Function::init( $self->{'precision'} );
     $self->{'menu_size'} = 27;
     $self->{'size'}{'x'} = $x;
     $self->{'size'}{'y'} = $y;
@@ -85,7 +85,7 @@ sub paint {
                       x_radius => '$rx', y_radius => '$ry', z_radius => '$rz', r_radius => '$rr',
                       zero => '0', one => '1');
 
-    my $start_color = Wx::Colour->new( $val->{'start_color'}{'red'}, $val->{'start_color'}{'green'}, $val->{'start_color'}{'blue'} );
+    my $start_color = Wx::Colour->new( @{$val->{'start_color'}}{'red', 'green', 'blue'} );
     my $background_color = Wx::Colour->new( 255, 255, 255 );
     my $thickness = $val->{'line'}{'thickness'} == 0 ? 1 / 2 : $val->{'line'}{'thickness'};
     $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );     # $dc->SetBrush( $fgb );
@@ -101,208 +101,19 @@ sub paint {
     my $fr = $val->{'r'}{'frequency'};
 
     my $base_factor = { X => $fx, Y => $fy, Z => $fz, R => $fr, e => $e, 'π' => $PI, 'Φ' => $PHI, 'φ' => $phi, 'Γ' => $GAMMA };
-
-    $fx *= ($base_factor->{ $val->{'x'}{'freq_factor'} } // 1);
-    $fy *= ($base_factor->{ $val->{'y'}{'freq_factor'} } // 1);
-    $fz *= ($base_factor->{ $val->{'z'}{'freq_factor'} } // 1);
-    $fr *= ($base_factor->{ $val->{'r'}{'freq_factor'} } // 1);
-
-    my $max_freq = abs $fx;
-    $max_freq = abs $fy if $max_freq < abs $fy ;
-    $max_freq = abs $fz if $max_freq < abs $fz;
-    $max_freq = abs $fr if $max_freq < abs $fr;
-
-    my $step_in_circle = $self->{'settings'}{'line'}{'density'} * $self->{'settings'}{'line'}{'density'} * $max_freq;
-    my $t_iter =         exists $self->{'flag'}{'sketch'}
-               ? 5 * $step_in_circle
-               : $self->{'settings'}{'line'}{'length'} * $step_in_circle;
-
-    my $rx = $self->{'settings'}{'x'}{'radius'} * $raster_radius;
-    my $ry = $self->{'settings'}{'y'}{'radius'} * $raster_radius;
-    my $rz = $self->{'settings'}{'z'}{'radius'} * $raster_radius;
-    my $rr = $self->{'settings'}{'r'}{'radius'} * $raster_radius;
-    if ($self->{'settings'}{'z'}{'on'}){
-        $rx *= $self->{'settings'}{'z'}{'radius'} / 2;
-        $ry *= $self->{'settings'}{'z'}{'radius'} / 2;
-        $rz /=                                  2;
-    }
-    if ($self->{'settings'}{'r'}{'on'}){
-        $rx *= 2 * $self->{'settings'}{'r'}{'radius'} / 3;
-        $ry *= 2 * $self->{'settings'}{'r'}{'radius'} / 3;
-    }
-
-    my $rxdamp  = (not $self->{'settings'}{'x'}{'radius_damp'}) ? 0 :
-          ($self->{'settings'}{'x'}{'radius_damp_type'} eq '*') ? 1 - ($self->{'settings'}{'x'}{'radius_damp'} / 1000 / $step_in_circle)
-                                                            : $rx * $self->{'settings'}{'x'}{'radius_damp'}/ 2000 / $step_in_circle;
-    my $rydamp  = (not $self->{'settings'}{'y'}{'radius_damp'}) ? 0 :
-          ($self->{'settings'}{'y'}{'radius_damp_type'} eq '*') ? 1 - ($self->{'settings'}{'y'}{'radius_damp'} / 1000 / $step_in_circle)
-                                                            : $ry * $self->{'settings'}{'y'}{'radius_damp'}/ 2000 / $step_in_circle;
-    my $rzdamp  = (not $self->{'settings'}{'z'}{'radius_damp'}) ? 0 :
-          ($self->{'settings'}{'z'}{'radius_damp_type'} eq '*') ? 1 - ($self->{'settings'}{'z'}{'radius_damp'} / 1500 / $step_in_circle)
-                                                            : $rz * $self->{'settings'}{'z'}{'radius_damp'}/ 3000 / $step_in_circle;
-    my $rrdamp  = (not $self->{'settings'}{'r'}{'radius_damp'}) ? 0 :
-         ($self->{'settings'}{'r'}{'radius_damp_type'} eq '*') ? 1 - ($self->{'settings'}{'r'}{'radius_damp'} / 1000 / $step_in_circle)
-                                                           : $rr * $self->{'settings'}{'r'}{'radius_damp'}/ 2000 / $step_in_circle;
-    my $rxdacc  = (not $self->{'settings'}{'x'}{'radius_damp_acc'}) ? 0 :
-          ($self->{'settings'}{'x'}{'radius_damp_acc_type'} eq '*') ? 1 - ($self->{'settings'}{'x'}{'radius_damp_acc'} / 1_000_000 / $step_in_circle) :
-          ($self->{'settings'}{'x'}{'radius_damp_acc_type'} eq '/') ? 1 + ($self->{'settings'}{'x'}{'radius_damp_acc'} / 1_000_000 / $step_in_circle)
-                                                                : $rx * $self->{'settings'}{'x'}{'radius_damp_acc'}/ 100_000_000 / $step_in_circle;
-    my $rydacc  = (not $self->{'settings'}{'y'}{'radius_damp_acc'}) ? 0 :
-          ($self->{'settings'}{'y'}{'radius_damp_acc_type'} eq '*') ? 1 - ($self->{'settings'}{'y'}{'radius_damp_acc'} / 1_000_000 / $step_in_circle) :
-          ($self->{'settings'}{'y'}{'radius_damp_acc_type'} eq '/') ? 1 + ($self->{'settings'}{'y'}{'radius_damp_acc'} / 1_000_000 / $step_in_circle)
-                                                                : $ry * $self->{'settings'}{'y'}{'radius_damp_acc'}/ 100_000_000 / $step_in_circle;
-    my $rzdacc  = (not $self->{'settings'}{'z'}{'radius_damp_acc'}) ? 0 :
-          ($self->{'settings'}{'z'}{'radius_damp_acc_type'} eq '*') ? 1 - ($self->{'settings'}{'z'}{'radius_damp_acc'} / 2_000_000 / $step_in_circle) :
-          ($self->{'settings'}{'z'}{'radius_damp_acc_type'} eq '/') ? 1 + ($self->{'settings'}{'z'}{'radius_damp_acc'} / 2_000_000 / $step_in_circle)
-                                                                : $rz * $self->{'settings'}{'z'}{'radius_damp_acc'}/ 200_000_000 / $step_in_circle;
-    my $rrdacc  = (not $self->{'settings'}{'r'}{'radius_damp_acc'}) ? 0 :
-          ($self->{'settings'}{'r'}{'radius_damp_acc_type'} eq '*'
-        or $self->{'settings'}{'x'}{'radius_damp_acc_type'} eq '/') ? 1 - ($self->{'settings'}{'r'}{'radius_damp_acc'}/ 1000 / $step_in_circle)
-                                                                : $rr * $self->{'settings'}{'r'}{'radius_damp_acc'}/20000 / $step_in_circle;
-
-    my $dtx = $val->{'x'}{'on'} ? (  $fx * $TAU / $step_in_circle) : 0;
-    my $dty = $val->{'y'}{'on'} ? (  $fy * $TAU / $step_in_circle) : 0;
-    my $dtz = $val->{'z'}{'on'} ? (  $fz * $TAU / $step_in_circle) : 0;
-    my $dtr = $val->{'r'}{'on'} ? (- $fr * $TAU / $step_in_circle) : 0;
-
-    my $fxdamp  = (not $val->{'x'}{'freq_damp'}) ? 0 :
-          ($val->{'x'}{'freq_damp_type'} eq '*') ? 1 - ($val->{'x'}{'freq_damp'}  / 40_000 / $step_in_circle)
-                                                 : $dtx * $val->{'x'}{'freq_damp'} / 40 / $step_in_circle;
-    my $fydamp  = (not $val->{'y'}{'freq_damp'}) ? 0 :
-          ($val->{'y'}{'freq_damp_type'} eq '*') ? 1 - ($val->{'y'}{'freq_damp'}  / 40_000 / $step_in_circle)
-                                                 : $dty * $val->{'y'}{'freq_damp'} / 40 / $step_in_circle;
-    my $fzdamp  = (not $val->{'z'}{'freq_damp'}) ? 0 :
-          ($val->{'z'}{'freq_damp_type'} eq '*') ? 1 - ($val->{'z'}{'freq_damp'}  / 20_000 / $step_in_circle)
-                                                 : $dtz * $val->{'z'}{'freq_damp'}/ 20_000 / $step_in_circle;
-    my $frdamp  = (not $self->{'settings'}{'r'}{'freq_damp'}) ? 0 :
-          ($val->{'r'}{'freq_damp_type'} eq '*') ? 1 - ($val->{'r'}{'freq_damp'}  / 20_000 / $step_in_circle)
-                                                 : $dtr * $val->{'r'}{'freq_damp'}/ 20_000 / $step_in_circle;
-
-    my $tx = my $ty = my $tz = my $tr = 0;
-    $tx += $TAU * $self->{'settings'}{'x'}{'offset'} if $self->{'settings'}{'x'}{'offset'};
-    $ty += $TAU * $self->{'settings'}{'y'}{'offset'} if $self->{'settings'}{'y'}{'offset'};
-    $tz += $TAU * $self->{'settings'}{'z'}{'offset'} if $self->{'settings'}{'z'}{'offset'};
-    $tr += $TAU * $self->{'settings'}{'r'}{'offset'} if $self->{'settings'}{'r'}{'offset'};
-    $tx -= $max_time while $tx >=  $max_time;
-    $tx += $max_time while $tx <= -$max_time;
-    $ty -= $max_time while $ty >=  $max_time;
-    $ty += $max_time while $ty <= -$max_time;
-    my ($x, $y);
-    my $cflow = $self->{'settings'}{'color_flow'};
-    my $color_change_time;
-    my @color;
-    my $color_index = 0;
-    my $startc = Graphics::Toolkit::Color->new( @{$self->{'settings'}{'start_color'}}{'red', 'green', 'blue'} );
-    my $endc = Graphics::Toolkit::Color->new( @{$self->{'settings'}{'end_color'}}{'red', 'green', 'blue'} );
-    if ($cflow->{'type'} eq 'linear'){
-        my $color_count = int ($self->{'settings'}{'line'}{'length'} / $cflow->{'stepsize'});
-        @color = map {[$_->rgb] } $startc->gradient( to => $endc, steps => $color_count + 1, dynamic => $cflow->{'dynamic'} );
-    } elsif ($cflow->{'type'} eq 'alternate'){
-        return unless exists $cflow->{'period'} and $cflow->{'period'} > 1;
-        @color = map {[$_->rgb]} $startc->gradient( to => $endc, steps => $cflow->{'period'}, dynamic => $cflow->{'dynamic'} );
-        my @tc = reverse @color;
-        pop @tc;
-        shift @tc;
-        push @color, @tc;
-        @tc = @color;
-        my $color_circle_length = (2 * $cflow->{'period'} - 2) * $cflow->{'stepsize'};
-        push @color, @tc for 0 .. int ($self->{'settings'}{'line'}{'length'} / $color_circle_length);
-    } elsif ($cflow->{'type'} eq 'circular'){
-        return unless exists $cflow->{'period'} and $cflow->{'period'} > 1;
-        @color = map {[$_->rgb]} $startc->complement( steps => $cflow->{'period'},
-                                                      saturation_tilt => $endc->saturation - $startc->saturation,
-                                                      lightness_tilt => $endc->lightness - $startc->lightness);
-        my @tc = @color;
-        push @color, @tc for 0 .. int ($self->{'settings'}{'line'}{'length'} / $cflow->{'period'} / $cflow->{'stepsize'});
-    } else { @color = ([$self->{'settings'}{'start_color'}{'red'},
-                        $self->{'settings'}{'start_color'}{'green'},
-                        $self->{'settings'}{'start_color'}{'blue'}  ]);
-    }
-    $color_change_time = $step_in_circle * $cflow->{'stepsize'};
-
-    $x = ($dtx ? $rx * cos $tx : 0);
-    $y = ($dty ? $ry * sin $ty : 0);
-    $x -= $rz * cos $tz if $dtz;
-    $y -= $rz * sin $tz if $dtz;
-    ($x, $y) = (($x * cos($rz) ) - ($y * sin($tr) ), ($x * sin($tr) ) + ($y * cos($tr) ) ) if $dtr;
-    my ($x_old, $y_old) = ($x, $y);
+    my $t_iter = $val->{'pen_settings'}{'length'} * 10;
+    my $dtx = $TAU * $fx / $val->{'pen_settings'}{'density'}**2;
+    my $dty = $TAU * $fx / $val->{'pen_settings'}{'density'}**2;
 
     my $code = 'for (1 .. $t_iter){'."\n";
 
-    $code .= $dtx ? '  $x = $rx * App::GUI::Harmonograph::Function::'.$self->{'settings'}{'mod'}{'x_function'}.
-                            '('.$var_names{ $self->{'settings'}{'mod'}{'x_var'} }.');'."\n"
-                  : '  $x = 0;'."\n";
-
-    $code .= $dty ? '  $y = $ry * App::GUI::Harmonograph::Function::'.$self->{'settings'}{'mod'}{'y_function'}.
-                            '('.$var_names{ $self->{'settings'}{'mod'}{'y_var'} }.');'."\n"
-                  : '  $y = 0;'."\n";
-
-    $code .= '  $x -= $rz * App::GUI::Harmonograph::Function::'.$self->{'settings'}{'mod'}{'zx_function'}.
-                           '('.$var_names{ $self->{'settings'}{'mod'}{'zx_var'} }.');'."\n" if $dtz;
-    $code .= '  $y -= $rz * App::GUI::Harmonograph::Function::'.$self->{'settings'}{'mod'}{'zy_function'}.
-                           '('.$var_names{ $self->{'settings'}{'mod'}{'zy_var'} }.');'."\n" if $dtz;
-
-    $code .= '  ($x, $y) = (($x * App::GUI::Harmonograph::Function::'.$self->{'settings'}{'mod'}{'r11_function'}.
-                            '('.$var_names{ $self->{'settings'}{'mod'}{'r11_var'} }.'))'.
-                        ' - ($y * App::GUI::Harmonograph::Function::'.$self->{'settings'}{'mod'}{'r12_function'}.
-                            '('.$var_names{ $self->{'settings'}{'mod'}{'r12_var'} }.')),'.
-                          ' ($x * App::GUI::Harmonograph::Function::'.$self->{'settings'}{'mod'}{'r21_function'}.
-                            '('.$var_names{ $self->{'settings'}{'mod'}{'r21_var'} }.'))'.
-                        ' + ($y * App::GUI::Harmonograph::Function::'.$self->{'settings'}{'mod'}{'r22_function'}.
-                            '('.$var_names{ $self->{'settings'}{'mod'}{'r22_var'} }.')));'."\n" if $dtr;
-
-    $code .= $self->{'settings'}{'line'}{'connect'}
-           ? '  $dc->DrawLine( $cx + $x_old, $cy + $y_old, $cx + $x, $cy + $y);'."\n"
-           : '  $dc->DrawPoint( $cx + $x, $cy + $y );'."\n";
-    $code .= '  $tx += $dtx;'."\n"                          if $dtx;
-    $code .= '  $ty += $dty;'."\n"                          if $dty;
-    $code .= '  $tz += $dtz;'."\n"                          if $dtz;
-    $code .= '  $tr += $dtr;'."\n"                          if $dtr;
-    $code .= '  $tx -= $max_time if $tx >= $max_time;'."\n" if $dtx;
-    $code .= '  $ty -= $max_time if $ty >= $max_time;'."\n" if $dtx;
-
-    $code .= '  $dtx *= $fxdamp;'."\n"             if $fxdamp and $self->{'settings'}{'x'}{'freq_damp_type'} eq '*';
-    $code .= '  $dty *= $fydamp;'."\n"             if $fydamp and $self->{'settings'}{'y'}{'freq_damp_type'} eq '*';
-    $code .= '  $dtz *= $fzdamp;'."\n"             if $fzdamp and $self->{'settings'}{'z'}{'freq_damp_type'} eq '*';
-    $code .= '  $dtr *= $frdamp;'."\n"             if $frdamp and $self->{'settings'}{'r'}{'freq_damp_type'} eq '*';
-    $code .= '  $dtx -= $fxdamp if $dtx > 0;'."\n" if $fxdamp and $self->{'settings'}{'x'}{'freq_damp_type'} eq '-';
-    $code .= '  $dty -= $fydamp if $dty > 0;'."\n" if $fydamp and $self->{'settings'}{'y'}{'freq_damp_type'} eq '-';
-    $code .= '  $dtz -= $fzdamp if $dtz > 0;'."\n" if $fzdamp and $self->{'settings'}{'z'}{'freq_damp_type'} eq '-';
-    $code .= '  $dtr -= $frdamp if $dtr < 0;'."\n" if $frdamp and $self->{'settings'}{'r'}{'freq_damp_type'} eq '-';
-
-
-    $code .= '  $rx *= $rxdamp;'."\n"            if $rxdamp and $self->{'settings'}{'x'}{'radius_damp_type'} eq '*';
-    $code .= '  $ry *= $rydamp;'."\n"            if $rydamp and $self->{'settings'}{'y'}{'radius_damp_type'} eq '*';
-    $code .= '  $rz *= $rzdamp;'."\n"            if $rzdamp and $self->{'settings'}{'z'}{'radius_damp_type'} eq '*';
-    $code .= '  $rx -= $rxdamp if $rx > 0;'."\n" if $rxdamp and $self->{'settings'}{'x'}{'radius_damp_type'} eq '-';
-    $code .= '  $ry -= $rydamp if $ry > 0;'."\n" if $rydamp and $self->{'settings'}{'y'}{'radius_damp_type'} eq '-';
-    $code .= '  $rz -= $rzdamp if $rz > 0;'."\n" if $rzdamp and $self->{'settings'}{'z'}{'radius_damp_type'} eq '-';
-    $code .= '  $dtr *= $rrdamp;' if $rrdamp;
-    $code .= '  $rxdamp += $rxdacc;'."\n"  if $rxdacc and $rxdamp and $self->{'settings'}{'x'}{'radius_damp_acc_type'} eq '+';
-    $code .= '  $rxdamp -= $rxdacc;'."\n"  if $rxdacc and $rxdamp and $self->{'settings'}{'x'}{'radius_damp_acc_type'} eq '-';
-    $code .= '  $rxdamp *= $rxdacc;'."\n"  if $rxdacc and $rxdamp and $self->{'settings'}{'x'}{'radius_damp_acc_type'} eq '*';
-    $code .= '  $rxdamp *= $rxdacc;'."\n"  if $rxdacc and $rxdamp and $self->{'settings'}{'x'}{'radius_damp_acc_type'} eq '/';
-    $code .= '  $rydamp += $rydacc;'."\n"  if $rydacc and $rydamp and $self->{'settings'}{'y'}{'radius_damp_acc_type'} eq '+';
-    $code .= '  $rydamp -= $rydacc;'."\n"  if $rydacc and $rydamp and $self->{'settings'}{'y'}{'radius_damp_acc_type'} eq '-';
-    $code .= '  $rydamp *= $rydacc;'."\n"  if $rydacc and $rydamp and $self->{'settings'}{'y'}{'radius_damp_acc_type'} eq '*';
-    $code .= '  $rydamp *= $rydacc;'."\n"  if $rydacc and $rydamp and $self->{'settings'}{'y'}{'radius_damp_acc_type'} eq '/';
-    $code .= '  $rzdamp += $rzdacc;'."\n"  if $rzdacc and $rzdamp and $self->{'settings'}{'z'}{'radius_damp_acc_type'} eq '+';
-    $code .= '  $rzdamp -= $rzdacc;'."\n"  if $rzdacc and $rzdamp and $self->{'settings'}{'z'}{'radius_damp_acc_type'} eq '-';
-    $code .= '  $rzdamp *= $rzdacc;'."\n"  if $rzdacc and $rzdamp and $self->{'settings'}{'z'}{'radius_damp_acc_type'} eq '*';
-    $code .= '  $rzdamp *= $rzdacc;'."\n"  if $rzdacc and $rzdamp and $self->{'settings'}{'z'}{'radius_damp_acc_type'} eq '/';
-#    $code .= '$rxdamp += $rxdacc;'  if $rrdacc and $rrdamp and $self->{'settings'}{'r'}{'radius_damp_acc_type'} eq '+';
-#    $code .= '$rxdamp -= $rxdacc;'  if $rrdacc and $rrdamp and $self->{'settings'}{'r'}{'radius_damp_acc_type'} eq '-';
-#    $code .= '$rxdamp *= $rxdacc;'  if $rrdacc and $rrdamp and $self->{'settings'}{'r'}{'radius_damp_acc_type'} eq '*';
-#    $code .= '$rxdamp *= $rxdacc;'  if $rrdacc and $rrdamp and $self->{'settings'}{'r'}{'radius_damp_acc_type'} eq '/';
-
-    $code .= ' $dc->SetPen( Wx::Pen->new( Wx::Colour->new( @{$color[++$color_index]} ),'.
-             ' $thickness, &Wx::wxPENSTYLE_SOLID)) unless $_ % $color_change_time;' if $cflow->{'type'} ne 'no' and @color;
-    $code .= '  $progress->add_percentage( $_ / $t_iter * 100, $color[$color_index] ) unless $_ % $step_in_circle;'."\n" unless defined $self->{'flag'}{'sketch'};
-    $code .= '  ($x_old, $y_old) = ($x, $y);'."\n" if ($self->{'settings'}{'line'}{'connect'} or exists $self->{'flag'}{'sketch'});
+  #  $code .= ' $dc->SetPen( Wx::Pen->new( $start_color ), 1, &Wx::wxPENSTYLE_SOLID);';
+   # $code .= ' $dc->DrawLine( $cx + $x_old, $cy + $y_old, $cx + $x, $cy + $y);';
+   # $code .= '$progress->add_percentage( $_ / $t_iter * 100, $color[$color_index] ) unless $_ % $step_in_circle;'."\n" unless defined $self->{'flag'}{'sketch'};
+  #  $code .= '  ($x_old, $y_old) = ($x, $y);'."\n";
     $code .= '}';
-
     eval $code;
-say $code;
+#say $code;
     die "bad iter code - $@ : $code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
 
     delete $self->{'flag'};
@@ -343,3 +154,201 @@ sub save_bmp_file {
 }
 
 1;
+
+__END__
+
+    $fx *= ($base_factor->{ $val->{'x'}{'freq_factor'} } // 1);
+    $fy *= ($base_factor->{ $val->{'y'}{'freq_factor'} } // 1);
+    $fz *= ($base_factor->{ $val->{'z'}{'freq_factor'} } // 1);
+    $fr *= ($base_factor->{ $val->{'r'}{'freq_factor'} } // 1);
+
+    my $max_freq = abs $fx;
+    $max_freq = abs $fy if $max_freq < abs $fy ;
+    $max_freq = abs $fz if $max_freq < abs $fz;
+    $max_freq = abs $fr if $max_freq < abs $fr;
+
+    my $step_in_circle = $val->{'line'}{'density'} * $val->{'line'}{'density'} * $max_freq;
+    my $t_iter =         exists $self->{'flag'}{'sketch'}
+               ? 5 * $step_in_circle
+               : $val->{'line'}{'length'} * $step_in_circle;
+
+    my $rx = $val->{'x'}{'radius'} * $raster_radius;
+    my $ry = $val->{'y'}{'radius'} * $raster_radius;
+    my $rz = $val->{'z'}{'radius'} * $raster_radius;
+    my $rr = $val->{'r'}{'radius'} * $raster_radius;
+    if ($val->{'z'}{'on'}){
+        $rx *= $val->{'z'}{'radius'} / 2;
+        $ry *= $val->{'z'}{'radius'} / 2;
+        $rz /=                         2;
+    }
+    if ($val->{'r'}{'on'}){
+        $rx *= 2 * $val->{'r'}{'radius'} / 3;
+        $ry *= 2 * $val->{'r'}{'radius'} / 3;
+    }
+
+    my $rxdamp  = (not $val->{'x'}{'radius_damp'}) ? 0 :
+          ($val->{'x'}{'radius_damp_type'} eq '*') ? 1 - ($val->{'x'}{'radius_damp'} / 1000 / $step_in_circle)
+                                                   : $rx * $val->{'x'}{'radius_damp'}/ 2000 / $step_in_circle;
+    my $rydamp  = (not $val->{'y'}{'radius_damp'}) ? 0 :
+          ($val->{'y'}{'radius_damp_type'} eq '*') ? 1 - ($val->{'y'}{'radius_damp'} / 1000 / $step_in_circle)
+                                                   : $ry * $val->{'y'}{'radius_damp'}/ 2000 / $step_in_circle;
+    my $rzdamp  = (not $val->{'z'}{'radius_damp'}) ? 0 :
+          ($val->{'z'}{'radius_damp_type'} eq '*') ? 1 - ($val->{'z'}{'radius_damp'} / 1500 / $step_in_circle)
+                                                            : $rz * $val->{'z'}{'radius_damp'}/ 3000 / $step_in_circle;
+    my $rrdamp  = (not $val->{'r'}{'radius_damp'}) ? 0 :
+          ($val->{'r'}{'radius_damp_type'} eq '*') ? 1 - ($val->{'r'}{'radius_damp'} / 1000 / $step_in_circle)
+                                                   : $rr * $val->{'r'}{'radius_damp'}/ 2000 / $step_in_circle;
+    my $rxdacc  = (not $val->{'x'}{'radius_damp_acc'}) ? 0 :
+          ($val->{'x'}{'radius_damp_acc_type'} eq '*') ? 1 - ($val->{'x'}{'radius_damp_acc'} / 1_000_000 / $step_in_circle) :
+          ($val->{'x'}{'radius_damp_acc_type'} eq '/') ? 1 + ($val->{'x'}{'radius_damp_acc'} / 1_000_000 / $step_in_circle)
+                                                                : $rx * $val->{'x'}{'radius_damp_acc'}/ 100_000_000 / $step_in_circle;
+    my $rydacc  = (not $val->{'y'}{'radius_damp_acc'}) ? 0 :
+          ($val->{'y'}{'radius_damp_acc_type'} eq '*') ? 1 - ($val->{'y'}{'radius_damp_acc'} / 1_000_000 / $step_in_circle) :
+          ($val->{'y'}{'radius_damp_acc_type'} eq '/') ? 1 + ($val->{'y'}{'radius_damp_acc'} / 1_000_000 / $step_in_circle)
+                                                                : $ry * $val->{'y'}{'radius_damp_acc'}/ 100_000_000 / $step_in_circle;
+    my $rzdacc  = (not $val->{'z'}{'radius_damp_acc'}) ? 0 :
+          ($val->{'z'}{'radius_damp_acc_type'} eq '*') ? 1 - ($val->{'z'}{'radius_damp_acc'} / 2_000_000 / $step_in_circle) :
+          ($val->{'z'}{'radius_damp_acc_type'} eq '/') ? 1 + ($val->{'z'}{'radius_damp_acc'} / 2_000_000 / $step_in_circle)
+                                                       : $rz * $val->{'z'}{'radius_damp_acc'}/ 200_000_000 / $step_in_circle;
+    my $rrdacc  = (not $val->{'r'}{'radius_damp_acc'}) ? 0 :
+          ($val->{'r'}{'radius_damp_acc_type'} eq '*'
+        or $val->{'x'}{'radius_damp_acc_type'} eq '/') ? 1 - ($val->{'r'}{'radius_damp_acc'}/ 1000 / $step_in_circle)
+                                                       : $rr * $val->{'r'}{'radius_damp_acc'}/20000 / $step_in_circle;
+
+    my $dtx = $val->{'x'}{'on'} ? (  $fx * $TAU / $step_in_circle) : 0;
+    my $dty = $val->{'y'}{'on'} ? (  $fy * $TAU / $step_in_circle) : 0;
+    my $dtz = $val->{'z'}{'on'} ? (  $fz * $TAU / $step_in_circle) : 0;
+    my $dtr = $val->{'r'}{'on'} ? (- $fr * $TAU / $step_in_circle) : 0;
+
+    my $fxdamp  = (not $val->{'x'}{'freq_damp'}) ? 0 :
+          ($val->{'x'}{'freq_damp_type'} eq '*') ? 1 - ($val->{'x'}{'freq_damp'}  / 40_000 / $step_in_circle)
+                                                 : $dtx * $val->{'x'}{'freq_damp'} / 40 / $step_in_circle;
+    my $fydamp  = (not $val->{'y'}{'freq_damp'}) ? 0 :
+          ($val->{'y'}{'freq_damp_type'} eq '*') ? 1 - ($val->{'y'}{'freq_damp'}  / 40_000 / $step_in_circle)
+                                                 : $dty * $val->{'y'}{'freq_damp'} / 40 / $step_in_circle;
+    my $fzdamp  = (not $val->{'z'}{'freq_damp'}) ? 0 :
+          ($val->{'z'}{'freq_damp_type'} eq '*') ? 1 - ($val->{'z'}{'freq_damp'}  / 20_000 / $step_in_circle)
+                                                 : $dtz * $val->{'z'}{'freq_damp'}/ 20_000 / $step_in_circle;
+    my $frdamp  = (not $val->{'r'}{'freq_damp'}) ? 0 :
+          ($val->{'r'}{'freq_damp_type'} eq '*') ? 1 - ($val->{'r'}{'freq_damp'}  / 20_000 / $step_in_circle)
+                                                 : $dtr * $val->{'r'}{'freq_damp'}/ 20_000 / $step_in_circle;
+
+    my $tx = my $ty = my $tz = my $tr = 0;
+    $tx += $TAU * $val->{'x'}{'offset'} if $val->{'x'}{'offset'};
+    $ty += $TAU * $val->{'y'}{'offset'} if $val->{'y'}{'offset'};
+    $tz += $TAU * $val->{'z'}{'offset'} if $val->{'z'}{'offset'};
+    $tr += $TAU * $val->{'r'}{'offset'} if $val->{'r'}{'offset'};
+    $tx -= $max_time while $tx >=  $max_time;
+    $tx += $max_time while $tx <= -$max_time;
+    $ty -= $max_time while $ty >=  $max_time;
+    $ty += $max_time while $ty <= -$max_time;
+    my ($x, $y);
+    my $color_change_time;
+    my @color;
+    my $color_index = 0;
+    my $startc = color( @{$val->{'start_color'}}{'red', 'green', 'blue'} );
+    my $endc = color( @{$val->{'end_color'}}{'red', 'green', 'blue'} );
+    if ($val->{'color_flow'}{'type'} eq 'linear'){
+        my $color_count = int ($val->{'line'}{'length'} / $val->{'color_flow'}{'stepsize'});
+        @color = map {[$_->values('rgb')] } $startc->gradient( to => $endc, steps => $color_count + 1, dynamic => $val->{'color_flow'}{'dynamic'} );
+    } elsif ($val->{'color_flow'}{'type'} eq 'alternate'){
+        return unless exists $val->{'color_flow'}{'period'} and $val->{'color_flow'}{'period'} > 1;
+        @color = map {[$_->values('rgb')]} $startc->gradient( to => $endc, steps => $val->{'color_flow'}{'period'}, dynamic => $val->{'color_flow'}{'dynamic'} );
+        my @tc = reverse @color;
+        pop @tc;
+        shift @tc;
+        push @color, @tc;
+        @tc = @color;
+        my $color_circle_length = (2 * $val->{'color_flow'}{'period'} - 2) * $val->{'color_flow'}{'stepsize'};
+        push @color, @tc for 0 .. int ($val->{'line'}{'length'} / $color_circle_length);
+    } elsif ($val->{'color_flow'}{'type'} eq 'circular'){
+        return unless exists $val->{'color_flow'}{'period'} and $val->{'color_flow'}{'period'} > 1;
+        @color = map {[$_->values('rgb')]} $startc->complement( steps => $val->{'color_flow'}{'period'},
+                                                      saturation_tilt => $endc->saturation - $startc->saturation,
+                                                      lightness_tilt => $endc->lightness - $startc->lightness);
+        my @tc = @color;
+        push @color, @tc for 0 .. int ($val->{'line'}{'length'} / $val->{'color_flow'}{'period'} / $val->{'color_flow'}{'stepsize'});
+    } else { @color = ([ @{$val->{'start_color'}}{'red', 'green', 'blue'}  ]);
+    }
+    $color_change_time = $step_in_circle * $val->{'color_flow'}{'stepsize'};
+
+    $x = ($dtx ? $rx * cos $tx : 0);
+    $y = ($dty ? $ry * sin $ty : 0);
+    $x -= $rz * cos $tz if $dtz;
+    $y -= $rz * sin $tz if $dtz;
+    ($x, $y) = (($x * cos($rz) ) - ($y * sin($tr) ), ($x * sin($tr) ) + ($y * cos($tr) ) ) if $dtr;
+    my ($x_old, $y_old) = ($x, $y);
+
+    my $code = 'for (1 .. $t_iter){'."\n";
+
+    $code .= $dtx ? '  $x = $rx * App::GUI::Harmonograph::Function::'.$val->{'mod'}{'x_function'}.
+                            '('.$var_names{ $val->{'mod'}{'x_var'} }.');'."\n"
+                  : '  $x = 0;'."\n";
+
+    $code .= $dty ? '  $y = $ry * App::GUI::Harmonograph::Function::'.$val->{'mod'}{'y_function'}.
+                            '('.$var_names{ $val->{'mod'}{'y_var'} }.');'."\n"
+                  : '  $y = 0;'."\n";
+
+    $code .= '  $x -= $rz * App::GUI::Harmonograph::Function::'.$val->{'mod'}{'zx_function'}.
+                           '('.$var_names{ $val->{'mod'}{'zx_var'} }.');'."\n" if $dtz;
+    $code .= '  $y -= $rz * App::GUI::Harmonograph::Function::'.$val->{'mod'}{'zy_function'}.
+                           '('.$var_names{ $val->{'mod'}{'zy_var'} }.');'."\n" if $dtz;
+
+    $code .= '  ($x, $y) = (($x * App::GUI::Harmonograph::Function::'.$val->{'mod'}{'r11_function'}.
+                            '('.$var_names{ $val->{'mod'}{'r11_var'} }.'))'.
+                        ' - ($y * App::GUI::Harmonograph::Function::'.$val->{'mod'}{'r12_function'}.
+                            '('.$var_names{ $val->{'mod'}{'r12_var'} }.')),'.
+                          ' ($x * App::GUI::Harmonograph::Function::'.$val->{'mod'}{'r21_function'}.
+                            '('.$var_names{ $val->{'mod'}{'r21_var'} }.'))'.
+                        ' + ($y * App::GUI::Harmonograph::Function::'.$val->{'mod'}{'r22_function'}.
+                            '('.$var_names{ $val->{'mod'}{'r22_var'} }.')));'."\n" if $dtr;
+
+    $code .= $val->{'line'}{'connect'}
+           ? '  $dc->DrawLine( $cx + $x_old, $cy + $y_old, $cx + $x, $cy + $y);'."\n"
+           : '  $dc->DrawPoint( $cx + $x, $cy + $y );'."\n";
+    $code .= '  $tx += $dtx;'."\n"                          if $dtx;
+    $code .= '  $ty += $dty;'."\n"                          if $dty;
+    $code .= '  $tz += $dtz;'."\n"                          if $dtz;
+    $code .= '  $tr += $dtr;'."\n"                          if $dtr;
+    $code .= '  $tx -= $max_time if $tx >= $max_time;'."\n" if $dtx;
+    $code .= '  $ty -= $max_time if $ty >= $max_time;'."\n" if $dtx;
+
+    $code .= '  $dtx *= $fxdamp;'."\n"             if $fxdamp and $val->{'x'}{'freq_damp_type'} eq '*';
+    $code .= '  $dty *= $fydamp;'."\n"             if $fydamp and $val->{'y'}{'freq_damp_type'} eq '*';
+    $code .= '  $dtz *= $fzdamp;'."\n"             if $fzdamp and $val->{'z'}{'freq_damp_type'} eq '*';
+    $code .= '  $dtr *= $frdamp;'."\n"             if $frdamp and $val->{'r'}{'freq_damp_type'} eq '*';
+    $code .= '  $dtx -= $fxdamp if $dtx > 0;'."\n" if $fxdamp and $val->{'x'}{'freq_damp_type'} eq '-';
+    $code .= '  $dty -= $fydamp if $dty > 0;'."\n" if $fydamp and $val->{'y'}{'freq_damp_type'} eq '-';
+    $code .= '  $dtz -= $fzdamp if $dtz > 0;'."\n" if $fzdamp and $val->{'z'}{'freq_damp_type'} eq '-';
+    $code .= '  $dtr -= $frdamp if $dtr < 0;'."\n" if $frdamp and $val->{'r'}{'freq_damp_type'} eq '-';
+
+
+    $code .= '  $rx *= $rxdamp;'."\n"            if $rxdamp and $val->{'x'}{'radius_damp_type'} eq '*';
+    $code .= '  $ry *= $rydamp;'."\n"            if $rydamp and $val->{'y'}{'radius_damp_type'} eq '*';
+    $code .= '  $rz *= $rzdamp;'."\n"            if $rzdamp and $val->{'z'}{'radius_damp_type'} eq '*';
+    $code .= '  $rx -= $rxdamp if $rx > 0;'."\n" if $rxdamp and $val->{'x'}{'radius_damp_type'} eq '-';
+    $code .= '  $ry -= $rydamp if $ry > 0;'."\n" if $rydamp and $val->{'y'}{'radius_damp_type'} eq '-';
+    $code .= '  $rz -= $rzdamp if $rz > 0;'."\n" if $rzdamp and $val->{'z'}{'radius_damp_type'} eq '-';
+    $code .= '  $dtr *= $rrdamp;' if $rrdamp;
+    $code .= '  $rxdamp += $rxdacc;'."\n"  if $rxdacc and $rxdamp and $val->{'x'}{'radius_damp_acc_type'} eq '+';
+    $code .= '  $rxdamp -= $rxdacc;'."\n"  if $rxdacc and $rxdamp and $val->{'x'}{'radius_damp_acc_type'} eq '-';
+    $code .= '  $rxdamp *= $rxdacc;'."\n"  if $rxdacc and $rxdamp and $val->{'x'}{'radius_damp_acc_type'} eq '*';
+    $code .= '  $rxdamp *= $rxdacc;'."\n"  if $rxdacc and $rxdamp and $val->{'x'}{'radius_damp_acc_type'} eq '/';
+    $code .= '  $rydamp += $rydacc;'."\n"  if $rydacc and $rydamp and $val->{'y'}{'radius_damp_acc_type'} eq '+';
+    $code .= '  $rydamp -= $rydacc;'."\n"  if $rydacc and $rydamp and $val->{'y'}{'radius_damp_acc_type'} eq '-';
+    $code .= '  $rydamp *= $rydacc;'."\n"  if $rydacc and $rydamp and $val->{'y'}{'radius_damp_acc_type'} eq '*';
+    $code .= '  $rydamp *= $rydacc;'."\n"  if $rydacc and $rydamp and $val->{'y'}{'radius_damp_acc_type'} eq '/';
+    $code .= '  $rzdamp += $rzdacc;'."\n"  if $rzdacc and $rzdamp and $val->{'z'}{'radius_damp_acc_type'} eq '+';
+    $code .= '  $rzdamp -= $rzdacc;'."\n"  if $rzdacc and $rzdamp and $val->{'z'}{'radius_damp_acc_type'} eq '-';
+    $code .= '  $rzdamp *= $rzdacc;'."\n"  if $rzdacc and $rzdamp and $val->{'z'}{'radius_damp_acc_type'} eq '*';
+    $code .= '  $rzdamp *= $rzdacc;'."\n"  if $rzdacc and $rzdamp and $val->{'z'}{'radius_damp_acc_type'} eq '/';
+#    $code .= '$rxdamp += $rxdacc;'  if $rrdacc and $rrdamp and $val->{'r'}{'radius_damp_acc_type'} eq '+';
+#    $code .= '$rxdamp -= $rxdacc;'  if $rrdacc and $rrdamp and $val->{'r'}{'radius_damp_acc_type'} eq '-';
+#    $code .= '$rxdamp *= $rxdacc;'  if $rrdacc and $rrdamp and $val->{'r'}{'radius_damp_acc_type'} eq '*';
+#    $code .= '$rxdamp *= $rxdacc;'  if $rrdacc and $rrdamp and $val->{'r'}{'radius_damp_acc_type'} eq '/';
+
+    $code .= ' $dc->SetPen( Wx::Pen->new( Wx::Colour->new( @{$color[++$color_index]} ),'.
+             ' $thickness, &Wx::wxPENSTYLE_SOLID)) unless $_ % $color_change_time;' if $val->{'color_flow'}{'type'} ne 'no' and @color;
+    $code .= '  $progress->add_percentage( $_ / $t_iter * 100, $color[$color_index] ) unless $_ % $step_in_circle;'."\n" unless defined $self->{'flag'}{'sketch'};
+    $code .= '  ($x_old, $y_old) = ($x, $y);'."\n" if ($val->{'line'}{'connect'} or exists $self->{'flag'}{'sketch'});
+    $code .= '}';
