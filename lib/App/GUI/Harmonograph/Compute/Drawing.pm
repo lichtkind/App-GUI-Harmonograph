@@ -3,8 +3,13 @@ use warnings;
 
 package App::GUI::Harmonograph::Compute::Drawing;
 use Benchmark;
-my $TAU = 6.283185307;
 
+my $TAU = 6.283185307;
+my $PI  = 3.1415926535;
+my $PHI = 1.618033988;
+my $phi = 0.618033988;
+my $e   = 2.718281828;
+my $GAMMA = 1.7724538509055160;
 
 1;
 __END__

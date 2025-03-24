@@ -37,10 +37,10 @@ sub new {
     $self->{'tabs'}->AddPage( $self->{'tab'}{'mod'},      'Modulation Matrix');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'visual'},   'Visual Settings');
 
-    $self->{'pendulum'}{'x'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'}, 'x','pendulum in x direction (left to right)', 1, 100);
-    $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'}, 'y','pendulum in y direction (left to right)', 1, 100);
-    $self->{'pendulum'}{'z'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'circular'}, 'z','circular pendulum',        0, 100);
-    $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'circular'}, 'R','rotating pendulum',        0, 100);
+    $self->{'pendulum'}{'x'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'}, 'X','pendulum in x direction (left to right)', 1, 100);
+    $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'}, 'Y','pendulum in y direction (up - down)',    1, 100);
+    $self->{'pendulum'}{'z'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'circular'}, 'Z','circular wobbling pendulum',          0, 100);
+    $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'circular'}, 'R','rotation pendulum',                  0, 100);
 
     $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/x y z r/;
     $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/mod visual/;
@@ -75,13 +75,13 @@ sub new {
         my $path = $self->base_path . '.ini';
         $self->write_settings_file( $path);
         $self->{'config'}->add_setting_file( $path );
-        $self->{'last_file_settings'} = $settings;
+  #      $self->{'last_file_settings'} = $settings;
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'save_next'},  sub {
         my $settings = $self->get_settings;
         my $path = $self->base_path . '.' . $self->{'config'}->get_value('file_base_ending');
         $self->write_image( $path );
-        $self->{'last_file_settings'} = $settings;
+  #      $self->{'last_file_settings'} = $settings;
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'draw'},  sub { draw( $self ) });
     Wx::Event::EVT_CLOSE( $self, sub {
@@ -207,23 +207,20 @@ sub new {
     #$setting_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $main_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-    $main_sizer->Add( $board_sizer, 1, &Wx::wxEXPAND, 0);
+    $main_sizer->Add( $board_sizer, 0, &Wx::wxEXPAND, 0);
     $main_sizer->Add( $setting_sizer, 1, &Wx::wxEXPAND|&Wx::wxLEFT, 10);
 
     $self->SetSizer($main_sizer);
     $self->SetAutoLayout( 1 );
-    my $size = [1200, 781];
+    my $size = [1200, 810];
     $self->SetSize($size);
     $self->SetMinSize($size);
     $self->SetMaxSize($size);
 
-say $self->{'board'}->GetSize->GetHeight;
-say $self->{'board'}->GetSize->GetWidth;
-
     $self->update_recent_settings_menu();
     $self->init();
     $self->{'btn'}{'draw'}->SetFocus;
-    $self->{'last_file_settings'} = get_settings( $self );
+#    $self->{'last_file_settings'} = get_settings( $self );
     $self;
 }
 
@@ -257,7 +254,7 @@ sub init {
 sub get_settings {
     my $self = shift;
     my $settings = $self->{'tab'}{'visual'}->get_settings;
-    $settings->{$_} = $self->{'pendulum'}{'x'}->get_settings for qw/x y z r/;
+    $settings->{$_} = $self->{'pendulum'}{$_}->get_settings for qw/x y z r/;
     $settings->{'mod'} = $self->{'tab'}{'mod'}->get_settings;
     $settings;
 }
@@ -325,7 +322,7 @@ sub inc_base_counter {
     }
     $self->{'txt'}{'file_bnr'}->SetValue( $cc );
     $self->{'config'}->set_value('file_base_counter', $cc);
-    $self->{'last_file_settings'} = get_settings( $self );
+ #   $self->{'last_file_settings'} = get_settings( $self );
 }
 
 

@@ -15,19 +15,19 @@ my $GAMMA = 1.7724538509055160;
 
 use Graphics::Toolkit::Color qw/color/;
 use App::GUI::Harmonograph::Compute::Function;
+use App::GUI::Harmonograph::Compute::Drawing;
 # use Benchmark;
 
 sub new {
     my ( $class, $parent, $x, $y ) = @_;
     my $self = $class->SUPER::new( $parent, -1, [-1,-1], [$x, $y] );
     $self->{'precision'} = 4;
-    #App::GUI::Harmonograph::Function::init( $self->{'precision'} );
     $self->{'menu_size'} = 27;
     $self->{'size'}{'x'} = $x;
     $self->{'size'}{'y'} = $y;
     $self->{'center'}{'x'} = $x / 2;
     $self->{'center'}{'y'} = $y / 2;
-    $self->{'hard_radius'} = ($x > $y ? $self->{'center'}{'y'} : $self->{'center'}{'x'}) - 25;
+    $self->{'hard_radius'} = ($x > $y ? $self->{'center'}{'y'} : $self->{'center'}{'x'});
     $self->{'dc'} = Wx::MemoryDC->new( );
     $self->{'bmp'} = Wx::Bitmap->new( $self->{'size'}{'x'} + 10, $self->{'size'}{'y'} +10 + $self->{'menu_size'}, 24);
     $self->{'dc'}->SelectObject( $self->{'bmp'} );
@@ -92,26 +92,46 @@ sub paint {
     $dc->Clear();
     $dc->SetPen( Wx::Pen->new( $start_color, $thickness, &Wx::wxPENSTYLE_SOLID) );
 
-    my $cx = (defined $width) ? $width / 2 : $self->{'center'}{'x'};
-    my $cy = (defined $height) ? $height / 2 : $self->{'center'}{'y'};
-    my $raster_radius = (defined $height) ? (($width > $height ? $cy : $cx) - 25) : $self->{'hard_radius'};
-    my $fx = $val->{'x'}{'frequency'};
-    my $fy = $val->{'y'}{'frequency'};
-    my $fz = $val->{'z'}{'frequency'};
-    my $fr = $val->{'r'}{'frequency'};
+    my $Cx = (defined $width)  ? ($width / 2)  : $self->{'center'}{'x'};
+    my $Cy = (defined $height) ? ($height / 2) : $self->{'center'}{'y'};
+    my $Cr = (defined $height) ? ($width > $height ? $Cx : $Cy) : $self->{'hard_radius'};
+    $Cr -= 15;
 
-    my $base_factor = { X => $fx, Y => $fy, Z => $fz, R => $fr, e => $e, 'π' => $PI, 'Φ' => $PHI, 'φ' => $phi, 'Γ' => $GAMMA };
-    my $t_iter = $val->{'pen_settings'}{'length'} * 10;
-    my $dtx = $TAU * $fx / $val->{'pen_settings'}{'density'}**2;
-    my $dty = $TAU * $fx / $val->{'pen_settings'}{'density'}**2;
+    my $fX = $val->{'x'}{'frequency'};
+    my $fY = $val->{'y'}{'frequency'};
+    my $fZ = $val->{'z'}{'frequency'};
+    my $fR = $val->{'r'}{'frequency'};
 
-    my $code = 'for (1 .. $t_iter){'."\n";
+    my $base_factor = { X => $fX, Y => $fY, Z => $fZ, R => $fR, e => $e, 'π' => $PI, 'Φ' => $PHI, 'φ' => $phi, 'Γ' => $GAMMA };
 
+
+    my $step_in_circle = ($val->{'line'}{'density'}**2);
+    my $t_iter = (exists $self->{'flag'}{'sketch'}) ? 5 : $val->{'line'}{'length'} * 10;
+    $t_iter *= $step_in_circle;
+
+    my $tX = my $tY = 0;
+    my $dtX = $TAU * $fX / $step_in_circle;
+    my $dtY = $TAU * $fY / $step_in_circle;
+    my ($x_old, $y_old);
+    my $x = $Cr * cos($tX);
+    my $y = $Cr * sin($tX);
+
+    $dc->SetPen( Wx::Pen->new( $start_color, 0.5, &Wx::wxPENSTYLE_SOLID) );
+    my @code = ('for (1 .. $t_iter){',
+        ($val->{'line'}{'connect'} ? '  ($x_old, $y_old) = ($x, $y)' : ()),
   #  $code .= ' $dc->SetPen( Wx::Pen->new( $start_color ), 1, &Wx::wxPENSTYLE_SOLID);';
    # $code .= ' $dc->DrawLine( $cx + $x_old, $cy + $y_old, $cx + $x, $cy + $y);';
    # $code .= '$progress->add_percentage( $_ / $t_iter * 100, $color[$color_index] ) unless $_ % $step_in_circle;'."\n" unless defined $self->{'flag'}{'sketch'};
-  #  $code .= '  ($x_old, $y_old) = ($x, $y);'."\n";
-    $code .= '}';
+    '  $tX += $dtX',
+    '  $tY += $dtY',
+    '  $x = $Cr * cos($tX)',
+    '  $y = $Cr * sin($tY)',
+    ($val->{'line'}{'connect'}
+    ? '  $dc->DrawLine( $Cx + $x_old, $Cy + $y_old, $Cx + $x, $Cy + $y)'
+    : '  $dc->DrawPoint( $Cx + $x, $Cy + $y )'),
+#    'say "$Cx + $x, $Cy + $y"',
+    '}');
+    my $code = join '', map {$_.";\n"} @code;
     eval $code;
 #say $code;
     die "bad iter code - $@ : $code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
