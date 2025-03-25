@@ -1,6 +1,7 @@
-0.8  2025-02-17  lichtkind
+1.0  2025-04-01  lichtkind
 -------
-    * = minor fix
+    * = major feature release
+
     * + sync both color stores of color picker
 
 0.71  2023-11-17  lichtkind

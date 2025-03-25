@@ -1,22 +1,18 @@
+
+# painting area on left side
+
+package App::GUI::Harmonograph::Frame::Part::Board;
 use v5.12;
 use warnings;
 use utf8;
 use Wx;
-
-package App::GUI::Harmonograph::Frame::Part::Board;
 use base qw/Wx::Panel/;
-
-my $TAU = 6.283185307;
-my $PI  = 3.1415926535;
-my $PHI = 1.618033988;
-my $phi = 0.618033988;
-my $e   = 2.718281828;
-my $GAMMA = 1.7724538509055160;
-
+# use Benchmark;
 use Graphics::Toolkit::Color qw/color/;
 use App::GUI::Harmonograph::Compute::Function;
 use App::GUI::Harmonograph::Compute::Drawing;
-# use Benchmark;
+
+my $TAU = 6.283185307;
 
 sub new {
     my ( $class, $parent, $x, $y ) = @_;
@@ -76,59 +72,91 @@ sub set_settings {
 
 sub paint {
     my( $self, $dc, $width, $height ) = @_; # my $t = Benchmark->new;
-    my $progress = $self->GetParent->{'progress'};
-   # my $precision = App::GUI::Harmonograph::Function::factor;
     my $val = $self->{'settings'};
-    my $max_time = $TAU;
+    my $progress = $self->GetParent->{'progress'};
+   # my $ = App::GUI::Harmonograph::Compute::Drawing::prepare( $val );
+
     my %var_names = ( x_time => '$tx', y_time => '$ty', z_time => '$tz', r_time => '$tr',
                       x_freq => '$dtx', y_freq => '$dty', z_freq => '$dtz', r_freq => '$dtr',
                       x_radius => '$rx', y_radius => '$ry', z_radius => '$rz', r_radius => '$rr',
                       zero => '0', one => '1');
 
     my $start_color = Wx::Colour->new( @{$val->{'start_color'}}{'red', 'green', 'blue'} );
-    my $background_color = Wx::Colour->new( 255, 255, 255 );
-    my $thickness = $val->{'line'}{'thickness'} == 0 ? 1 / 2 : $val->{'line'}{'thickness'};
-    $dc->SetBackground( Wx::Brush->new( $background_color, &Wx::wxBRUSHSTYLE_SOLID ) );     # $dc->SetBrush( $fgb );
+    $dc->SetBackground( Wx::Brush->new( Wx::Colour->new( 255, 255, 255 ), &Wx::wxBRUSHSTYLE_SOLID ) );
+    # $dc->SetBrush( $fgb );
     $dc->Clear();
-    $dc->SetPen( Wx::Pen->new( $start_color, $thickness, &Wx::wxPENSTYLE_SOLID) );
+    $dc->SetPen( Wx::Pen->new( $start_color, $val->{'line'}{'thickness'}, &Wx::wxPENSTYLE_SOLID) );
 
+#$val->{'x'}{'radius_damp'};
+#$val->{'x'}{'radius_damp_acc'};
+#$val->{'x'}{'radius_damp_type'};
+#$val->{'x'}{'radius_damp_acc_type'};
     my $Cx = (defined $width)  ? ($width / 2)  : $self->{'center'}{'x'};
     my $Cy = (defined $height) ? ($height / 2) : $self->{'center'}{'y'};
     my $Cr = (defined $height) ? ($width > $height ? $Cx : $Cy) : $self->{'hard_radius'};
     $Cr -= 15;
 
-    my $fX = $val->{'x'}{'frequency'};
-    my $fY = $val->{'y'}{'frequency'};
-    my $fZ = $val->{'z'}{'frequency'};
-    my $fR = $val->{'r'}{'frequency'};
-
-    my $base_factor = { X => $fX, Y => $fY, Z => $fZ, R => $fR, e => $e, 'π' => $PI, 'Φ' => $PHI, 'φ' => $phi, 'Γ' => $GAMMA };
-
-
     my $step_in_circle = ($val->{'line'}{'density'}**2);
     my $t_iter = (exists $self->{'flag'}{'sketch'}) ? 5 : $val->{'line'}{'length'} * 10;
     $t_iter *= $step_in_circle;
 
-    my $tX = my $tY = 0;
+
+    my $fX = $val->{'x'}{'frequency'} * $val->{'x'}{'freq_factor'};
+    my $fY = $val->{'y'}{'frequency'} * $val->{'y'}{'freq_factor'};
+    my $fZ = $val->{'z'}{'frequency'} * $val->{'z'}{'freq_factor'};
+    my $fR = $val->{'r'}{'frequency'} * $val->{'r'}{'freq_factor'};
+    my $dfX = $val->{'x'}{'freq_damp'} / $step_in_circle / 600_000;
+    my $dfY = $val->{'y'}{'freq_damp'} / $step_in_circle / 600_000;
+    my $dfZ = $val->{'z'}{'freq_damp'} / $step_in_circle / 600_000;
+    my $dfR = $val->{'r'}{'freq_damp'} / $step_in_circle / 600_000;
+    if ($val->{'x'}{'direction'}){  $fX = - $fX;   $dfX = - $dfX; }
+    if ($val->{'y'}{'direction'}){  $fY = - $fY;   $dfY = - $dfY; }
+    if ($val->{'z'}{'direction'}){  $fZ = - $fZ;   $dfZ = - $dfZ; }
+    if ($val->{'r'}{'direction'}){  $fR = - $fR;   $dfR = - $dfR; }
+    if ($val->{'x'}{'invert_freq'}){$fX = 1 / $fX; $dfX = $dfX / $fX; }
+    if ($val->{'y'}{'invert_freq'}){$fY = 1 / $fY; $dfY = $dfX / $fY; }
+    if ($val->{'z'}{'invert_freq'}){$fZ = 1 / $fZ; $dfZ = $dfZ / $fZ; }
+    if ($val->{'r'}{'invert_freq'}){$fR = 1 / $fR; $dfR = $dfR / $fR; }
+    $dfX = 1 - ($dfX * 30) if $val->{'x'}{'freq_damp_type'} eq '*';
+    $dfY = 1 - ($dfY * 30) if $val->{'y'}{'freq_damp_type'} eq '*';
+    $dfZ = 1 - ($dfZ * 30) if $val->{'z'}{'freq_damp_type'} eq '*';
+    $dfR = 1 - ($dfR * 30) if $val->{'r'}{'freq_damp_type'} eq '*';
+
+say "$fX / $dfX + $val->{'x'}{'offset'} || $val->{x}{freq_damp_type}";
+
+    my $rX = $val->{'x'}{'radius'} * $Cr;
+    my $rY = $val->{'y'}{'radius'} * $Cr;
+    my $rZ = $val->{'z'}{'radius'} * $Cr;
+    my $rR = $val->{'r'}{'radius'} * $Cr;
+
+    my $tX = $val->{'x'}{'offset'} * $TAU;
+    my $tY = $val->{'y'}{'offset'} * $TAU;
+    my $tZ = $val->{'z'}{'offset'} * $TAU;
+    my $tR = $val->{'r'}{'offset'} * $TAU;
     my $dtX = $TAU * $fX / $step_in_circle;
     my $dtY = $TAU * $fY / $step_in_circle;
     my ($x_old, $y_old);
-    my $x = $Cr * cos($tX);
-    my $y = $Cr * sin($tX);
+    my $x = $Cx + ($rX * cos($tX));
+    my $y = $Cy + ($rY * sin($tY));
 
-    $dc->SetPen( Wx::Pen->new( $start_color, 0.5, &Wx::wxPENSTYLE_SOLID) );
+    my $update_fX = $val->{'x'}{'freq_damp'} ?
+                  (($val->{'x'}{'freq_damp_type'} eq '-') ? '  $dtX -= $dfX' : '  $dtX *= $dfX') : '';
+    my $update_fY = $val->{'y'}{'freq_damp'} ?
+                  (($val->{'y'}{'freq_damp_type'} eq '-') ? '  $dtY -= $dfY' : '  $dtY *= $dfY') : '';
+
     my @code = ('for (1 .. $t_iter){',
         ($val->{'line'}{'connect'} ? '  ($x_old, $y_old) = ($x, $y)' : ()),
-  #  $code .= ' $dc->SetPen( Wx::Pen->new( $start_color ), 1, &Wx::wxPENSTYLE_SOLID);';
+   # $code .= ' $dc->SetPen( Wx::Pen->new( $start_color ), 1, &Wx::wxPENSTYLE_SOLID);';
    # $code .= ' $dc->DrawLine( $cx + $x_old, $cy + $y_old, $cx + $x, $cy + $y);';
    # $code .= '$progress->add_percentage( $_ / $t_iter * 100, $color[$color_index] ) unless $_ % $step_in_circle;'."\n" unless defined $self->{'flag'}{'sketch'};
-    '  $tX += $dtX',
-    '  $tY += $dtY',
-    '  $x = $Cr * cos($tX)',
-    '  $y = $Cr * sin($tY)',
+            '  $tX += $dtX',
+            '  $tY += $dtY',
+            $update_fX, $update_fY,
+            '  $x = $Cx + ($rX * cos($tX))',
+            '  $y = $Cy + ($rY * sin($tY))',
     ($val->{'line'}{'connect'}
-    ? '  $dc->DrawLine( $Cx + $x_old, $Cy + $y_old, $Cx + $x, $Cy + $y)'
-    : '  $dc->DrawPoint( $Cx + $x, $Cy + $y )'),
+          ? '  $dc->DrawLine( $x_old, $y_old, $x, $y)'
+          : '  $dc->DrawPoint( $x, $y )'),
 #    'say "$Cx + $x, $Cy + $y"',
     '}');
     my $code = join '', map {$_.";\n"} @code;

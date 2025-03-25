@@ -30,12 +30,16 @@ sub new {
     $self->{'tabs'}             = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
     $self->{'tab'}{'linear'}    = Wx::Panel->new($self->{'tabs'});
     $self->{'tab'}{'circular'}  = Wx::Panel->new($self->{'tabs'});
+    $self->{'tab'}{'epicycle'}  = Wx::Panel->new($self->{'tabs'});
     $self->{'tab'}{'mod'}       = App::GUI::Harmonograph::Frame::Panel::ModMatrix->new( $self->{'tabs'} );
     $self->{'tab'}{'visual'}    = App::GUI::Harmonograph::Frame::Panel::VisualSettings->new( $self->{'tabs'}, $self->{'config'}->get_value('color') );
+    $self->{'tab'}{'colors'}  = Wx::Panel->new($self->{'tabs'});
     $self->{'tabs'}->AddPage( $self->{'tab'}{'linear'},   'Lateral Pendulum');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'circular'}, 'Rotary Pendulum');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'mod'},      'Modulation Matrix');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'visual'},   'Visual Settings');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'epicycle'}, 'Epi Pendulum');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'mod'},      'Modulation');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'visual'},   'Visual');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'colors'},   'Colors');
 
     $self->{'pendulum'}{'x'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'}, 'X','pendulum in x direction (left to right)', 1, 100);
     $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'}, 'Y','pendulum in y direction (up - down)',    1, 100);

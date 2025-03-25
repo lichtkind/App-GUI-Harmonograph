@@ -13,7 +13,7 @@ sub new {
     my $self = $class->SUPER::new( $parent, -1 );
     $self->{'connect'} = Wx::CheckBox->new( $self, -1, '  Line');
     $self->{'length'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 80, 'Length','length of drawing in full circles', 1,  150,  10);
-    $self->{'density'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 80, 'Density','pixel per circle',  1,  35,  10);
+    $self->{'density'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 80, 'Density','pixel per circle',  1,  70,  10);
     $self->{'thickness'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 80, 'Thickness','dot size or thickness of drawn line in pixel',  0,  12,  0);
     $self->{'connect'}->SetToolTip('draw just dots (off) or connect them with lines (on)');
     Wx::Event::EVT_CHECKBOX( $self, $self->{'connect'}, sub {  $self->{'callback'}->() });
