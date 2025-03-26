@@ -69,15 +69,15 @@ sub new {
     my $box_attr = $base_attr | &Wx::wxTOP | &Wx::wxBOTTOM;
 
     my $f_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $f_sizer->Add( $self->{'on'},       0, $base_attr | &Wx::wxALIGN_CENTER_VERTICAL, 0);
-    $f_sizer->Add( $lbl,                0, &Wx::wxALIGN_LEFT|&Wx::wxALIGN_CENTER_VERTICAL|&Wx::wxGROW|&Wx::wxTOP|&Wx::wxLEFT, 6);
-    $f_sizer->Add( $self->{'frequency'}, 0, $base_attr|&Wx::wxLEFT, 8);
+    $f_sizer->Add( $self->{'on'},       0, $base_attr, 0);
+    $f_sizer->Add( $lbl,                0, $base_attr|&Wx::wxTOP|&Wx::wxLEFT, 6);
+    $f_sizer->Add( $self->{'frequency'}, 0, $base_attr|&Wx::wxLEFT, 5);
     $f_sizer->AddSpacer( 18 );
     $f_sizer->Add( $self->{'freq_factor'}, 0, $box_attr |&Wx::wxLEFT,  0);
     $f_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $fdez_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $fdez_sizer->Add( $self->{'freq_dez'},    0, $base_attr|&Wx::wxLEFT, 49);
+    $fdez_sizer->Add( $self->{'freq_dez'},    0, $base_attr|&Wx::wxLEFT, 51);
     $fdez_sizer->AddSpacer( 5 );
     $fdez_sizer->Add( $self->{'invert_freq'}, 0, $base_attr|&Wx::wxLEFT, 9);
     $fdez_sizer->Add( $self->{'direction'},   0, $base_attr|&Wx::wxLEFT, 7);

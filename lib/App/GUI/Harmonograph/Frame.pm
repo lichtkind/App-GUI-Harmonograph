@@ -42,12 +42,12 @@ sub new {
     $self->{'tabs'}->AddPage( $self->{'tab'}{'visual'},   'Visual');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'colors'},   'Colors');
 
-    $self->{'pendulum'}{'x'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'},   'X','pendulum in x direction (left to right)', 1, 100);
-    $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'},   'Y','pendulum in y direction (up - down)',     1, 100);
-    $self->{'pendulum'}{'z'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'circular'}, 'Z','circular wobbling pendulum',              0, 100);
-    $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'circular'}, 'R','rotation pendulum',                       0, 100);
-    $self->{'pendulum'}{'ex'}   = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'epicycle'}, 'X','epicycle in x direction (left to right)',0, 100);
-    $self->{'pendulum'}{'ey'}   = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'epicycle'}, 'Y','epicycle in y direction (up - down)',    0, 100);
+    $self->{'pendulum'}{'x'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'},   'X ','pendulum in x direction (left to right)', 1, 100);
+    $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'},   'Y ','pendulum in y direction (up - down)',     1, 100);
+    $self->{'pendulum'}{'z'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'circular'}, 'Z ','circular wobbling pendulum',              0, 100);
+    $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'circular'}, 'R ','rotation pendulum',                       0, 100);
+    $self->{'pendulum'}{'ex'}   = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'epicycle'}, 'x°','epicycle in x direction (left to right)',0, 100);
+    $self->{'pendulum'}{'ey'}   = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'epicycle'}, 'y°','epicycle in y direction (up - down)',    0, 100);
 
     $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/x y z r ex ey/;
     $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/mod visual/;
@@ -259,7 +259,7 @@ sub update_recent_settings_menu {
 
 sub init {
     my ($self) = @_;
-    $self->{'pendulum'}{$_}->init() for qw/x y z r/;
+    $self->{'pendulum'}{$_}->init() for qw/x y z r ex ey/;
     $self->{'tab'}{$_}->init() for qw/mod visual/;
     $self->{'progress'}->set_color( { red => 20, green => 20, blue => 110 } );
     $self->sketch( );
@@ -270,14 +270,14 @@ sub init {
 sub get_settings {
     my $self = shift;
     my $settings = $self->{'tab'}{'visual'}->get_settings;
-    $settings->{$_} = $self->{'pendulum'}{$_}->get_settings for qw/x y z r/;
+    $settings->{$_} = $self->{'pendulum'}{$_}->get_settings for qw/x y z r ex ey/;
     $settings->{'mod'} = $self->{'tab'}{'mod'}->get_settings;
     $settings;
 }
 sub set_settings {
     my ($self, $settings) = @_;
     return unless ref $settings eq 'HASH';
-    $self->{'pendulum'}{$_}->set_settings( $settings->{$_} ) for qw/x y z r/;
+    $self->{'pendulum'}{$_}->set_settings( $settings->{$_} ) for qw/x y z r ex ey/;
     $self->{'tab'}{'mod'}->set_settings( $settings->{'mod'} );
     $self->{'tab'}{'visual'}->set_settings( $settings );
 }
