@@ -17,12 +17,11 @@ sub new {
     return unless ref $colors eq 'HASH';
 
     my $self = $class->SUPER::new( $parent, -1 );
-    App::GUI::Harmonograph::Frame::Part::ColorPicker::set_colors( $colors );
 
     $self->{'part'}{'start_color'}        = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self, 'start', { red => 20, green => 20, blue => 110 } );
     $self->{'part'}{'end_color'}          = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self, 'end',  { red => 110, green => 20, blue => 20 } );
-    $self->{'part'}{'start_color_picker'} = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self, $self->{'part'}{'start_color'}, 'Start Picker:', 150, 0);
-    $self->{'part'}{'end_color_picker'}   = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self, $self->{'part'}{'end_color'}, 'End Picker:', 150, 5);
+    $self->{'part'}{'start_color_picker'} = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self, $colors);
+    $self->{'part'}{'end_color_picker'}   = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self, $colors);
     $self->{'part'}{'pen_settings'}       = App::GUI::Harmonograph::Frame::Part::PenLine->new( $self );
     $self->{'part'}{'color_change'}       = App::GUI::Harmonograph::Frame::Part::ColorFlow->new( $self, $self->{'part'}{'end_color'} );
 
@@ -62,8 +61,8 @@ sub get_settings {
     {
         line        => $self->{'part'}{'pen_settings'}->get_settings,
         color_flow  => $self->{'part'}{'color_change'}->get_settings,
-        start_color => $self->{'part'}{'start_color'}->get_settings,
-        end_color   => $self->{'part'}{'end_color'}->get_settings,
+        start_color => $self->{'part'}{'start_color'}->get_data,
+        end_color   => $self->{'part'}{'end_color'}->get_data,
     }
 }
 

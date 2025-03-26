@@ -1,7 +1,7 @@
 
 #
 
-package App::GUI::Harmonograph::Frame::Panel::ModMatrix;
+package App::GUI::Harmonograph::Frame::Panel::Modulation;
 use v5.12;
 use utf8;
 use warnings;

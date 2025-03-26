@@ -81,7 +81,7 @@ sub paint {
                       x_radius => '$rx', y_radius => '$ry', z_radius => '$rz', r_radius => '$rr',
                       zero => '0', one => '1');
 
-    my $start_color = Wx::Colour->new( @{$val->{'start_color'}}{'red', 'green', 'blue'} );
+    my $start_color = Wx::Colour->new( 0, 20, 200 ); # @{$val->{'start_color'}}{'red', 'green', 'blue'}
     $dc->SetBackground( Wx::Brush->new( Wx::Colour->new( 255, 255, 255 ), &Wx::wxBRUSHSTYLE_SOLID ) );
     # $dc->SetBrush( $fgb );
     $dc->Clear();

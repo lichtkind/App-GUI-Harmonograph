@@ -1,15 +1,16 @@
+
+# color flow settings
+
+package App::GUI::Harmonograph::Frame::Part::ColorFlow;
 use v5.12;
 use warnings;
 use Wx;
-
-package App::GUI::Harmonograph::Frame::Part::ColorFlow;
 use base qw/Wx::Panel/;
 use App::GUI::Harmonograph::Widget::SliderCombo;
 
 sub new {
-    my ( $class, $parent, $end_color) = @_;
+    my ( $class, $parent) = @_;
     my $self = $class->SUPER::new( $parent, -1 );
-    $self->{'end_color'} = $end_color;
 
     my $flow_label = Wx::StaticText->new( $self, -1, 'Color Change');
     $self->{'type'}    = Wx::ComboBox->new( $self, -1, 'linear', [-1,-1], [115, -1], [qw/no linear alternate circular/], &Wx::wxTE_READONLY );
@@ -90,7 +91,6 @@ sub update_enable {
     $self->{'dynamic'}->Enable( $type eq 'alternate' or $type eq 'linear' );
     $self->{'direction'}->Enable( $type eq 'alternate' or $type eq 'linear' );
     $self->{'period'}->Enable( $type eq 'alternate' or $type eq 'circular' );
-    $self->{'end_color'}->Enable( $type ne 'no' );
 }
 
 1;

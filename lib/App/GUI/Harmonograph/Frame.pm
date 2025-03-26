@@ -8,8 +8,9 @@ use Wx::AUI;
 use App::GUI::Harmonograph::Dialog::About;
 use App::GUI::Harmonograph::Frame::Part::Board;
 use App::GUI::Harmonograph::Frame::Part::Pendulum;
-use App::GUI::Harmonograph::Frame::Panel::ModMatrix;
-use App::GUI::Harmonograph::Frame::Panel::VisualSettings;
+use App::GUI::Harmonograph::Frame::Panel::Modulation;
+use App::GUI::Harmonograph::Frame::Panel::Visual;
+use App::GUI::Harmonograph::Frame::Panel::Color;
 use App::GUI::Harmonograph::Widget::ProgressBar;
 use App::GUI::Harmonograph::Settings; # file IO for parameters of image
 use App::GUI::Harmonograph::Config;   # file IO for program config: dirs, color set store
@@ -31,9 +32,9 @@ sub new {
     $self->{'tab'}{'linear'}    = Wx::Panel->new($self->{'tabs'});
     $self->{'tab'}{'circular'}  = Wx::Panel->new($self->{'tabs'});
     $self->{'tab'}{'epicycle'}  = Wx::Panel->new($self->{'tabs'});
-    $self->{'tab'}{'mod'}       = App::GUI::Harmonograph::Frame::Panel::ModMatrix->new( $self->{'tabs'} );
-    $self->{'tab'}{'visual'}    = App::GUI::Harmonograph::Frame::Panel::VisualSettings->new( $self->{'tabs'}, $self->{'config'}->get_value('color') );
-    $self->{'tab'}{'colors'}  = Wx::Panel->new($self->{'tabs'});
+    $self->{'tab'}{'mod'}       = App::GUI::Harmonograph::Frame::Panel::Modulation->new( $self->{'tabs'} );
+    $self->{'tab'}{'visual'}    = App::GUI::Harmonograph::Frame::Panel::Visual->new( $self->{'tabs'} );
+    $self->{'tab'}{'colors'}    = App::GUI::Harmonograph::Frame::Panel::Color->new( $self->{'tabs'}, $self->{'config'} );
     $self->{'tabs'}->AddPage( $self->{'tab'}{'linear'},   'Lateral Pendulum');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'circular'}, 'Rotary Pendulum');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'epicycle'}, 'Epi Pendulum');
@@ -41,12 +42,14 @@ sub new {
     $self->{'tabs'}->AddPage( $self->{'tab'}{'visual'},   'Visual');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'colors'},   'Colors');
 
-    $self->{'pendulum'}{'x'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'}, 'X','pendulum in x direction (left to right)', 1, 100);
-    $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'}, 'Y','pendulum in y direction (up - down)',    1, 100);
-    $self->{'pendulum'}{'z'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'circular'}, 'Z','circular wobbling pendulum',          0, 100);
-    $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'circular'}, 'R','rotation pendulum',                  0, 100);
+    $self->{'pendulum'}{'x'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'},   'X','pendulum in x direction (left to right)', 1, 100);
+    $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'},   'Y','pendulum in y direction (up - down)',     1, 100);
+    $self->{'pendulum'}{'z'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'circular'}, 'Z','circular wobbling pendulum',              0, 100);
+    $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'circular'}, 'R','rotation pendulum',                       0, 100);
+    $self->{'pendulum'}{'ex'}   = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'epicycle'}, 'X','epicycle in x direction (left to right)',0, 100);
+    $self->{'pendulum'}{'ey'}   = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'epicycle'}, 'Y','epicycle in y direction (up - down)',    0, 100);
 
-    $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/x y z r/;
+    $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/x y z r ex ey/;
     $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/mod visual/;
 
     $self->{'progress'}         = App::GUI::Harmonograph::Widget::ProgressBar->new( $self, 465,  10, { red => 20, green => 20, blue => 110 });
@@ -54,8 +57,8 @@ sub new {
     $self->{'dialog'}{'about'}  = App::GUI::Harmonograph::Dialog::About->new();
 
     my $btnw = 44; my $btnh     = 30;# button width and height
-    $self->{'btn'}{'dir'}       = Wx::Button->new( $self, -1, 'Di&r',   [-1,-1],[$btnw, $btnh] );
-    $self->{'btn'}{'write_next'}= Wx::Button->new( $self, -1, '&INI',   [-1,-1],[$btnw, $btnh] );
+    $self->{'btn'}{'dir'}       = Wx::Button->new( $self, -1, 'Di&r',  [-1,-1],[$btnw, $btnh] );
+    $self->{'btn'}{'write_next'}= Wx::Button->new( $self, -1, '&INI',  [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'draw'}      = Wx::Button->new( $self, -1, '&Draw', [-1,-1],[$btnw, $btnh] );
     $self->{'btn'}{'save_next'} = Wx::Button->new( $self, -1, '&Save', [-1,-1],[$btnw, $btnh] );
     $self->{'txt'}{'file_bdir'} = Wx::TextCtrl->new( $self,-1, $self->{'config'}->get_value('file_base_dir'), [-1,-1],  [185, -1] );
@@ -175,6 +178,15 @@ sub new {
     $circular_sizer->Add( $self->{'pendulum'}{'r'},   0, $vert_attr| &Wx::wxLEFT, 15);
     $circular_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->{'tab'}{'circular'}->SetSizer( $circular_sizer );
+
+    my $epi_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
+    $epi_sizer->AddSpacer(0);
+    $epi_sizer->Add( $self->{'pendulum'}{'ex'},   0, $vert_attr| &Wx::wxLEFT, 15);
+    $epi_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'epicycle'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
+    $epi_sizer->AddSpacer(5);
+    $epi_sizer->Add( $self->{'pendulum'}{'ey'},   0, $vert_attr| &Wx::wxLEFT, 15);
+    $epi_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+    $self->{'tab'}{'epicycle'}->SetSizer( $epi_sizer );
 
     my $cmdi_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     my $image_lbl = Wx::StaticText->new( $self, -1, 'Image:' );

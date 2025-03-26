@@ -6,7 +6,7 @@ package App::GUI::Harmonograph::Widget::ColorDisplay;
 use base qw/Wx::Panel/;
 
 sub new {
-    my ( $class, $parent, $x, $y, $init  ) = @_;
+    my ( $class, $parent, $x, $y, $nr, $init  ) = @_;
     return unless ref $init eq 'HASH' and exists $init->{'red'} and exists $init->{'green'}and exists $init->{'blue'};
 
     my $self = $class->SUPER::new( $parent, -1, [-1,-1], [$x, $y]);
@@ -20,6 +20,7 @@ sub new {
         $dc->Clear();
     } );
     $self->{'init'} = $init;
+    $self->{'nr'} = $nr;
     $self->set_color( $init );
     $self;
 }
@@ -46,6 +47,8 @@ sub get_color {
     }
 }
 
+sub get_nr { $_[0]->{'nr'} }
+
 sub SetCallBack {
     my ( $self, $code) = @_;
     return unless ref $code eq 'CODE';
@@ -53,3 +56,4 @@ sub SetCallBack {
 }
 
 1;
+
