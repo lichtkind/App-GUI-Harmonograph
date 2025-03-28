@@ -43,7 +43,7 @@ read this POD
 
 =item 2.
 
-start the program (C<harmonograph>)
+start the program: > C<harmonograph>
 
 =item 3.
 
@@ -56,13 +56,14 @@ to produce a full image
 
 =item 5.
 
-choose in image menu output size (in pixel) and output format. Then select
-there I<Save> (or C<Ctrl+S>) to store image in a PNG / JPEG / SVG file.
+choose in menu I<"Image"> > I<"Size"> size of output image in pixel and
+right below also output format. Then select there I<"Save"> (or push C<Ctrl+S>)
+to store image in a PNG / JPEG / SVG file.
 
 =item 6.
 
-choose I<Write> in settings menu (C<Ctrl+W>) to save settings into an
-INI file. Load it from there later to restore settings for further tweaking.
+choose I<"Write"> in I<"Settings"> menu (C<Ctrl+W>) to save settings into
+an INI file. Load it from there later to restore settings for further tweaking.
 
 =back
 
