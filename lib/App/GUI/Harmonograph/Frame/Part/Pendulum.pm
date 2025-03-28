@@ -3,11 +3,11 @@
 
 package App::GUI::Harmonograph::Frame::Part::Pendulum;
 use base qw/Wx::Panel/;
-use App::GUI::Harmonograph::Widget::SliderCombo;
 use v5.12;
 use utf8;
 use warnings;
 use Wx;
+use App::GUI::Harmonograph::Widget::SliderCombo;
 
 my $PI  = 3.1415926535;
 my $PHI = 1.618033988;
@@ -28,7 +28,7 @@ sub new {
     $self->{'on'} = Wx::CheckBox->new( $self, -1, '', [-1,-1], [-1,-1], $on );
     $self->{'on'}->SetToolTip('set partial pendulum on or off');
 
-    my $lbl  = Wx::StaticText->new($self, -1, uc($label) );
+    my $main_label  = Wx::StaticText->new($self, -1, uc($label) );
 
     $self->{'frequency'}  = App::GUI::Harmonograph::Widget::SliderCombo->new
                         ( $self, 100, 'Frequency', 'frequency of '.$help, 1, $max, 1 );
@@ -39,6 +39,8 @@ sub new {
     $self->{'freq_factor'}->SetToolTip('base factor the frequency will be multiplied with: one (no), or a math constants as shown');
     $self->{'freq_damp'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Damp  ', 'damping factor (diminishes frequency over time)', 0, 100, 0);
     $self->{'freq_damp_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '*', '-']);
+    $self->{'freq_damp_acc'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Acceleration ', 'accelaration of damping factor', 0, 100, 0);
+    $self->{'freq_damp_acc_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '*', '/', '+', '-']);
     $self->{'invert_freq'} = Wx::CheckBox->new( $self, -1, ' Inv.');
     $self->{'invert_freq'}->SetToolTip('invert (1/x) pendulum frequency');
     $self->{'direction'} = Wx::CheckBox->new( $self, -1, ' Dir.');
@@ -50,7 +52,7 @@ sub new {
     $self->{'offset'} = App::GUI::Harmonograph::Widget::SliderCombo->new
                             ($self, 110, 'Offset', 'additional offset pendulum starts with (0 - quater rotation)', 0, 100, 0);
     $self->{'radius'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Radius %', 'radius or amplitude of pendulum swing', 0, 150, 100);
-    $self->{'radius_damp'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Damp  ', 'damping factor (diminishes amplitude over time)', 0, 800, 0);
+    $self->{'radius_damp'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Damp  ', 'damping factor (diminishes amplitude over time)', 0, 100, 0);
     $self->{'radius_damp_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '*', '-']);
     $self->{'radius_damp_acc'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Acceleration ', 'accelaration of damping factor', 0, 100, 0);
     $self->{'radius_damp_acc_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '*', '/', '+', '-']);
@@ -69,8 +71,8 @@ sub new {
     my $box_attr = $base_attr | &Wx::wxTOP | &Wx::wxBOTTOM;
 
     my $f_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $f_sizer->Add( $self->{'on'},       0, $base_attr, 0);
-    $f_sizer->Add( $lbl,                0, $base_attr|&Wx::wxTOP|&Wx::wxLEFT, 6);
+    $f_sizer->Add( $self->{'on'},        0, $base_attr, 0);
+    $f_sizer->Add( $main_label,          0, $base_attr|&Wx::wxTOP|&Wx::wxLEFT, 6);
     $f_sizer->Add( $self->{'frequency'}, 0, $base_attr|&Wx::wxLEFT, 5);
     $f_sizer->AddSpacer( 18 );
     $f_sizer->Add( $self->{'freq_factor'}, 0, $box_attr |&Wx::wxLEFT,  0);
@@ -89,39 +91,46 @@ sub new {
     $f_damp_sizer->Add( $self->{'freq_damp_type'}, 0, $box_attr |&Wx::wxLEFT, 0);
     $f_damp_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
-    my $o_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $o_sizer->AddSpacer( 65 );
-    $o_sizer->Add( $self->{'offset'},      0, $box_attr,  8);
-    $o_sizer->Add( $self->{'quarter_off'}, 0, $base_attr|&Wx::wxLEFT, 8);
-    $o_sizer->Add( $self->{'half_off'},    0, $base_attr|&Wx::wxLEFT, 8);
-    $o_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
+    my $f_acc_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $f_acc_sizer->Add( $self->{'freq_damp_acc'}, 0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT, 25);
+    $f_acc_sizer->AddSpacer( 19 );
+    $f_acc_sizer->Add( $self->{'freq_damp_acc_type'}, 0, $box_attr |&Wx::wxLEFT,  0);
+    $f_acc_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
+
+    my $offset_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $offset_sizer->AddSpacer( 65 );
+    $offset_sizer->Add( $self->{'offset'},      0, $box_attr,  8);
+    $offset_sizer->Add( $self->{'quarter_off'}, 0, $base_attr|&Wx::wxLEFT, 8);
+    $offset_sizer->Add( $self->{'half_off'},    0, $base_attr|&Wx::wxLEFT, 8);
+    $offset_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $r_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $r_sizer->Add( $self->{'radius'},   0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT,  50);
     $r_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
-    my $rd_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $rd_sizer->Add( $self->{'radius_damp'},     0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT, 62);
-    $rd_sizer->AddSpacer( 18 );
-    $rd_sizer->Add( $self->{'radius_damp_type'}, 0, $box_attr |&Wx::wxLEFT,  0);
-    $rd_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
+    my $r_damp_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $r_damp_sizer->Add( $self->{'radius_damp'},     0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT, 62);
+    $r_damp_sizer->AddSpacer( 18 );
+    $r_damp_sizer->Add( $self->{'radius_damp_type'}, 0, $box_attr |&Wx::wxLEFT,  0);
+    $r_damp_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
-    my $ra_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $ra_sizer->Add( $self->{'radius_damp_acc'}, 0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT, 25);
-    $ra_sizer->AddSpacer( 18 );
-    $ra_sizer->Add( $self->{'radius_damp_acc_type'}, 0, $box_attr |&Wx::wxLEFT,  0);
-    $ra_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
+    my $r_acc_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $r_acc_sizer->Add( $self->{'radius_damp_acc'}, 0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT, 25);
+    $r_acc_sizer->AddSpacer( 18 );
+    $r_acc_sizer->Add( $self->{'radius_damp_acc_type'}, 0, $box_attr |&Wx::wxLEFT,  0);
+    $r_acc_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $sizer->AddSpacer( 5 );
     $sizer->Add( $f_sizer,      0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 0);
-    $sizer->Add( $fdez_sizer,   0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 15);
-    $sizer->Add( $f_damp_sizer, 0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 15);
-    $sizer->Add( $o_sizer,      0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 10);
-    $sizer->Add( $r_sizer,      0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 10);
-    $sizer->Add( $rd_sizer,     0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 15);
-    $sizer->Add( $ra_sizer,     0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 15);
-    $sizer->AddSpacer( 10 );
+    $sizer->Add( $fdez_sizer,   0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 13);
+    $sizer->Add( $f_damp_sizer, 0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 13);
+    $sizer->Add( $f_acc_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 13);
+    $sizer->Add( $offset_sizer, 0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP ,  8);
+    $sizer->Add( $r_sizer,      0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP ,  8);
+    $sizer->Add( $r_damp_sizer, 0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 13);
+    $sizer->Add( $r_acc_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 13);
+    $sizer->AddSpacer( 5 );
     $self->SetSizer($sizer);
     $self;
 }
@@ -130,14 +139,18 @@ sub SetCallBack {
     my ( $self, $code) = @_;
     return unless ref $code eq 'CODE';
     $self->{'callback'} = $code;
-    $self->{ $_ }->SetCallBack( $code ) for qw /radius radius_damp radius_damp_acc frequency freq_dez freq_damp offset/;
+    $self->{ $_ }->SetCallBack( $code ) for qw /radius radius_damp radius_damp_acc offset
+                                                freq_damp_acc frequency freq_dez freq_damp/;
 }
 
 sub init {
     my ( $self ) = @_;
-    $self->set_settings ({ on => $self->{'initially_on'}, radius => 1, frequency => 1, freq_factor => 1, offset => 0,
-        direction => 0, invert_freq => 0, freq_damp => 0, freq_damp_type => '*',
-        radius_damp => 0, radius_damp_acc => 0, radius_damp_type => '*', radius_damp_acc_type => '*' } );
+    $self->set_settings ({
+        on => $self->{'initially_on'},
+        frequency => 1, freq_factor => 1, freq_damp => 0, freq_damp_type => '*',
+        freq_damp_acc => 0,freq_damp_acc_type => '*', direction => 0, invert_freq => 0,
+        offset => 0, radius => 1, radius_damp => 0, radius_damp_acc => 0,
+        radius_damp_type => '*', radius_damp_acc_type => '*' } );
 }
 
 sub get_settings {
@@ -153,6 +166,8 @@ sub get_settings {
                         ($ff eq 'φ') ? $phi : ($ff eq 'e') ? $e  :                $GAMMA),
         freq_damp   => $self->{'freq_damp'}->GetValue,
         freq_damp_type => $self->{'freq_damp_type'}->GetValue,
+        freq_damp_type => $self->{'freq_damp_type'}->GetValue,
+        freq_damp_acc_type  => $self->{'freq_damp_acc_type'}->GetValue,
         offset      => (0.5 * $self->{'half_off'}->IsChecked)
                      + (0.25 * $self->{'quarter_off'}->IsChecked)
                      + ($self->{'offset'}->GetValue / 400),
@@ -178,7 +193,9 @@ sub set_settings {
     $self->{ 'freq_factor'}->SetValue( ($ff == 1) ? 1  : ($ff < 1) ? 'φ' : ($ff > 3) ? 'π' :
                                        ($ff > 2) ? 'e' : ($ff > 1.7) ? 'Γ' :           'Φ' );
     $self->{ 'freq_damp' }->SetValue( $data->{'freq_damp'}, 'passive' );
+    $self->{ 'freq_damp_acc' }->SetValue( $data->{'freq_damp_acc'}, 'passive' );
     $self->{ 'freq_damp_type'}->SetValue(  $data->{ 'freq_damp_type'} // '*' );
+    $self->{ 'freq_damp_acc_type'}->SetValue(  $data->{ 'freq_damp_type'} // '*' );
     $self->{ 'half_off' }->SetValue( $data->{'offset'} >= 0.5 );
     $data->{ 'offset' } -= 0.5 if $data->{'offset'} >= 0.5;
     $self->{ 'quarter_off' }->SetValue( $data->{'offset'} >= 0.25 );
@@ -196,8 +213,10 @@ sub set_settings {
 sub update_enable {
     my ($self) = @_;
     my $val = $self->{ 'on' }->IsChecked;
-    $self->{$_}->Enable( $val ) for qw/frequency freq_damp freq_damp_type freq_dez freq_factor invert_freq direction
-        half_off quarter_off offset  radius radius_damp radius_damp_acc radius_damp_type radius_damp_acc_type/;
+    $self->{$_}->Enable( $val ) for qw/
+        freq_dez freq_factor invert_freq direction half_off quarter_off offset
+        frequency freq_damp freq_damp_acc freq_damp_type freq_damp_acc_type
+        radius radius_damp radius_damp_acc radius_damp_type radius_damp_acc_type/;
 }
 
 1;

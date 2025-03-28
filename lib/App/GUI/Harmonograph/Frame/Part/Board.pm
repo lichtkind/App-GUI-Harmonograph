@@ -24,8 +24,8 @@ sub new {
     $self->{'center'}{'x'} = $x / 2;
     $self->{'center'}{'y'} = $y / 2;
     $self->{'hard_radius'} = ($x > $y ? $self->{'center'}{'y'} : $self->{'center'}{'x'});
-    $self->{'dc'} = Wx::MemoryDC->new( );
     $self->{'bmp'} = Wx::Bitmap->new( $self->{'size'}{'x'} + 10, $self->{'size'}{'y'} +10 + $self->{'menu_size'}, 24);
+    $self->{'dc'} = Wx::MemoryDC->new( );
     $self->{'dc'}->SelectObject( $self->{'bmp'} );
 
     Wx::Event::EVT_PAINT( $self, sub {
@@ -46,7 +46,6 @@ sub new {
         }
         1;
     }); # Blit (xdest, ydest, width, height, DC *src, xsrc, ysrc, wxRasterOperationMode logicalFunc=wxCOPY, bool useMask=false)
-
     return $self;
 }
 
@@ -74,7 +73,13 @@ sub paint {
     my( $self, $dc, $width, $height ) = @_; # my $t = Benchmark->new;
     my $val = $self->{'settings'};
     my $progress = $self->GetParent->{'progress'};
-   # my $ = App::GUI::Harmonograph::Compute::Drawing::prepare( $val );
+
+    my $Cx = (defined $width)  ? ($width / 2)  : $self->{'center'}{'x'};
+    my $Cy = (defined $height) ? ($height / 2) : $self->{'center'}{'y'};
+    my $Cr = (defined $height) ? ($width > $height ? $Cx : $Cy) : $self->{'hard_radius'};
+    $Cr -= 15;
+
+   # my $ = App::GUI::Harmonograph::Compute::Drawing::prepare( $val, $Cr, $self->{'flag'}{'sketch'} );
 
     my %var_names = ( x_time => '$tx', y_time => '$ty', z_time => '$tz', r_time => '$tr',
                       x_freq => '$dtx', y_freq => '$dty', z_freq => '$dtz', r_freq => '$dtr',
@@ -83,18 +88,17 @@ sub paint {
 
     my $start_color = Wx::Colour->new( 0, 20, 200 ); # @{$val->{'start_color'}}{'red', 'green', 'blue'}
     $dc->SetBackground( Wx::Brush->new( Wx::Colour->new( 255, 255, 255 ), &Wx::wxBRUSHSTYLE_SOLID ) );
-    # $dc->SetBrush( $fgb );
     $dc->Clear();
     $dc->SetPen( Wx::Pen->new( $start_color, $val->{'line'}{'thickness'}, &Wx::wxPENSTYLE_SOLID) );
+    #$dc->SetBrush( Wx::Brush->new( $start_color, &Wx::wxBRUSHSTYLE_STIPPLE) );
 
 #$val->{'x'}{'radius_damp'};
 #$val->{'x'}{'radius_damp_acc'};
 #$val->{'x'}{'radius_damp_type'};
 #$val->{'x'}{'radius_damp_acc_type'};
-    my $Cx = (defined $width)  ? ($width / 2)  : $self->{'center'}{'x'};
-    my $Cy = (defined $height) ? ($height / 2) : $self->{'center'}{'y'};
-    my $Cr = (defined $height) ? ($width > $height ? $Cx : $Cy) : $self->{'hard_radius'};
-    $Cr -= 15;
+#$val->{'x'}{'freq_damp_type'};
+#$val->{'x'}{'freq_damp_acc_type'};
+
 
     my $step_in_circle = ($val->{'line'}{'density'}**2);
     my $t_iter = (exists $self->{'flag'}{'sketch'}) ? 5 : $val->{'line'}{'length'} * 10;

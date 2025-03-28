@@ -1,8 +1,11 @@
 1.0  2025-04-01  lichtkind
 -------
     * = major feature release
-
-    * + sync both color stores of color picker
+    * * added 2 epicycle pendula
+    * * copy color tab from cellgraph
+    * * much more pen setting
+    * * extended modulation tab
+    * + frequency damping acceleration settings (parallel radius settings)
 
 0.71  2023-11-17  lichtkind
 -------

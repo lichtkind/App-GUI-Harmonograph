@@ -34,13 +34,13 @@ sub new {
     $self->{'tab'}{'epicycle'}  = Wx::Panel->new($self->{'tabs'});
     $self->{'tab'}{'mod'}       = App::GUI::Harmonograph::Frame::Panel::Modulation->new( $self->{'tabs'} );
     $self->{'tab'}{'visual'}    = App::GUI::Harmonograph::Frame::Panel::Visual->new( $self->{'tabs'} );
-    $self->{'tab'}{'colors'}    = App::GUI::Harmonograph::Frame::Panel::Color->new( $self->{'tabs'}, $self->{'config'} );
+    $self->{'tab'}{'color'}     = App::GUI::Harmonograph::Frame::Panel::Color->new( $self->{'tabs'}, $self->{'config'} );
     $self->{'tabs'}->AddPage( $self->{'tab'}{'linear'},   'Lateral Pendulum');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'circular'}, 'Rotary Pendulum');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'epicycle'}, 'Epi Pendulum');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'mod'},      'Modulation');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'visual'},   'Visual');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'colors'},   'Colors');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},    'Colors');
 
     $self->{'pendulum'}{'x'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'},   'X ','pendulum in x direction (left to right)', 1, 100);
     $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'},   'Y ','pendulum in y direction (up - down)',     1, 100);
@@ -49,8 +49,10 @@ sub new {
     $self->{'pendulum'}{'ex'}   = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'epicycle'}, 'x°','epicycle in x direction (left to right)',0, 100);
     $self->{'pendulum'}{'ey'}   = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'epicycle'}, 'y°','epicycle in y direction (up - down)',    0, 100);
 
-    $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/x y z r ex ey/;
-    $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for qw/mod visual/;
+    $self->{'tab_names'} = [qw/mod visual color/];
+    $self->{'pendulum_names'} = [qw/x y z r ex ey/];
+    $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @{$self->{'pendulum_names'}};
+    $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @{$self->{'tab_names'}};
 
     $self->{'progress'}         = App::GUI::Harmonograph::Widget::ProgressBar->new( $self, 465,  10, { red => 20, green => 20, blue => 110 });
     $self->{'board'}            = App::GUI::Harmonograph::Frame::Part::Board->new( $self , 600, 600 );
@@ -92,7 +94,7 @@ sub new {
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'draw'},  sub { draw( $self ) });
     Wx::Event::EVT_CLOSE( $self, sub {
-        $self->{'config'}->set_value( 'color', $self->{'tab'}{'visual'}->get_colors );
+        $self->{'tab'}{'color'}->update_config;
         $self->{'config'}->save();
         $self->{'dialog'}{'about'}->Destroy();
         $_[1]->Skip(1)
@@ -162,29 +164,29 @@ sub new {
     my $line_attr    = $std_attr | &Wx::wxLEFT | &Wx::wxRIGHT ;
 
     my $linear_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $linear_sizer->AddSpacer(0);
-    $linear_sizer->Add( $self->{'pendulum'}{'x'},   0, $vert_attr| &Wx::wxLEFT, 15);
+    $linear_sizer->AddSpacer(10);
+    $linear_sizer->Add( $self->{'pendulum'}{'x'},   0, $std_attr| &Wx::wxLEFT, 15);
     $linear_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'linear'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
-    $linear_sizer->AddSpacer(5);
-    $linear_sizer->Add( $self->{'pendulum'}{'y'},   0, $vert_attr| &Wx::wxLEFT, 15);
+    $linear_sizer->AddSpacer(10);
+    $linear_sizer->Add( $self->{'pendulum'}{'y'},   0, $std_attr| &Wx::wxLEFT, 15);
     $linear_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->{'tab'}{'linear'}->SetSizer( $linear_sizer );
 
     my $circular_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $circular_sizer->AddSpacer(0);
-    $circular_sizer->Add( $self->{'pendulum'}{'z'},   0, $vert_attr| &Wx::wxLEFT, 15);
+    $circular_sizer->AddSpacer(10);
+    $circular_sizer->Add( $self->{'pendulum'}{'z'},   0, $std_attr| &Wx::wxLEFT, 15);
     $circular_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'circular'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
-    $circular_sizer->AddSpacer(5);
-    $circular_sizer->Add( $self->{'pendulum'}{'r'},   0, $vert_attr| &Wx::wxLEFT, 15);
+    $circular_sizer->AddSpacer(10);
+    $circular_sizer->Add( $self->{'pendulum'}{'r'},   0, $std_attr| &Wx::wxLEFT, 15);
     $circular_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->{'tab'}{'circular'}->SetSizer( $circular_sizer );
 
     my $epi_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $epi_sizer->AddSpacer(0);
-    $epi_sizer->Add( $self->{'pendulum'}{'ex'},   0, $vert_attr| &Wx::wxLEFT, 15);
+    $epi_sizer->AddSpacer(10);
+    $epi_sizer->Add( $self->{'pendulum'}{'ex'},   0, $std_attr| &Wx::wxLEFT, 15);
     $epi_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'epicycle'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
-    $epi_sizer->AddSpacer(5);
-    $epi_sizer->Add( $self->{'pendulum'}{'ey'},   0, $vert_attr| &Wx::wxLEFT, 15);
+    $epi_sizer->AddSpacer(10);
+    $epi_sizer->Add( $self->{'pendulum'}{'ey'},   0, $std_attr| &Wx::wxLEFT, 15);
     $epi_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->{'tab'}{'epicycle'}->SetSizer( $epi_sizer );
 
@@ -259,8 +261,8 @@ sub update_recent_settings_menu {
 
 sub init {
     my ($self) = @_;
-    $self->{'pendulum'}{$_}->init() for qw/x y z r ex ey/;
-    $self->{'tab'}{$_}->init() for qw/mod visual/;
+    $self->{'pendulum'}{$_}->init() for @{$self->{'pendulum_names'}};
+    $self->{'tab'}{$_}->init() for @{$self->{'tab_names'}};
     $self->{'progress'}->set_color( { red => 20, green => 20, blue => 110 } );
     $self->sketch( );
     $self->SetStatusText( "all settings are set to default", 1);
@@ -270,14 +272,14 @@ sub init {
 sub get_settings {
     my $self = shift;
     my $settings = $self->{'tab'}{'visual'}->get_settings;
-    $settings->{$_} = $self->{'pendulum'}{$_}->get_settings for qw/x y z r ex ey/;
+    $settings->{$_} = $self->{'pendulum'}{$_}->get_settings for @{$self->{'pendulum_names'}};
     $settings->{'mod'} = $self->{'tab'}{'mod'}->get_settings;
     $settings;
 }
 sub set_settings {
     my ($self, $settings) = @_;
     return unless ref $settings eq 'HASH';
-    $self->{'pendulum'}{$_}->set_settings( $settings->{$_} ) for qw/x y z r ex ey/;
+    $self->{'pendulum'}{$_}->set_settings( $settings->{$_} ) for @{$self->{'pendulum_names'}};
     $self->{'tab'}{'mod'}->set_settings( $settings->{'mod'} );
     $self->{'tab'}{'visual'}->set_settings( $settings );
 }
