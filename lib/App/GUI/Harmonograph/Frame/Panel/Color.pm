@@ -34,11 +34,11 @@ sub new {
     $self->{'state_pic'}[$_]      = App::GUI::Harmonograph::Widget::ColorDisplay->new
         ($self, $self->{'rule_square_size'}-2, $self->{'rule_square_size'},
          $_, $self->{'state_colors'}[$_]->values(as => 'hash')          ) for 0 .. $self->{'last_state'};
-    $self->{'color_set_store_lbl'}= Wx::StaticText->new($self, -1, 'Color Set Store' );
-    $self->{'color_set_f_lbl'}    = Wx::StaticText->new($self, -1, 'Colors Set Function' );
-    $self->{'state_color_lbl'}    = Wx::StaticText->new($self, -1, 'Currently Used State Colors' );
-    $self->{'curr_color_lbl'}     = Wx::StaticText->new($self, -1, 'Selected State Color' );
-    $self->{'color_store_lbl'}    = Wx::StaticText->new($self, -1, 'Color Store' );
+    $self->{'label'}{'color_set_store'} = Wx::StaticText->new($self, -1, 'Color Set Store' );
+    $self->{'label'}{'color_set_funct'} = Wx::StaticText->new($self, -1, 'Colors Set Function' );
+    $self->{'label'}{'used_colors'}     = Wx::StaticText->new($self, -1, 'Currently Used Colors' );
+    $self->{'label'}{'selected_color'}  = Wx::StaticText->new($self, -1, 'Selected State Color' );
+    $self->{'label'}{'color_store'}     = Wx::StaticText->new($self, -1, 'Color Store' );
 
     $self->{'widget'}{'dynamic'} = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[75, -1], [ 0.2, 0.25, 0.33, 0.4, 0.5, 0.66, 0.7, 0.83, 0.9, 1, 1.2, 1.5, 2, 2.5, 3, 4 ]);
     $self->{'widget'}{'delta_S'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [50,-1], &Wx::wxTE_RIGHT);
@@ -85,17 +85,17 @@ sub new {
     });
 
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW ;
-    my $all_attr = &Wx::wxGROW | &Wx::wxALL | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxALIGN_CENTER_VERTICAL;
+    my $all_attr = $std_attr | &Wx::wxALL | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxALIGN_CENTER_VERTICAL;
 
     my $f_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $f_sizer->AddSpacer( 10 );
-    $f_sizer->Add( $self->{'btn'}{'gray'}, 0, $std_attr|&Wx::wxALL, 5 );
-    $f_sizer->Add( $self->{'btn'}{'gradient'}, 0, $std_attr|&Wx::wxALL, 5 );
-    $f_sizer->Add( $self->{'widget'}{'dynamic'}, 0, $std_attr|&Wx::wxALL, 5 );
+    $f_sizer->Add( $self->{'btn'}{'gray'},       0, $all_attr, 5 );
+    $f_sizer->Add( $self->{'btn'}{'gradient'},   0, $all_attr, 5 );
+    $f_sizer->Add( $self->{'widget'}{'dynamic'}, 0, $all_attr, 5 );
     $f_sizer->AddSpacer( 20 );
-    $f_sizer->Add( $self->{'btn'}{'complement'}, 0, $std_attr|&Wx::wxALL, 5 );
-    $f_sizer->Add( $self->{'widget'}{'delta_S'}, 0, $std_attr|&Wx::wxALL, 5 );
-    $f_sizer->Add( $self->{'widget'}{'delta_L'}, 0, $std_attr|&Wx::wxALL, 5 );
+    $f_sizer->Add( $self->{'btn'}{'complement'}, 0, $all_attr, 5 );
+    $f_sizer->Add( $self->{'widget'}{'delta_S'}, 0, $all_attr, 5 );
+    $f_sizer->Add( $self->{'widget'}{'delta_L'}, 0, $all_attr, 5 );
     $f_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $state_sizer = $self->{'state_sizer'} = Wx::BoxSizer->new(&Wx::wxHORIZONTAL); # $self->{'plate_sizer'}->Clear(1);
@@ -104,32 +104,32 @@ sub new {
     for my $state (0 .. $self->{'last_state'}){
         $option_sizer[$state] = Wx::BoxSizer->new( &Wx::wxVERTICAL );
         $option_sizer[$state]->AddSpacer( 2 );
-        $option_sizer[$state]->Add( $self->{'state_pic'}[$state], 0, $all_attr, 3);
+        $option_sizer[$state]->Add( $self->{'state_pic'}[$state],    0, $all_attr, 3);
         $option_sizer[$state]->Add( $self->{'state_marker'}[$state], 0, $all_attr, 3);
-        $state_sizer->Add( $option_sizer[$state], 0, $all_attr, 6);
+        $state_sizer->Add( $option_sizer[$state],                    0, $all_attr, 6);
         $state_sizer->AddSpacer( 1 );
     }
     $state_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $main_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $main_sizer->AddSpacer( 10 );
-    $main_sizer->Add( $self->{'color_set_store_lbl'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL , 5);
+    $main_sizer->Add( $self->{'label'}{'color_set_store'},0, &Wx::wxALIGN_CENTER_HORIZONTAL,  5);
     $main_sizer->AddSpacer( 5 );
-    $main_sizer->Add( $self->{'setpicker'}, 0, $std_attr, 0);
-    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxALL, 10 );
-    $main_sizer->Add( $self->{'color_set_f_lbl'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL , 5);
+    $main_sizer->Add( $self->{'setpicker'},               0, $std_attr,                       0);
+    $main_sizer->Add( Wx::StaticLine->new( $self, -1),    0, $all_attr,                      10);
+    $main_sizer->Add( $self->{'label'}{'color_set_funct'},0, &Wx::wxALIGN_CENTER_HORIZONTAL,  5);
     $main_sizer->AddSpacer( 5 );
-    $main_sizer->Add( $f_sizer, 0, $std_attr, 0);
-    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxALL, 10 );
-    $main_sizer->Add( $self->{'state_color_lbl'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL , 5);
+    $main_sizer->Add( $f_sizer,                           0, $std_attr,                       0);
+    $main_sizer->Add( Wx::StaticLine->new( $self, -1),    0, $all_attr,                      10);
+    $main_sizer->Add( $self->{'label'}{'used_colors'},    0, &Wx::wxALIGN_CENTER_HORIZONTAL,  5);
     $main_sizer->Add( $state_sizer, 0, $std_attr, 0);
-    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxALL, 10 );
-    $main_sizer->Add( $self->{'curr_color_lbl'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL , 5);
+    $main_sizer->Add( Wx::StaticLine->new( $self, -1),    0, $all_attr,                      10);
+    $main_sizer->Add( $self->{'label'}{'selected_color'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL,  5);
     $main_sizer->AddSpacer( 5 );
-    $main_sizer->Add( $self->{'browser'}, 0, $std_attr, 0);
-    $main_sizer->Add( Wx::StaticLine->new( $self, -1), 0, $std_attr|&Wx::wxALL, 10 );
-    $main_sizer->Add( $self->{'color_store_lbl'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL , 5);
-    $main_sizer->Add( $self->{'picker'}, 0, $std_attr, 0);
+    $main_sizer->Add( $self->{'browser'},                 0, $std_attr,                       0);
+    $main_sizer->Add( Wx::StaticLine->new( $self, -1),    0, $all_attr,                      10);
+    $main_sizer->Add( $self->{'label'}{'color_store'},    0, &Wx::wxALIGN_CENTER_HORIZONTAL , 5);
+    $main_sizer->Add( $self->{'picker'},                  0, $std_attr,                       0);
     $main_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     $self->SetSizer( $main_sizer );

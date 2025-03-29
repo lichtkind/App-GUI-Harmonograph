@@ -9,10 +9,10 @@ use warnings;
 use Wx;
 use App::GUI::Harmonograph::Widget::SliderCombo;
 
-my $PI  = 3.1415926535;
-my $PHI = 1.618033988;
-my $phi = 0.618033988;
-my $e   = 2.718281828;
+my $PI    = 3.1415926535;
+my $PHI   = 1.618033988;
+my $phi   = 0.618033988;
+my $e     = 2.718281828;
 my $GAMMA = 1.7724538509055160;
 
 sub new {

@@ -271,17 +271,16 @@ sub init {
 
 sub get_settings {
     my $self = shift;
-    my $settings = $self->{'tab'}{'visual'}->get_settings;
+    my $settings = {};
     $settings->{$_} = $self->{'pendulum'}{$_}->get_settings for @{$self->{'pendulum_names'}};
-    $settings->{'mod'} = $self->{'tab'}{'mod'}->get_settings;
+    $settings->{$_} = $self->{'tab'}{$_}->get_settings for @{$self->{'tab_names'}};
     $settings;
 }
 sub set_settings {
     my ($self, $settings) = @_;
     return unless ref $settings eq 'HASH';
     $self->{'pendulum'}{$_}->set_settings( $settings->{$_} ) for @{$self->{'pendulum_names'}};
-    $self->{'tab'}{'mod'}->set_settings( $settings->{'mod'} );
-    $self->{'tab'}{'visual'}->set_settings( $settings );
+    $self->{'tab'}{$_}->set_settings( $settings->{$_} ) for @{$self->{'tab_names'}};
 }
 
 sub draw {

@@ -89,7 +89,7 @@ sub paint {
     my $start_color = Wx::Colour->new( 0, 20, 200 ); # @{$val->{'start_color'}}{'red', 'green', 'blue'}
     $dc->SetBackground( Wx::Brush->new( Wx::Colour->new( 255, 255, 255 ), &Wx::wxBRUSHSTYLE_SOLID ) );
     $dc->Clear();
-    $dc->SetPen( Wx::Pen->new( $start_color, $val->{'line'}{'thickness'}, &Wx::wxPENSTYLE_SOLID) );
+    $dc->SetPen( Wx::Pen->new( $start_color, $val->{'visual'}{'line_thickness'}, &Wx::wxPENSTYLE_SOLID) );
     #$dc->SetBrush( Wx::Brush->new( $start_color, &Wx::wxBRUSHSTYLE_STIPPLE) );
 
 #$val->{'x'}{'radius_damp'};
@@ -100,19 +100,19 @@ sub paint {
 #$val->{'x'}{'freq_damp_acc_type'};
 
 
-    my $step_in_circle = ($val->{'line'}{'density'}**2);
-    my $t_iter = (exists $self->{'flag'}{'sketch'}) ? 5 : $val->{'line'}{'length'} * 10;
-    $t_iter *= $step_in_circle;
+    my $dot_per_sec = ($val->{'visual'}{'dots_per_second'}**2);
+    my $t_iter = (exists $self->{'flag'}{'sketch'}) ? 5 : $val->{'visual'}{'length'} * 10;
+    $t_iter *= $dot_per_sec;
 
 
     my $fX = $val->{'x'}{'frequency'} * $val->{'x'}{'freq_factor'};
     my $fY = $val->{'y'}{'frequency'} * $val->{'y'}{'freq_factor'};
     my $fZ = $val->{'z'}{'frequency'} * $val->{'z'}{'freq_factor'};
     my $fR = $val->{'r'}{'frequency'} * $val->{'r'}{'freq_factor'};
-    my $dfX = $val->{'x'}{'freq_damp'} / $step_in_circle / 600_000;
-    my $dfY = $val->{'y'}{'freq_damp'} / $step_in_circle / 600_000;
-    my $dfZ = $val->{'z'}{'freq_damp'} / $step_in_circle / 600_000;
-    my $dfR = $val->{'r'}{'freq_damp'} / $step_in_circle / 600_000;
+    my $dfX = $val->{'x'}{'freq_damp'} / $dot_per_sec / 600_000;
+    my $dfY = $val->{'y'}{'freq_damp'} / $dot_per_sec / 600_000;
+    my $dfZ = $val->{'z'}{'freq_damp'} / $dot_per_sec / 600_000;
+    my $dfR = $val->{'r'}{'freq_damp'} / $dot_per_sec / 600_000;
     if ($val->{'x'}{'direction'}){  $fX = - $fX;   $dfX = - $dfX; }
     if ($val->{'y'}{'direction'}){  $fY = - $fY;   $dfY = - $dfY; }
     if ($val->{'z'}{'direction'}){  $fZ = - $fZ;   $dfZ = - $dfZ; }
@@ -137,8 +137,8 @@ say "$fX / $dfX + $val->{'x'}{'offset'} || $val->{x}{freq_damp_type}";
     my $tY = $val->{'y'}{'offset'} * $TAU;
     my $tZ = $val->{'z'}{'offset'} * $TAU;
     my $tR = $val->{'r'}{'offset'} * $TAU;
-    my $dtX = $TAU * $fX / $step_in_circle;
-    my $dtY = $TAU * $fY / $step_in_circle;
+    my $dtX = $TAU * $fX / $dot_per_sec;
+    my $dtY = $TAU * $fY / $dot_per_sec;
     my ($x_old, $y_old);
     my $x = $Cx + ($rX * cos($tX));
     my $y = $Cy + ($rY * sin($tY));
@@ -149,7 +149,7 @@ say "$fX / $dfX + $val->{'x'}{'offset'} || $val->{x}{freq_damp_type}";
                   (($val->{'y'}{'freq_damp_type'} eq '-') ? '  $dtY -= $dfY' : '  $dtY *= $dfY') : '';
 
     my @code = ('for (1 .. $t_iter){',
-        ($val->{'line'}{'connect'} ? '  ($x_old, $y_old) = ($x, $y)' : ()),
+        ($val->{'visual'}{'connect_dots'} ? '  ($x_old, $y_old) = ($x, $y)' : ()),
    # $code .= ' $dc->SetPen( Wx::Pen->new( $start_color ), 1, &Wx::wxPENSTYLE_SOLID);';
    # $code .= ' $dc->DrawLine( $cx + $x_old, $cy + $y_old, $cx + $x, $cy + $y);';
    # $code .= '$progress->add_percentage( $_ / $t_iter * 100, $color[$color_index] ) unless $_ % $step_in_circle;'."\n" unless defined $self->{'flag'}{'sketch'};
@@ -158,7 +158,7 @@ say "$fX / $dfX + $val->{'x'}{'offset'} || $val->{x}{freq_damp_type}";
             $update_fX, $update_fY,
             '  $x = $Cx + ($rX * cos($tX))',
             '  $y = $Cy + ($rY * sin($tY))',
-    ($val->{'line'}{'connect'}
+    ($val->{'visual'}{'connect_dots'}
           ? '  $dc->DrawLine( $x_old, $y_old, $x, $y)'
           : '  $dc->DrawPoint( $x, $y )'),
 #    'say "$Cx + $x, $Cy + $y"',
