@@ -6,11 +6,11 @@ package App::GUI::Harmonograph::Frame;
 use base qw/Wx::Frame/;
 use Wx::AUI;
 use App::GUI::Harmonograph::Dialog::About;
-use App::GUI::Harmonograph::Frame::Part::Board;
-use App::GUI::Harmonograph::Frame::Part::Pendulum;
-use App::GUI::Harmonograph::Frame::Panel::Modulation;
-use App::GUI::Harmonograph::Frame::Panel::Visual;
-use App::GUI::Harmonograph::Frame::Panel::Color;
+use App::GUI::Harmonograph::Frame::Panel::Board;
+use App::GUI::Harmonograph::Frame::Panel::Pendulum;
+use App::GUI::Harmonograph::Frame::Tab::Modulation;
+use App::GUI::Harmonograph::Frame::Tab::Visual;
+use App::GUI::Harmonograph::Frame::Tab::Color;
 use App::GUI::Harmonograph::Widget::ProgressBar;
 use App::GUI::Harmonograph::Settings; # file IO for parameters of image
 use App::GUI::Harmonograph::Config;   # file IO for program config: dirs, color set store
@@ -18,23 +18,23 @@ use App::GUI::Harmonograph::Config;   # file IO for program config: dirs, color 
 sub new {
     my ( $class, $parent, $title ) = @_;
     my $self = $class->SUPER::new( $parent, -1, $title );
-    $self->SetIcon( Wx::GetWxPerlIcon() );
-    $self->CreateStatusBar( 2 );
-    $self->SetStatusWidths( 620, -1);
-    $self->SetStatusText( "no file loaded", 1 );
+    $self->SetIcon( Wx::GetWxPerlIcon() ); # !!! better icon
     $self->{'title'} = $title;
     $self->{'config'} = App::GUI::Harmonograph::Config->new();
     Wx::ToolTip::Enable( $self->{'config'}->get_value('tips') );
     Wx::InitAllImageHandlers();
+    $self->CreateStatusBar( 2 );
+    $self->SetStatusWidths( 620, -1);
+    $self->SetStatusText( "no file loaded", 1 );
 
     # create GUI parts
     $self->{'tabs'}             = Wx::AuiNotebook->new($self, -1, [-1,-1], [-1,-1], &Wx::wxAUI_NB_TOP );
     $self->{'tab'}{'linear'}    = Wx::Panel->new($self->{'tabs'});
     $self->{'tab'}{'circular'}  = Wx::Panel->new($self->{'tabs'});
     $self->{'tab'}{'epicycle'}  = Wx::Panel->new($self->{'tabs'});
-    $self->{'tab'}{'mod'}       = App::GUI::Harmonograph::Frame::Panel::Modulation->new( $self->{'tabs'} );
-    $self->{'tab'}{'visual'}    = App::GUI::Harmonograph::Frame::Panel::Visual->new( $self->{'tabs'} );
-    $self->{'tab'}{'color'}     = App::GUI::Harmonograph::Frame::Panel::Color->new( $self->{'tabs'}, $self->{'config'} );
+    $self->{'tab'}{'mod'}       = App::GUI::Harmonograph::Frame::Tab::Modulation->new( $self->{'tabs'} );
+    $self->{'tab'}{'visual'}    = App::GUI::Harmonograph::Frame::Tab::Visual->new( $self->{'tabs'} );
+    $self->{'tab'}{'color'}     = App::GUI::Harmonograph::Frame::Tab::Color->new( $self->{'tabs'}, $self->{'config'} );
     $self->{'tabs'}->AddPage( $self->{'tab'}{'linear'},   'Lateral Pendulum');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'circular'}, 'Rotary Pendulum');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'epicycle'}, 'Epi Pendulum');
@@ -42,12 +42,12 @@ sub new {
     $self->{'tabs'}->AddPage( $self->{'tab'}{'visual'},   'Visual');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},    'Colors');
 
-    $self->{'pendulum'}{'x'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'},   'X ','pendulum in x direction (left to right)', 1, 100);
-    $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'linear'},   'Y ','pendulum in y direction (up - down)',     1, 100);
-    $self->{'pendulum'}{'z'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'circular'}, 'Z ','circular wobbling pendulum',              0, 100);
-    $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'circular'}, 'R ','rotation pendulum',                       0, 100);
-    $self->{'pendulum'}{'ex'}   = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'epicycle'}, 'x°','epicycle in x direction (left to right)',0, 100);
-    $self->{'pendulum'}{'ey'}   = App::GUI::Harmonograph::Frame::Part::Pendulum->new( $self->{'tab'}{'epicycle'}, 'y°','epicycle in y direction (up - down)',    0, 100);
+    $self->{'pendulum'}{'x'}    = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'linear'},   'X ','pendulum in x direction (left to right)', 1, 100);
+    $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'linear'},   'Y ','pendulum in y direction (up - down)',     1, 100);
+    $self->{'pendulum'}{'z'}    = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'circular'}, 'Z ','circular wobbling pendulum',              0, 100);
+    $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'circular'}, 'R ','rotation pendulum',                       0, 100);
+    $self->{'pendulum'}{'ex'}   = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'epicycle'}, 'x°','epicycle in x direction (left to right)',0, 100);
+    $self->{'pendulum'}{'ey'}   = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'epicycle'}, 'y°','epicycle in y direction (up - down)',    0, 100);
 
     $self->{'tab_names'} = [qw/mod visual color/];
     $self->{'pendulum_names'} = [qw/x y z r ex ey/];
@@ -55,7 +55,7 @@ sub new {
     $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @{$self->{'tab_names'}};
 
     $self->{'progress'}         = App::GUI::Harmonograph::Widget::ProgressBar->new( $self, 465,  10, { red => 20, green => 20, blue => 110 });
-    $self->{'board'}            = App::GUI::Harmonograph::Frame::Part::Board->new( $self , 600, 600 );
+    $self->{'board'}            = App::GUI::Harmonograph::Frame::Panel::Board->new( $self , 600, 600 );
     $self->{'dialog'}{'about'}  = App::GUI::Harmonograph::Dialog::About->new();
 
     my $btnw = 44; my $btnh     = 30;# button width and height

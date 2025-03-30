@@ -5,17 +5,17 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::GUI::Harmonograph::Frame::Panel::Color;
+package App::GUI::Harmonograph::Frame::Tab::Color;
 use base qw/Wx::Panel/;
 
-use App::GUI::Harmonograph::Frame::Part::ColorBrowser;
-use App::GUI::Harmonograph::Frame::Part::ColorPicker;
-use App::GUI::Harmonograph::Frame::Part::ColorSetPicker;
+use App::GUI::Harmonograph::Frame::Panel::ColorBrowser;
+use App::GUI::Harmonograph::Frame::Panel::ColorPicker;
+use App::GUI::Harmonograph::Frame::Panel::ColorSetPicker;
 use App::GUI::Harmonograph::Widget::ColorDisplay;
 use App::GUI::Harmonograph::Widget::PositionMarker;
 use Graphics::Toolkit::Color qw/color/;
 
-our $default_color_def = $App::GUI::Harmonograph::Frame::Part::ColorSetPicker::default_color;
+our $default_color_def = $App::GUI::Harmonograph::Frame::Panel::ColorSetPicker::default_color;
 
 sub new {
     my ( $class, $parent, $config ) = @_;
@@ -35,8 +35,8 @@ sub new {
     $self->{'color_display'}[$_] = App::GUI::Harmonograph::Widget::ColorDisplay->new
         ($self, $self->{'display_size'}-2, $self->{'display_size'},
          $_, $self->{'used_colors'}[$_]->values(as => 'hash')      ) for 0 .. $self->{'color_count'}-1;
-    $self->{'color_marker'}[$_]->SetToolTip("select state color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'color_count'}-1;
-    $self->{'color_display'}[$_]->SetToolTip("select state color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'color_count'}-1;
+    $self->{'color_marker'}[$_]->SetToolTip("used color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'color_count'}-1;
+    $self->{'color_display'}[$_]->SetToolTip("used color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'color_count'}-1;
 
     $self->{'label'}{'color_set_store'} = Wx::StaticText->new($self, -1, 'Color Set Store' );
     $self->{'label'}{'color_set_funct'} = Wx::StaticText->new($self, -1, 'Colors Set Function' );
@@ -59,10 +59,10 @@ sub new {
     $self->{'widget'}{'delta_L'}->SetToolTip("max. lightness deviation when computing complement colors ( -100 .. 100)");
 
 
-    $self->{'picker'}    = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self, $config->get_value('color') );
-    $self->{'setpicker'} = App::GUI::Harmonograph::Frame::Part::ColorSetPicker->new( $self, $config->get_value('color_set'));
+    $self->{'picker'}    = App::GUI::Harmonograph::Frame::Panel::ColorPicker->new( $self, $config->get_value('color') );
+    $self->{'setpicker'} = App::GUI::Harmonograph::Frame::Panel::ColorSetPicker->new( $self, $config->get_value('color_set'));
 
-    $self->{'browser'}   = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self, 'used', {red => 0, green => 0, blue => 0} );
+    $self->{'browser'}   = App::GUI::Harmonograph::Frame::Panel::ColorBrowser->new( $self, 'selected', {red => 0, green => 0, blue => 0} );
     $self->{'browser'}->SetCallBack( sub { $self->set_current_color( $_[0] ) });
 
     Wx::Event::EVT_LEFT_DOWN( $self->{'color_display'}[$_], sub { $self->set_current_color_nr( $_[0]->get_nr ) }) for 0 .. $self->{'color_count'}-1;

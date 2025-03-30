@@ -1,7 +1,7 @@
 
 # tab with visual settings, line dots and color flow (change)
 
-package App::GUI::Harmonograph::Frame::Panel::Visual;
+package App::GUI::Harmonograph::Frame::Tab::Visual;
 use v5.12;
 use warnings;
 use Wx;

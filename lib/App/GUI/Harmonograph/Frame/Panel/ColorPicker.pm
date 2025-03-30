@@ -2,7 +2,7 @@ use v5.12;
 use warnings;
 use Wx;
 
-package App::GUI::Harmonograph::Frame::Part::ColorPicker;
+package App::GUI::Harmonograph::Frame::Panel::ColorPicker;
 use base qw/Wx::Panel/;
 use App::GUI::Harmonograph::Widget::ColorDisplay;
 

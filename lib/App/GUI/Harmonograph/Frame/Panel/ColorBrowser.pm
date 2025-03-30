@@ -1,7 +1,7 @@
 
 # panel with sliders to select a color
 
-package App::GUI::Harmonograph::Frame::Part::ColorBrowser;
+package App::GUI::Harmonograph::Frame::Panel::ColorBrowser;
 use v5.12;
 use warnings;
 use Wx;

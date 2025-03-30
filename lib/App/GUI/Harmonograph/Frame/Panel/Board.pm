@@ -1,7 +1,7 @@
 
 # painting area on left side
 
-package App::GUI::Harmonograph::Frame::Part::Board;
+package App::GUI::Harmonograph::Frame::Panel::Board;
 use v5.12;
 use warnings;
 use utf8;
@@ -156,8 +156,10 @@ say "$fX / $dfX + $val->{'x'}{'offset'} || $val->{x}{freq_damp_type}";
             '  $tX += $dtX',
             '  $tY += $dtY',
             $update_fX, $update_fY,
-            '  $x = $Cx + ($rX * cos($tX))',
-            '  $y = $Cy + ($rY * sin($tY))',
+    ($val->{'x'}{'on'} ? '  $x = $rX * cos($tX)' : '  $x = 0'),
+    ($val->{'y'}{'on'} ? '  $y = $rY * sin($tY)' : '  $y = 0'),
+            '  $x += $Cx',
+            '  $y += $Cy',
     ($val->{'visual'}{'connect_dots'}
           ? '  $dc->DrawLine( $x_old, $y_old, $x, $y)'
           : '  $dc->DrawPoint( $x, $y )'),

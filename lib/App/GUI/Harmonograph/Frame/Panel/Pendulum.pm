@@ -1,7 +1,7 @@
 
 # settings for all pendula
 
-package App::GUI::Harmonograph::Frame::Part::Pendulum;
+package App::GUI::Harmonograph::Frame::Panel::Pendulum;
 use base qw/Wx::Panel/;
 use v5.12;
 use utf8;
