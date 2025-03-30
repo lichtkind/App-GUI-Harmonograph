@@ -84,7 +84,7 @@ sub new {
 
     my $x_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $x_sizer->AddSpacer( 15 );
-    $x_sizer->Add( $self->{'lbl'}{'x'},    0, $box_attr, 10);
+    $x_sizer->Add( $self->{'lbl'}{'x'},    0, $box_attr, 12);
     $x_sizer->AddSpacer( 25 );
     $x_sizer->Add( $self->{'x_function'},  0, $box_attr, 6);
     $x_sizer->AddSpacer( 10 );
@@ -185,21 +185,21 @@ sub new {
     $ey_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $sizer->Add( $x_sizer,  0, $next_attr, 15);
-    $sizer->Add( Wx::StaticLine->new( $self, -1, [-1,-1], [ 135, 2] ),  0, $std_attr | &Wx::wxTOP, 15);
-    $sizer->Add( $y_sizer,  0, $next_attr,  5);
-    $sizer->Add( Wx::StaticLine->new( $self, -1),  0, $std_attr | &Wx::wxALL, 10);
-    $sizer->Add( $zx_sizer, 0, $next_attr ,  5);
-    $sizer->Add( $zy_sizer, 0, $next_attr ,  5);
-    $sizer->Add( Wx::StaticLine->new( $self, -1),  0, $std_attr | &Wx::wxALL, 10);
-    $sizer->Add( $r11_sizer, 0, $next_attr ,  5);
-    $sizer->Add( $r12_sizer, 0, $next_attr ,  5);
-    $sizer->Add( $r21_sizer, 0, $next_attr ,  5);
-    $sizer->Add( $r22_sizer, 0, $next_attr ,  5);
-    $sizer->Add( Wx::StaticLine->new( $self, -1),  0, $std_attr | &Wx::wxALL, 10);
-    $sizer->Add( $ex_sizer, 0, $next_attr , 15);
-    $sizer->Add( Wx::StaticLine->new( $self, -1),  0, $std_attr | &Wx::wxALL, 10);
-    $sizer->Add( $ey_sizer, 0, $next_attr , 15);
+    $sizer->Add( $x_sizer,                         0, $next_attr, 15);
+    $sizer->Add( Wx::StaticLine->new( $self, -1),  0, $next_attr, 15);
+    $sizer->Add( $y_sizer,                         0, $next_attr, 15);
+    $sizer->Add( Wx::StaticLine->new( $self, -1),  0, $next_attr, 15);
+    $sizer->Add( $zx_sizer,                        0, $next_attr, 15);
+    $sizer->Add( $zy_sizer,                        0, $next_attr,  5);
+    $sizer->Add( Wx::StaticLine->new( $self, -1),  0, $next_attr, 15);
+    $sizer->Add( $r11_sizer,                       0, $next_attr, 15);
+    $sizer->Add( $r12_sizer,                       0, $next_attr,  5);
+    $sizer->Add( $r21_sizer,                       0, $next_attr,  5);
+    $sizer->Add( $r22_sizer,                       0, $next_attr,  5);
+    $sizer->Add( Wx::StaticLine->new( $self, -1),  0, $next_attr, 15);
+    $sizer->Add( $ex_sizer,                        0, $next_attr, 15);
+    $sizer->Add( Wx::StaticLine->new( $self, -1),  0, $next_attr, 15);
+    $sizer->Add( $ey_sizer,                        0, $next_attr, 15);
     $sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->SetSizer( $sizer );
     $self;

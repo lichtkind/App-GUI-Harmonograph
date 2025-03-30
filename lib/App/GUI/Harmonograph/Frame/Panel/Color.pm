@@ -23,17 +23,21 @@ sub new {
 
     $self->{'set_back'}  = sub {};
     $self->{'config'}     = $config;
-    $self->{'rule_square_size'} = 32;
-    $self->{'last_state'} = 10;  # max pos
-    $self->{'state_count'} = 2;  # nr of currently used
-    $self->{'current_state'} = 1;
+    $self->{'color_count'} = 11;  # max pos
+    $self->{'active_color_count'} = 2;  # nr of currently used
+    $self->{'current_color_nr'} = 1;
+    $self->{'display_size'} = 32;
 
-    $self->{'state_colors'}       = [ color('white')->gradient( to => 'black', steps => $self->{'state_count'}) ];
-    $self->{'state_colors'}[$_]   = color( $default_color_def ) for $self->{'state_count'} .. $self->{'last_state'};
-    $self->{'state_marker'}       = [ map { App::GUI::Harmonograph::Widget::PositionMarker->new($self, $self->{'rule_square_size'}, 20, $_, '', $default_color_def) } 0 ..$self->{'last_state'} ];
-    $self->{'state_pic'}[$_]      = App::GUI::Harmonograph::Widget::ColorDisplay->new
-        ($self, $self->{'rule_square_size'}-2, $self->{'rule_square_size'},
-         $_, $self->{'state_colors'}[$_]->values(as => 'hash')          ) for 0 .. $self->{'last_state'};
+    $self->{'used_colors'}       = [ color('blue')->gradient( to => 'red', steps => $self->{'active_color_count'}) ];
+    $self->{'used_colors'}[$_]   = color( $default_color_def ) for $self->{'active_color_count'} .. $self->{'color_count'}-1;
+    $self->{'color_marker'}      = [ map { App::GUI::Harmonograph::Widget::PositionMarker->new
+                                           ($self, $self->{'display_size'}, 20, $_, '', $default_color_def) } 0 .. $self->{'color_count'}-1 ];
+    $self->{'color_display'}[$_] = App::GUI::Harmonograph::Widget::ColorDisplay->new
+        ($self, $self->{'display_size'}-2, $self->{'display_size'},
+         $_, $self->{'used_colors'}[$_]->values(as => 'hash')      ) for 0 .. $self->{'color_count'}-1;
+    $self->{'color_marker'}[$_]->SetToolTip("select state color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'color_count'}-1;
+    $self->{'color_display'}[$_]->SetToolTip("select state color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'color_count'}-1;
+
     $self->{'label'}{'color_set_store'} = Wx::StaticText->new($self, -1, 'Color Set Store' );
     $self->{'label'}{'color_set_funct'} = Wx::StaticText->new($self, -1, 'Colors Set Function' );
     $self->{'label'}{'used_colors'}     = Wx::StaticText->new($self, -1, 'Currently Used Colors' );
@@ -58,26 +62,24 @@ sub new {
     $self->{'picker'}    = App::GUI::Harmonograph::Frame::Part::ColorPicker->new( $self, $config->get_value('color') );
     $self->{'setpicker'} = App::GUI::Harmonograph::Frame::Part::ColorSetPicker->new( $self, $config->get_value('color_set'));
 
-    $self->{'browser'}   = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self, 'state', {red => 0, green => 0, blue => 0} );
+    $self->{'browser'}   = App::GUI::Harmonograph::Frame::Part::ColorBrowser->new( $self, 'used', {red => 0, green => 0, blue => 0} );
     $self->{'browser'}->SetCallBack( sub { $self->set_current_color( $_[0] ) });
 
-    Wx::Event::EVT_LEFT_DOWN( $self->{'state_pic'}[$_], sub { $self->select_state( $_[0]->get_nr ) }) for 0 .. $self->{'last_state'};
-    Wx::Event::EVT_LEFT_DOWN( $self->{'state_marker'}[$_], sub { $self->select_state( $_[0]->get_nr ) }) for 0 .. $self->{'last_state'};
-    $self->{'state_pic'}[$_]->SetToolTip("select state color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'last_state'};
-    $self->{'state_marker'}[$_]->SetToolTip("select state color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'last_state'};
+    Wx::Event::EVT_LEFT_DOWN( $self->{'color_display'}[$_], sub { $self->set_current_color_nr( $_[0]->get_nr ) }) for 0 .. $self->{'color_count'}-1;
+    Wx::Event::EVT_LEFT_DOWN( $self->{'color_marker'}[$_], sub { $self->set_current_color_nr( $_[0]->get_nr ) }) for 0 .. $self->{'color_count'}-1;
 
 
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'gray'}, sub {
-        $self->set_all_colors( color('white')->gradient( to => 'black', steps => $self->{'state_count'}, dynamic => $self->{'widget'}{'dynamic'}->GetValue) );
+        $self->set_all_colors( color('white')->gradient( to => 'black', steps => $self->{'active_color_count'}, dynamic => $self->{'widget'}{'dynamic'}->GetValue) );
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'gradient'}, sub {
         my @c = $self->get_all_colors;
-        my @new_colors = $c[0]->gradient( to => $c[ $self->{'current_state'} ], in => 'RGB', steps => $self->{'current_state'}+1, dynamic => $self->{'widget'}{'dynamic'}->GetValue);
+        my @new_colors = $c[0]->gradient( to => $c[ $self->{'current_color_nr'} ], in => 'RGB', steps => $self->{'current_color_nr'}+1, dynamic => $self->{'widget'}{'dynamic'}->GetValue);
         $self->set_all_colors( @new_colors );
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'complement'}, sub {
         my @c = $self->get_all_colors;
-        my @new_colors = $c[ $self->{'current_state'} ]->complement( steps => $self->{'current_state'}+1,
+        my @new_colors = $c[ $self->{'current_color_nr'} ]->complement( steps => $self->{'current_color_nr'}+1,
                                                                      saturation_tilt => $self->{'widget'}{'delta_S'}->GetValue,
                                                                      lightness_tilt => $self->{'widget'}{'delta_L'}->GetValue );
         push @new_colors, shift @new_colors;
@@ -86,6 +88,7 @@ sub new {
 
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW ;
     my $all_attr = $std_attr | &Wx::wxALL | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxALIGN_CENTER_VERTICAL;
+    my $next_attr = &Wx::wxGROW | &Wx::wxTOP | &Wx::wxALIGN_CENTER_HORIZONTAL;
 
     my $f_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $f_sizer->AddSpacer( 10 );
@@ -101,50 +104,43 @@ sub new {
     my $state_sizer = $self->{'state_sizer'} = Wx::BoxSizer->new(&Wx::wxHORIZONTAL); # $self->{'plate_sizer'}->Clear(1);
     $state_sizer->AddSpacer( 10 );
     my @option_sizer;
-    for my $state (0 .. $self->{'last_state'}){
-        $option_sizer[$state] = Wx::BoxSizer->new( &Wx::wxVERTICAL );
-        $option_sizer[$state]->AddSpacer( 2 );
-        $option_sizer[$state]->Add( $self->{'state_pic'}[$state],    0, $all_attr, 3);
-        $option_sizer[$state]->Add( $self->{'state_marker'}[$state], 0, $all_attr, 3);
-        $state_sizer->Add( $option_sizer[$state],                    0, $all_attr, 6);
+    for my $nr (0 .. $self->{'color_count'}-1){
+        $option_sizer[$nr] = Wx::BoxSizer->new( &Wx::wxVERTICAL );
+        $option_sizer[$nr]->AddSpacer( 2 );
+        $option_sizer[$nr]->Add( $self->{'color_display'}[$nr],0, $all_attr, 3);
+        $option_sizer[$nr]->Add( $self->{'color_marker'}[$nr], 0, $all_attr, 3);
+        $state_sizer->Add( $option_sizer[$nr],                 0, $all_attr, 6);
         $state_sizer->AddSpacer( 1 );
     }
     $state_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
-    my $main_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
-    $main_sizer->AddSpacer( 10 );
-    $main_sizer->Add( $self->{'label'}{'color_set_store'},0, &Wx::wxALIGN_CENTER_HORIZONTAL,  5);
-    $main_sizer->AddSpacer( 5 );
-    $main_sizer->Add( $self->{'setpicker'},               0, $std_attr,                       0);
-    $main_sizer->Add( Wx::StaticLine->new( $self, -1),    0, $all_attr,                      10);
-    $main_sizer->Add( $self->{'label'}{'color_set_funct'},0, &Wx::wxALIGN_CENTER_HORIZONTAL,  5);
-    $main_sizer->AddSpacer( 5 );
-    $main_sizer->Add( $f_sizer,                           0, $std_attr,                       0);
-    $main_sizer->Add( Wx::StaticLine->new( $self, -1),    0, $all_attr,                      10);
-    $main_sizer->Add( $self->{'label'}{'used_colors'},    0, &Wx::wxALIGN_CENTER_HORIZONTAL,  5);
-    $main_sizer->Add( $state_sizer, 0, $std_attr, 0);
-    $main_sizer->Add( Wx::StaticLine->new( $self, -1),    0, $all_attr,                      10);
-    $main_sizer->Add( $self->{'label'}{'selected_color'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL,  5);
-    $main_sizer->AddSpacer( 5 );
-    $main_sizer->Add( $self->{'browser'},                 0, $std_attr,                       0);
-    $main_sizer->Add( Wx::StaticLine->new( $self, -1),    0, $all_attr,                      10);
-    $main_sizer->Add( $self->{'label'}{'color_store'},    0, &Wx::wxALIGN_CENTER_HORIZONTAL , 5);
-    $main_sizer->Add( $self->{'picker'},                  0, $std_attr,                       0);
-    $main_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+    my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
+    $sizer->AddSpacer( 10 );
+    $sizer->Add( $self->{'label'}{'color_set_store'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL,   0);
+    $sizer->Add( $self->{'setpicker'},                0, $all_attr,                       10);
+    $sizer->Add( Wx::StaticLine->new( $self, -1),     0, $all_attr,                        0);
+    $sizer->AddSpacer( 10 );
+    $sizer->Add( $self->{'label'}{'color_set_funct'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL,   0);
+    $sizer->Add( $f_sizer,                            0, $all_attr,                       10);
+    $sizer->Add( Wx::StaticLine->new( $self, -1),     0, $all_attr,                        0);
+    $sizer->AddSpacer( 10 );
+    $sizer->Add( $self->{'label'}{'used_colors'},     0, &Wx::wxALIGN_CENTER_HORIZONTAL,   0);
+    $sizer->Add( $state_sizer,                        0, $std_attr,                        0);
+    $sizer->Add( Wx::StaticLine->new( $self, -1),     0, $all_attr,                        0);
+    $sizer->AddSpacer( 10 );
+    $sizer->Add( $self->{'label'}{'selected_color'},  0, &Wx::wxALIGN_CENTER_HORIZONTAL,  10);
+    $sizer->Add( $self->{'browser'},                  0, $next_attr, 10);
+    $sizer->Add( Wx::StaticLine->new( $self, -1),     0, $next_attr, 10);
+    $sizer->AddSpacer( 10 );
+    $sizer->Add( $self->{'label'}{'color_store'},     0, &Wx::wxALIGN_CENTER_HORIZONTAL, 10);
+    $sizer->Add( $self->{'picker'},                   0, $std_attr| &Wx::wxLEFT,         10);
+    $sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
-    $self->SetSizer( $main_sizer );
+    $self->SetSizer( $sizer );
     #$self->init;
-    $self->set_state_count( $self->{'state_count'} );
-    $self->select_state ( $self->{'current_state'} );
+    $self->set_active_color_count( $self->{'active_color_count'} );
+    $self->set_current_color_nr ( $self->{'current_color_nr'} );
     $self;
-}
-
-sub set_state_count {
-    my ($self, $count) = @_;
-    $self->{'state_count'} = $count;
-    $self->{'state_marker'}[$_]->set_state('passive') for 0 .. $self->{'state_count'} - 1;
-    $self->{'state_marker'}[$_]->set_state('disabled') for $self->{'state_count'} .. $self->{'last_state'};
-    $self->{'state_marker'}[ $self->{'current_state'} ]->set_state('active');
 }
 
 sub SetCallBack {
@@ -153,18 +149,27 @@ sub SetCallBack {
     $self->{'call_back'} = $code;
 }
 
-sub select_state {
-    my ($self, $state) = @_;
-    $state //= $self->{'current_state'};
-    my $old_marker_state = ($self->{'current_state'} < $self->{'state_count'}) ? 'passive' : 'disabled';
-    $self->{'state_marker'}[$self->{'current_state'}]->set_state( $old_marker_state );
-    $self->{'state_marker'}[ $state ]->set_state('active');
-    $self->{'current_state'} = $state;
-    $self->{'browser'}->set_data( $self->{'state_colors'}[$self->{'current_state'}]->rgb_hash, 'silent' );
+sub set_active_color_count {
+    my ($self, $count) = @_;
+    $self->{'active_color_count'} = $count;
+    $self->{'color_marker'}[$_]->set_state('passive') for 0 .. $self->{'active_color_count'}-1;
+    $self->{'color_marker'}[$_]->set_state('disabled') for $self->{'active_color_count'} .. $self->{'color_count'}-1;
+    $self->{'color_marker'}[ $self->{'current_color_nr'} ]->set_state('active');
 }
 
-sub init { $_[0]->set_settings( { 0 => '#FFFFFF', 1 => '#000000', dynamic => 1, delta_S => 0, delta_L => 0 } ) }
+sub set_current_color_nr {
+    my ($self, $nr) = @_;
+    $nr //= $self->{'current_color_nr'};
+    my $old_marker_state = ($self->{'current_color_nr'} < $self->{'active_color_count'}) ? 'passive' : 'disabled';
+    $self->{'color_marker'}[$self->{'current_color_nr'}]->set_state( $old_marker_state );
+    $self->{'color_marker'}[ $nr ]->set_state('active');
+    $self->{'current_color_nr'} = $nr;
+    $self->{'browser'}->set_data( $self->{'used_colors'}[$self->{'current_color_nr'}]->values(as => 'hash'), 'silent' );
+}
 
+sub init { $_[0]->set_settings( { list => ['blue', 'red'], dynamic => 1, delta_S => 0, delta_L => 0 } ) }
+
+sub get_state    { $_[0]->get_settings }
 sub get_settings {
     my ($self) = @_;
     my $data = {
@@ -172,54 +177,53 @@ sub get_settings {
         delta_S => $self->{'widget'}{'delta_S'}->GetValue,
         delta_L => $self->{'widget'}{'delta_L'}->GetValue,
     };
-    $data->{$_} = $self->{'state_colors'}[$_]->values(as => 'string') for 0 .. $self->{'last_state'};
-    $data;
-}
-sub get_state {
-    my ($self) = @_;
-    my $data = $self-> get_settings;
-    $data->{'objects'} = $self->{'state_colors'};
+    $data->{'list'} = [map {$_->values(as => 'string')} @{$self->{'used_colors'}}];
     $data;
 }
 
 sub set_settings {
-    my ($self, $data) = @_;
-    return unless ref $data eq 'HASH' and exists $data->{'dynamic'};
-    $self->{'widget'}{$_}->SetValue( $data->{$_} )     for qw/dynamic delta_S delta_L/;
-    $data->{$_} = $data->{$_} // $default_color_def    for 0 .. $self->{'last_state'};
-    $self->{'state_colors'}[$_] = color( $data->{$_} ) for 0 .. $self->{'last_state'};
-    $self->set_all_colors( @{$self->{'state_colors'}} );
-    $self->{'objects'} = $self->{'state_colors'};
+    my ($self, $settings) = @_;
+    return unless ref $settings eq 'HASH' and exists $settings->{'list'};
+    for (qw/dynamic delta_S delta_L/) {
+        $self->{'widget'}{$_}->SetValue( $settings->{$_} ) if exists $settings->{$_};
+    }
+    $self->{'active_color_count'} = @{ $settings->{'list'} };
+    $self->{'active_color_count'} = $self->{'color_count'} if $self->{'active_color_count'} > $self->{'color_count'};
+    $self->set_all_colors( @{ $settings->{'list'} } );
 }
 
 sub get_current_color {
     my ($self) = @_;
-    $self->{'state_colors'}[$self->{'current_state'}];
+    $self->{'used_colors'}[$self->{'current_color_nr'}];
 }
 
 sub set_current_color {
     my ($self, $color) = @_;
     return unless ref $color eq 'HASH';
-    $self->{'state_colors'}[$self->{'current_state'}] = color( $color );
-    $self->{'state_pic'}[$self->{'current_state'}]->set_color( $color );
+    $self->{'used_colors'}[$self->{'current_color_nr'}] = color( $color );
+    $self->{'color_display'}[$self->{'current_color_nr'}]->set_color( $color );
     $self->{'browser'}->set_data( $color );
     $self->{'call_back'}->( 'color' ); # update whole app
 }
 
 sub set_all_colors {
-    my ($self, @color) = @_;
-    return unless @color;
-    map { return if ref $_ ne 'Graphics::Toolkit::Color' } @color;
-    $self->{'state_colors'}[$_] = $color[$_] for 0 .. $#color;
-    # $self->{'state_colors'}[$_] = color( $default_color_def ) for $self->{'state_count'} .. $self->{'last_state'};
-    $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->rgb_hash ) for 0 .. $self->{'last_state'};
-    $self->{'state_pic'}[$_]->set_color( $self->{'state_colors'}[$_]->values ) for 0 .. $self->{'last_state'};
-    $self->select_state;
+    my ($self, @colors) = @_;
+    return unless @colors;
+    for my $i (0 .. $#colors){
+        my $temp = $colors[ $i ];
+        $colors[ $i ] = color( $temp ) if ref $temp ne 'Graphics::Toolkit::Color';
+        return "value number $i: $temp is no color" if ref $colors[ $i ] ne 'Graphics::Toolkit::Color';
+    }
+
+    $self->{'used_colors'} = [@colors];
+    $self->{'used_colors'}[$_] = color( $default_color_def ) for @colors .. $self->{'color_count'}-1;
+    $self->{'color_display'}[$_]->set_color( $self->{'used_colors'}[$_]->values(as => 'hash') ) for 0 .. $self->{'color_count'}-1;
+    $self->set_current_color_nr;
     $self->{'call_back'}->( 'color' ); # update whole app
 }
 
-sub get_all_colors { @{$_[0]->{'state_colors'}} }
-sub get_active_colors { @{$_[0]->{'state_colors'}}[ 0 .. $_[0]->{'state_count'} - 1] }
+sub get_all_colors { @{$_[0]->{'used_colors'}} }
+sub get_active_colors { @{$_[0]->{'used_colors'}}[ 0 .. $_[0]->{'active_color_count'} - 1] }
 
 sub update_config {
     my ($self) = @_;

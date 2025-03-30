@@ -286,7 +286,8 @@ sub set_settings {
 sub draw {
     my ($self) = @_;
     $self->SetStatusText( "drawing .....", 0 );
-    $self->{'progress'}->set_color( $self->{'tab'}{'visual'}->get_start_color );
+    my @colors = $self->{'tab'}{'color'}->get_all_colors;
+    $self->{'progress'}->set_color( $colors[0]->values( as => 'hash' ) );
     $self->{'board'}->draw( $self->get_settings );
     $self->SetStatusText( "done complete drawing", 0 );
 }
