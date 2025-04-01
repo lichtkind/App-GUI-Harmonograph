@@ -122,8 +122,6 @@ sub paint {
     $dfZ = 1 - ($dfZ * 30) if $val->{'z'}{'freq_damp_type'} eq '*';
     $dfR = 1 - ($dfR * 30) if $val->{'r'}{'freq_damp_type'} eq '*';
 
-#say "$fX / $dfX + $val->{'x'}{'offset'} || $val->{x}{freq_damp_type}";
-
     my $rX = $val->{'x'}{'radius'} * $Cr;
     my $rY = $val->{'y'}{'radius'} * $Cr;
     my $rZ = $val->{'z'}{'radius'} * $Cr;
@@ -132,11 +130,14 @@ sub paint {
     my $drY = $val->{'y'}{'radius_damp'} / $dot_per_sec / 1_200 * $Cr;
     my $drZ = $val->{'z'}{'radius_damp'} / $dot_per_sec / 1_200 * $Cr;
     my $drR = $val->{'r'}{'radius_damp'} / $dot_per_sec / 1_200 * $Cr;
+    my $ddrX = $val->{'x'}{'radius_damp_acc'} / $dot_per_sec / 200_000_000;
+    my $ddrY = $val->{'y'}{'radius_damp_acc'} / $dot_per_sec / 200_000_000;
+    my $ddrZ = $val->{'z'}{'radius_damp_acc'} / $dot_per_sec / 200_000_000;
+    my $ddrR = $val->{'r'}{'radius_damp_acc'} / $dot_per_sec / 200_000_000;
     $drX = 1 - ($drX / 200) if $val->{'x'}{'radius_damp_type'} eq '*';
     $drY = 1 - ($drY / 200) if $val->{'y'}{'radius_damp_type'} eq '*';
     $drZ = 1 - ($drZ / 200) if $val->{'z'}{'radius_damp_type'} eq '*';
     $drR = 1 - ($drR / 200) if $val->{'r'}{'radius_damp_type'} eq '*';
-
 
     my $tX = $val->{'x'}{'offset'} * $TAU;
     my $tY = $val->{'y'}{'offset'} * $TAU;
@@ -158,15 +159,11 @@ sub paint {
         my @code = ('  $t'.$index.' += $dt'.$index);
         if ($val->{'freq_damp'}){
             push @code, '  $dt'.$index.' '.$val->{'freq_damp_type'}.'= $df'.$index;
-            if ($val->{'freq_damp_acc'}){
-                push @code, '  $df'.$index.' '.$val->{'freq_damp_type'}.'= $ddf'.$index;
-            }
+            push @code, '  $df'.$index.' '.$val->{'freq_damp_acc_type'}.'= $ddf'.$index if ($val->{'freq_damp_acc'};
         }
         if ($val->{'radius_damp'}){
             push @code, '  $r'.$index.' '.$val->{'radius_damp_type'}.'= $dr'.$index;
-            if ($val->{'radius_damp_acc'}){
-                push @code, '  $dr'.$index.' '.$val->{'radius_damp_type'}.'= $ddr'.$index;
-            }
+            push @code, '  $dr'.$index.' '.$val->{'radius_damp_acc_type'}.'= $ddr'.$index if $val->{'radius_damp_acc'};
         }
         push @{$code{$pendulum_name}}, @code;
     }
