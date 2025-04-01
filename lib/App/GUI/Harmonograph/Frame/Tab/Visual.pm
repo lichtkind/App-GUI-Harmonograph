@@ -9,11 +9,12 @@ use base qw/Wx::Panel/;
 use App::GUI::Harmonograph::Widget::SliderCombo;
 
 my $default_settings = {
-        connect_dots => 1, line_thickness => 0, duration=> 60, dot_density => 60,
+        draw => 'line', line_thickness => 0, duration=> 60, dot_density => 60,
+        color_flow_type => 'no', color_flow_dynamic => 0, color_flow_speed => 4, colors_used => 2,
 };
 my @state_keys = keys %$default_settings;
 my @widget_keys;
-my @state_widgets = qw/connect_dots line_thickness/;
+my @state_widgets = qw/line_thickness color_flow_type color_flow_dynamic color_flow_speed colors_used/;
 
 
 sub new {
@@ -21,33 +22,32 @@ sub new {
     my $self = $class->SUPER::new( $parent, -1 );
     $self->{'callback'} = sub {};
 
-    $self->{'label'}{'line'}  = Wx::StaticText->new($self, -1, 'Line Drawn' );
+    $self->{'label'}{'line'}  = Wx::StaticText->new($self, -1, 'Drawn Line' );
     $self->{'label'}{'time'}  = Wx::StaticText->new($self, -1, 'Drawing Duration (Line Length)' );
     $self->{'label'}{'dense'} = Wx::StaticText->new($self, -1, 'Dot Density' );
     $self->{'label'}{'flow'}  = Wx::StaticText->new($self, -1, 'Color Change' );
     $self->{'label'}{'flow_type'} = Wx::StaticText->new( $self, -1, 'Change Type:');
+    $self->{'label'}{'colors'} = Wx::StaticText->new( $self, -1, 'Colors:');
 
-    $self->{'widget'}{'connect_dots'} = Wx::CheckBox->new( $self, -1, '  Connect');
-    #$self->{'widget'}{'draw'} = Wx::RadioBox->new( $self, -1, 'Draw', [-1, -1], [-1, -1], ['Dots', 'Line']);
-    $self->{'widget'}{'connect_dots'}->SetToolTip('draw just dots (off) or connect them with lines (on)');
-    $self->{'widget'}{'line_thickness'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 160, 'Thickness','dot size or thickness of drawn line in pixel',  0,  25,  0);
+    $self->{'widget'}{'draw'} = Wx::RadioBox->new( $self, -1, 'Draw', [-1, -1], [120, -1], ['Dots', 'Line']);
+    $self->{'widget'}{'draw'}->SetToolTip('draw just dots (off) or connect them with lines (on)');
+    $self->{'widget'}{'line_thickness'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 180, 'Thickness','dot size or thickness of drawn line in pixel',  0,  45,  0);
     $self->{'widget'}{'duration_min'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 85, 'Minutes','', 0,  100,  10);
-    $self->{'widget'}{'duration_s'}   = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 90, 'Seconds','', 0,  59,  10);
+    $self->{'widget'}{'duration_s'}   = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 85, 'Seconds','', 0,  59,  10);
     # $self->{'widget'}{'duration_cs'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 80, 'Fraction','', 1,  100,  10);
     $self->{'widget'}{'100dots_per_second'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 110, 'Coarse','how many dots is drawn in a second in batches of 50 ?',  0,  90,  10);
     $self->{'widget'}{'dots_per_second'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Fine','how many dots is drawn in a second ?',  0,  99,  10);
-
-    $self->{'widget'}{'type'}    = Wx::ComboBox->new( $self, -1, 'linear', [-1,-1], [115, -1], [qw/no linear alternate circular/], &Wx::wxTE_READONLY );
-    $self->{'widget'}{'type'}->SetToolTip("type of color flow: - linear - from start to end color \n  - alter(nate) - linearly between start and end color \n   - cicular - around the rainbow from start color visiting end color");
-    $self->{'widget'}{'dynamic'}  = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[75, -1], [1,2,3,4,5,6,7,8, 9, 10, 11, 12, 13], &Wx::wxTE_READONLY);
-    $self->{'widget'}{'dynamic'}->SetToolTip('dynamics of linear and alternating color change (1 = equal distanced colors change,\n larger = starting with slow color change becoming faster - or vice versa when dir activated)');
-    $self->{'widget'}{'stepsize'}  = App::GUI::Harmonograph::Widget::SliderCombo->new( $self,  94, 'Step Size','after how many circles does color change', 1, 100, 1);
-    $self->{'widget'}{'period'}    = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Period','amount of steps from start to end color', 2, 50, 10);
-    $self->{'widget'}{'direction'} = Wx::CheckBox->new( $self, -1, ' Dir.');
-    $self->{'widget'}{'direction'}->SetToolTip('if on color change starts fast getting slower, if odd starting slow ...');
+    $self->{'widget'}{'color_flow_type'} = Wx::ComboBox->new( $self, -1, 'no', [-1,-1], [115, -1], [qw/no one_time alternate circular/], &Wx::wxTE_READONLY );
+    $self->{'widget'}{'color_flow_type'}->SetToolTip("type of color flow: - linear - from start to end color \n  - alter(nate) - linearly between start and end color \n   - cicular - around the rainbow from start color visiting end color");
+    $self->{'label'}{'flow_type'}->SetToolTip("type of color flow: - linear - from start to end color \n  - alter(nate) - linearly between start and end color \n   - cicular - around the rainbow from start color visiting end color");
+    $self->{'widget'}{'color_flow_dynamic'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 115, 'Dynamic', '0 = equally paced color change, larger = starting with slow color change becoming faster - or vice versa when dir activated', -12,  12,  0, .01);
+    $self->{'widget'}{'color_flow_speed'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 140, 'Speed','color changes per minute', 1, 120, 1);
+    $self->{'widget'}{'colors_used'} = Wx::ComboBox->new( $self, -1, 2, [-1,-1], [75, -1], [1..11], &Wx::wxTE_READONLY );
+    $self->{'widget'}{'colors_used'}->SetToolTip("Select how many colors will be used / changed between.");
+    $self->{'label'}{'colors'}->SetToolTip("Select how many colors will be used / changed between.");
     @widget_keys = keys %{$self->{'widget'}};
 
-    Wx::Event::EVT_CHECKBOX( $self, $self->{'widget'}{'connect_dots'}, sub {  $self->{'callback'}->() });
+    Wx::Event::EVT_RADIOBOX( $self, $self->{'widget'}{'draw'}, sub {  $self->{'callback'}->() });
     $self->{'widget'}{ $_ }->SetCallBack( sub {  $self->{'callback'}->() } )
         for qw/line_thickness duration_min duration_s 100dots_per_second dots_per_second/;
 
@@ -57,8 +57,8 @@ sub new {
 
     my $line_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $line_sizer->AddSpacer( 20 );
-    $line_sizer->Add( $self->{'widget'}{'connect_dots'},  0, $box_attr, 5);
-    $line_sizer->AddSpacer( 30 );
+    $line_sizer->Add( $self->{'widget'}{'draw'},  0, $std_attr| &Wx::wxBOTTOM, 8);
+    $line_sizer->AddSpacer( 50 );
     $line_sizer->Add( $self->{'widget'}{'line_thickness'},  0, $box_attr, 5);
     $line_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
@@ -76,17 +76,38 @@ sub new {
     $dense_sizer->Add( $self->{'widget'}{'dots_per_second'},  0, $box_attr, 5);
     $dense_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
+    my $color_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
+    $color_sizer->AddSpacer( 20 );
+    $color_sizer->Add( $self->{'label'}{'flow_type'},  0, $box_attr, 11);
+    $color_sizer->AddSpacer( 10 );
+    $color_sizer->Add( $self->{'widget'}{'color_flow_type'},  0, $box_attr, 5);
+    $color_sizer->AddSpacer( 20 );
+    $color_sizer->Add( $self->{'widget'}{'color_flow_dynamic'},  0, $box_attr, 5);
+    $color_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+    my $flow_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
+    $flow_sizer->AddSpacer( 20 );
+    $flow_sizer->Add( $self->{'label'}{'colors'},  0, $box_attr, 11);
+    $flow_sizer->AddSpacer( 10 );
+    $flow_sizer->Add( $self->{'widget'}{'colors_used'},  0, $box_attr, 5);
+    $flow_sizer->AddSpacer( 100 );
+    $flow_sizer->Add( $self->{'widget'}{'color_flow_speed'},  0, $box_attr, 5);
+    $flow_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $sizer->AddSpacer( 10 );
     $sizer->Add( $self->{'label'}{'line'},        0, &Wx::wxALIGN_CENTER_HORIZONTAL,  0);
     $sizer->Add( $line_sizer,                     0, $std_attr|&Wx::wxTOP,           10);
-    $sizer->Add( Wx::StaticLine->new($self, -1),  0, $box_attr,                      10);
+    $sizer->Add( Wx::StaticLine->new($self, -1),  0, $box_attr,                       5);
+    $sizer->AddSpacer( 5 );
     $sizer->Add( $self->{'label'}{'time'},        0, &Wx::wxALIGN_CENTER_HORIZONTAL,  0);
     $sizer->Add( $time_sizer,                     0, $std_attr|&Wx::wxTOP,           10);
     $sizer->Add( Wx::StaticLine->new($self, -1),  0, $box_attr,                      10);
     $sizer->Add( $self->{'label'}{'dense'},       0, &Wx::wxALIGN_CENTER_HORIZONTAL,  0);
     $sizer->Add( $dense_sizer,                    0, $std_attr|&Wx::wxTOP,           10);
     $sizer->Add( Wx::StaticLine->new($self, -1),  0, $box_attr,                      10);
+    $sizer->Add( $self->{'label'}{'flow'},        0, &Wx::wxALIGN_CENTER_HORIZONTAL,  0);
+    $sizer->Add( $color_sizer,                    0, $std_attr|&Wx::wxTOP,           10);
+    $sizer->Add( $flow_sizer,                     0, $std_attr|&Wx::wxTOP,           10);
     $sizer->Add( Wx::StaticLine->new($self, -1),  0, $box_attr,                      10);
     $sizer->Add( 0, 1, $std_attr );
 
@@ -98,9 +119,12 @@ sub new {
 sub init         { $_[0]->set_settings( $default_settings ) }
 sub set_settings {
     my ( $self, $settings ) = @_;
-    return unless ref $settings eq 'HASH' and exists $settings->{'connect_dots'};
+    return unless ref $settings eq 'HASH' and exists $settings->{'draw'};
     $settings->{ $_ } //= $default_settings->{ $_ } for @state_keys;
     $self->{'widget'}{ $_ }->SetValue( $settings->{ $_ } ) for @state_widgets;
+
+    $self->{'widget'}{'draw'}->SetSelection(
+        lc $settings->{'draw'} eq lc $self->{'widget'}{'draw'}->GetString(1) ? 1 : 2);
     $self->{'widget'}{ 'duration_min' }->SetValue( int($settings->{ 'duration'} / 60), 'passive');
     $self->{'widget'}{ 'duration_s' }->SetValue(       $settings->{ 'duration'} % 60, 'passive');
     $self->{'widget'}{ '100dots_per_second'}->SetValue( int($settings->{ 'dot_density'} / 100), 'passive');
@@ -114,6 +138,7 @@ sub get_settings {
                              + $self->{'widget'}{ 'duration_s' }->GetValue;
     $settings->{'dot_density'} = ($self->{'widget'}{ '100dots_per_second' }->GetValue * 100)
                                 + $self->{'widget'}{ 'dots_per_second' }->GetValue;
+    $settings->{'draw'} = $self->{'widget'}{'draw'}->GetString( $self->{'widget'}{ 'draw' }->GetSelection );
     $settings;
 }
 

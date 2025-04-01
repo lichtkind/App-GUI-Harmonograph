@@ -48,7 +48,7 @@ sub new {
     $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'circular'}, 'R ','rotation pendulum',                       0, 100);
     $self->{'pendulum'}{'ex'}   = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'epicycle'}, 'x°','epicycle in x direction (left to right)',0, 100);
     $self->{'pendulum'}{'ey'}   = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'epicycle'}, 'y°','epicycle in y direction (up - down)',    0, 100);
-say "created tabs";
+
     $self->{'tab_names'} = [qw/mod visual color/];
     $self->{'pendulum_names'} = [qw/x y z r ex ey/];
     $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @{$self->{'pendulum_names'}};

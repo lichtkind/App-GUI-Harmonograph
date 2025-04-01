@@ -103,7 +103,7 @@ sub paint {
     my $dot_per_sec = ($val->{'visual'}{'dot_density'} || 1);
     my $t_iter = (exists $self->{'flag'}{'sketch'}) ? 5 : $val->{'visual'}{'duration'};
     $t_iter *= $dot_per_sec;
-
+    $val->{'visual'}{'connect_dots'} = int ($val->{'visual'}{'draw'} eq 'Line');
 
     my $fX = $val->{'x'}{'frequency'} * $val->{'x'}{'freq_factor'};
     my $fY = $val->{'y'}{'frequency'} * $val->{'y'}{'freq_factor'};
