@@ -52,11 +52,16 @@ sub new {
     $self->{'offset'} = App::GUI::Harmonograph::Widget::SliderCombo->new
                             ($self, 110, 'Offset', 'additional offset pendulum starts with (0 - quater rotation)', 0, 100, 0);
     $self->{'radius'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Radius %', 'radius or amplitude of pendulum swing', 0, 150, 100);
+    $self->{'neg_radius'} = Wx::CheckBox->new( $self, -1, ' Neg.');
+    $self->{'neg_radius'}->SetToolTip('allow radius to become negative');
     $self->{'radius_damp'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Damp  ', 'damping factor (diminishes amplitude over time)', 0, 100, 0);
     $self->{'radius_damp_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '*', '-']);
     $self->{'radius_damp_acc'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Acceleration ', 'accelaration of damping factor', 0, 100, 0);
     $self->{'radius_damp_acc_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '*', '/', '+', '-']);
+    $self->{'button'}{'reset_radius'} = Wx::Button->new( $self, -1, '1', [-1,-1], [35, 17] );
+    $self->{'button'}{'reset_radius'}->SetToolTip('reset radius to 100 %');
 
+    Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'reset_radius'}, sub { $self->{'radius'}->SetValue(100) });
     Wx::Event::EVT_CHECKBOX( $self, $self->{'on'},          sub { $self->update_enable(); $self->{'callback'}->() });
     Wx::Event::EVT_CHECKBOX( $self, $self->{'invert_freq'}, sub {                         $self->{'callback'}->() });
     Wx::Event::EVT_CHECKBOX( $self, $self->{'direction'},   sub {                         $self->{'callback'}->() });
@@ -106,6 +111,10 @@ sub new {
 
     my $r_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $r_sizer->Add( $self->{'radius'},   0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT,  50);
+    $r_sizer->AddSpacer( 18 );
+    $r_sizer->Add( $self->{'button'}{'reset_radius'}, 0, $box_attr,  2);
+    $r_sizer->AddSpacer( 12 );
+    $r_sizer->Add( $self->{'neg_radius'}, 0, $box_attr |&Wx::wxLEFT,  0);
     $r_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $r_damp_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
@@ -150,7 +159,7 @@ sub init {
         on => $self->{'initially_on'},
         frequency => 1, freq_factor => 1, freq_damp => 0, freq_damp_type => '*',
         freq_damp_acc => 0,freq_damp_acc_type => '*', direction => 0, invert_freq => 0,
-        offset => 0, radius => 1, radius_damp => 0, radius_damp_acc => 0,
+        offset => 0, radius => 1, radius_damp => 0, radius_damp_acc => 0, neg_radius => 0,
         radius_damp_type => '*', radius_damp_acc_type => '*' } );
 }
 
@@ -162,6 +171,7 @@ sub get_settings {
         on          => $self->{ 'on' }->IsChecked ? 1 : 0,
         direction   => $self->{ 'direction'}->IsChecked ? 1 : 0,
         invert_freq => $self->{ 'invert_freq'}->IsChecked ? 1 : 0,
+        neg_radius  => $self->{ 'neg_radius'}->IsChecked ? 1 : 0,
         frequency   => $f,
         freq_factor => (($ff eq 1)   ? 1    : ($ff eq 'π') ? $PI : ($ff eq 'Φ') ? $PHI :
                         ($ff eq 'φ') ? $phi : ($ff eq 'e') ? $e  :                $GAMMA),
@@ -188,6 +198,7 @@ sub set_settings {
     $self->{ 'on' }->SetValue( $data->{'on'} );
     $self->{ 'direction' }->SetValue( $data->{'direction'} );
     $self->{ 'invert_freq' }->SetValue( $data->{'invert_freq'} );
+    $self->{ 'neg_radius' }->SetValue( $data->{'neg_radius'} );
     $self->{ 'frequency'}->SetValue( int $data->{'frequency'}, 'passive' );
     $self->{ 'freq_dez' }->SetValue( int( 1000 * ($data->{'frequency'} - int $data->{'frequency'} ) ), 'passive' );
     my $ff = $data->{ 'freq_factor'} // 1;
