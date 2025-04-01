@@ -100,8 +100,8 @@ sub paint {
 #$val->{'x'}{'freq_damp_acc_type'};
 
 
-    my $dot_per_sec = ($val->{'visual'}{'dots_per_second'}**2);
-    my $t_iter = (exists $self->{'flag'}{'sketch'}) ? 5 : $val->{'visual'}{'length'} * 10;
+    my $dot_per_sec = ($val->{'visual'}{'dot_density'} || 1);
+    my $t_iter = (exists $self->{'flag'}{'sketch'}) ? 5 : $val->{'visual'}{'duration'};
     $t_iter *= $dot_per_sec;
 
 

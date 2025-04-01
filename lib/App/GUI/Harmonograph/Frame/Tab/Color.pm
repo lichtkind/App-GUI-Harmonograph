@@ -137,9 +137,9 @@ sub new {
     $sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     $self->SetSizer( $sizer );
-    #$self->init;
     $self->set_active_color_count( $self->{'active_color_count'} );
     $self->set_current_color_nr ( $self->{'current_color_nr'} );
+#    $self->init;
     $self;
 }
 

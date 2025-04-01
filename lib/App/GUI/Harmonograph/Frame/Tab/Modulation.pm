@@ -202,6 +202,7 @@ sub new {
     $sizer->Add( $ey_sizer,                        0, $next_attr, 15);
     $sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->SetSizer( $sizer );
+    $self->init;
     $self;
 }
 
@@ -211,7 +212,7 @@ sub set_settings {
     my ( $self, $data ) = @_;
     return unless ref $data eq 'HASH' and exists $data->{'x_function'};
     for my $key (keys %$default){
-        $self->{ $key }->SetValue( $data->{ $key } // $default->{ $key } );
+        $self->{ $key }->SetValue( $data->{ $key } // $default->{ $key, 1 } );
     }
     1;
 }

@@ -132,6 +132,7 @@ sub new {
     $sizer->Add( $r_acc_sizer,  0, &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP , 13);
     $sizer->AddSpacer( 5 );
     $self->SetSizer($sizer);
+    $self->init();
     $self;
 }
 
@@ -187,7 +188,7 @@ sub set_settings {
     $self->{ 'on' }->SetValue( $data->{'on'} );
     $self->{ 'direction' }->SetValue( $data->{'direction'} );
     $self->{ 'invert_freq' }->SetValue( $data->{'invert_freq'} );
-    $self->{ 'frequency'}->SetValue( int $data->{'frequency'} );
+    $self->{ 'frequency'}->SetValue( int $data->{'frequency'}, 'passive' );
     $self->{ 'freq_dez' }->SetValue( int( 1000 * ($data->{'frequency'} - int $data->{'frequency'} ) ), 'passive' );
     my $ff = $data->{ 'freq_factor'} // 1;
     $self->{ 'freq_factor'}->SetValue( ($ff == 1) ? 1  : ($ff < 1) ? 'φ' : ($ff > 3) ? 'π' :
