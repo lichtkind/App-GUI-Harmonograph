@@ -16,7 +16,6 @@ my @state_keys = keys %$default_settings;
 my @widget_keys;
 my @state_widgets = qw/line_thickness color_flow_type color_flow_dynamic color_flow_speed colors_used/;
 
-
 sub new {
     my ($class, $parent) = @_;
     my $self = $class->SUPER::new( $parent, -1 );
@@ -34,7 +33,6 @@ sub new {
     $self->{'widget'}{'line_thickness'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 180, 'Thickness','dot size or thickness of drawn line in pixel',  0,  45,  0);
     $self->{'widget'}{'duration_min'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 85, 'Minutes','', 0,  100,  10);
     $self->{'widget'}{'duration_s'}   = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 85, 'Seconds','', 0,  59,  10);
-    # $self->{'widget'}{'duration_cs'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 80, 'Fraction','', 1,  100,  10);
     $self->{'widget'}{'100dots_per_second'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 110, 'Coarse','how many dots is drawn in a second in batches of 50 ?',  0,  90,  10);
     $self->{'widget'}{'dots_per_second'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Fine','how many dots is drawn in a second ?',  0,  99,  10);
     $self->{'widget'}{'color_flow_type'} = Wx::ComboBox->new( $self, -1, 'no', [-1,-1], [115, -1], [qw/no one_time alternate circular/], &Wx::wxTE_READONLY );
@@ -47,9 +45,10 @@ sub new {
     $self->{'label'}{'colors'}->SetToolTip("Select how many colors will be used / changed between.");
     @widget_keys = keys %{$self->{'widget'}};
 
-    Wx::Event::EVT_RADIOBOX( $self, $self->{'widget'}{'draw'}, sub {  $self->{'callback'}->() });
+    Wx::Event::EVT_RADIOBOX( $self, $self->{'widget'}{'draw'}, sub { $self->{'callback'}->() });
+    Wx::Event::EVT_CHECKBOX( $self, $self->{'widget'}{$_},     sub { $self->{'callback'}->() }) for qw/color_flow_type colors_used/;
     $self->{'widget'}{ $_ }->SetCallBack( sub {  $self->{'callback'}->() } )
-        for qw/line_thickness duration_min duration_s 100dots_per_second dots_per_second/;
+        for qw/line_thickness duration_min duration_s 100dots_per_second dots_per_second color_flow_dynamic color_flow_speed/;
 
     my $std_attr  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW;
     my $box_attr  = $std_attr | &Wx::wxTOP | &Wx::wxBOTTOM;
@@ -110,8 +109,8 @@ sub new {
     $sizer->Add( $flow_sizer,                     0, $std_attr|&Wx::wxTOP,           10);
     $sizer->Add( Wx::StaticLine->new($self, -1),  0, $box_attr,                      10);
     $sizer->Add( 0, 1, $std_attr );
-
     $self->SetSizer( $sizer );
+
     $self->init();
     $self;
 }
