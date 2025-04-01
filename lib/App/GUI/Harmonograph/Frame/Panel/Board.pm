@@ -92,12 +92,6 @@ sub paint {
     $dc->SetPen( Wx::Pen->new( $start_color, $val->{'visual'}{'line_thickness'}, &Wx::wxPENSTYLE_SOLID) );
     #$dc->SetBrush( Wx::Brush->new( $start_color, &Wx::wxBRUSHSTYLE_STIPPLE) );
 
-#$val->{'x'}{'radius_damp_acc'};
-#$val->{'x'}{'radius_damp_acc_type'};
-#$val->{'x'}{'freq_damp_type'};
-#$val->{'x'}{'freq_damp_acc_type'};
-
-
     my $dot_per_sec = ($val->{'visual'}{'dot_density'} || 1);
     my $t_iter = (exists $self->{'flag'}{'sketch'}) ? 5 : $val->{'visual'}{'duration'};
     $t_iter *= $dot_per_sec;
@@ -111,6 +105,10 @@ sub paint {
     my $dfY = $val->{'y'}{'freq_damp'} / $dot_per_sec / 600_000;
     my $dfZ = $val->{'z'}{'freq_damp'} / $dot_per_sec / 600_000;
     my $dfR = $val->{'r'}{'freq_damp'} / $dot_per_sec / 600_000;
+    my $ddfX = $val->{'x'}{'freq_damp_acc'} / $dot_per_sec / 200_000_000;
+    my $ddfY = $val->{'y'}{'freq_damp_acc'} / $dot_per_sec / 200_000_000;
+    my $ddfZ = $val->{'z'}{'freq_damp_acc'} / $dot_per_sec / 200_000_000;
+    my $ddfR = $val->{'r'}{'freq_damp_acc'} / $dot_per_sec / 200_000_000;
     if ($val->{'x'}{'direction'}){  $fX = - $fX;   $dfX = - $dfX; }
     if ($val->{'y'}{'direction'}){  $fY = - $fY;   $dfY = - $dfY; }
     if ($val->{'z'}{'direction'}){  $fZ = - $fZ;   $dfZ = - $dfZ; }
@@ -124,7 +122,7 @@ sub paint {
     $dfZ = 1 - ($dfZ * 30) if $val->{'z'}{'freq_damp_type'} eq '*';
     $dfR = 1 - ($dfR * 30) if $val->{'r'}{'freq_damp_type'} eq '*';
 
-say "$fX / $dfX + $val->{'x'}{'offset'} || $val->{x}{freq_damp_type}";
+#say "$fX / $dfX + $val->{'x'}{'offset'} || $val->{x}{freq_damp_type}";
 
     my $rX = $val->{'x'}{'radius'} * $Cr;
     my $rY = $val->{'y'}{'radius'} * $Cr;
@@ -146,40 +144,49 @@ say "$fX / $dfX + $val->{'x'}{'offset'} || $val->{x}{freq_damp_type}";
     my $tR = $val->{'r'}{'offset'} * $TAU;
     my $dtX = $TAU * $fX / $dot_per_sec;
     my $dtY = $TAU * $fY / $dot_per_sec;
+    my $dtZ = $TAU * $fZ / $dot_per_sec;
+    my $dtR = $TAU * $fR / $dot_per_sec;
     my ($x_old, $y_old);
     my $x = $Cx + ($rX * cos($tX));
     my $y = $Cy + ($rY * sin($tY));
 
-    my $update_fX = ($val->{'x'}{'freq_damp'}) ?
-                   (($val->{'x'}{'freq_damp_type'} eq '-') ? '  $dtX -= $dfX' : '  $dtX *= $dfX') : '';
-    my $update_fY = ($val->{'y'}{'freq_damp'}) ?
-                   (($val->{'y'}{'freq_damp_type'} eq '-') ? '  $dtY -= $dfY' : '  $dtY *= $dfY') : '';
-    my $update_rX = $val->{'x'}{'radius_damp'} ?
-                  (($val->{'x'}{'radius_damp_type'} eq '-') ?
-                   ($val->{'x'}{'neg_radius'} ? '  $rX -= $drX' : '  $rX -= $drX if $rX > 0') : '  $rX *= $drX') : '';
-    my $update_rY = $val->{'y'}{'radius_damp'} ?
-                  (($val->{'y'}{'radius_damp_type'} eq '-') ?
-                   ($val->{'y'}{'neg_radius'} ? '  $rY -= $drY' : '  $rY -= $drY if $rY > 0') : '  $rY *= $drY') : '';
+    my %code = ( x=> [], y=> [], z=> [], r=> [], ex=> [], ey=> [] );
+    for my $pendulum_name (qw/x y z r ex ey/){
+        next unless $val->{$pendulum_name}{'on'};
+        my $val = $val->{ $pendulum_name };
+        my $index = uc $pendulum_name;
+        my @code = ('  $t'.$index.' += $dt'.$index);
+        if ($val->{'freq_damp'}){
+            push @code, '  $dt'.$index.' '.$val->{'freq_damp_type'}.'= $df'.$index;
+            if ($val->{'freq_damp_acc'}){
+                push @code, '  $df'.$index.' '.$val->{'freq_damp_type'}.'= $ddf'.$index;
+            }
+        }
+        if ($val->{'radius_damp'}){
+            push @code, '  $r'.$index.' '.$val->{'radius_damp_type'}.'= $dr'.$index;
+            if ($val->{'radius_damp_acc'}){
+                push @code, '  $dr'.$index.' '.$val->{'radius_damp_type'}.'= $ddr'.$index;
+            }
+        }
+        push @{$code{$pendulum_name}}, @code;
+    }
+    push @{$code{'x'}}, ($val->{'x'}{'on'} ? '  $x = $rX * cos($tX)' : '  $x = 0');
+    push @{$code{'y'}}, ($val->{'y'}{'on'} ? '  $y = $rY * sin($tY)' : '  $y = 0');
 
+    my @code = ('for (1 .. $t_iter){');
+    push @code, '  ($x_old, $y_old) = ($x, $y)' if $val->{'visual'}{'connect_dots'};
+    push @code, @{$code{$_}} for qw/x y z r ex ey/;
+    push @code, '  $x += $Cx', '  $y += $Cy';
+    push @code, ($val->{'visual'}{'connect_dots'}
+              ? '  $dc->DrawLine( $x_old, $y_old, $x, $y)'
+              : '  $dc->DrawPoint( $x, $y )');
 
+   # push @code, ' $dc->SetPen( Wx::Pen->new( $start_color ), 1, &Wx::wxPENSTYLE_SOLID);';
+   # push @code, '$progress->add_percentage( $_ / $t_iter * 100, $color[$color_index] ) unless $_ % $step_in_circle;'."\n" unless defined $self->{'flag'}{'sketch'};
 
-    my @code = ('for (1 .. $t_iter){',
-        ($val->{'visual'}{'connect_dots'} ? '  ($x_old, $y_old) = ($x, $y)' : ()),
-   # $code .= ' $dc->SetPen( Wx::Pen->new( $start_color ), 1, &Wx::wxPENSTYLE_SOLID);';
-   # $code .= '$progress->add_percentage( $_ / $t_iter * 100, $color[$color_index] ) unless $_ % $step_in_circle;'."\n" unless defined $self->{'flag'}{'sketch'};
-            '  $tX += $dtX',
-            '  $tY += $dtY',
-    ($val->{'x'}{'on'} ? ($update_fX, $update_rX,'  $x = $rX * cos($tX)') : '  $x = 0'),
-    ($val->{'y'}{'on'} ? ($update_fY, $update_rY,'  $y = $rY * sin($tY)') : '  $y = 0'),
-            '  $x += $Cx',
-            '  $y += $Cy',
-    ($val->{'visual'}{'connect_dots'}
-          ? '  $dc->DrawLine( $x_old, $y_old, $x, $y)'
-          : '  $dc->DrawPoint( $x, $y )'), #    'say "$x, $y"',
-    '}');
-    my $code = join '', map {$_.";\n"} @code;
+    my $code = join '', map {$_.";\n"} @code, '}';
+say $code;
     eval $code;
-#say $code;
     die "bad iter code - $@ : $code" if $@; # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
 
     delete $self->{'flag'};

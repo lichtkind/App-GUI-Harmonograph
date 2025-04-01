@@ -58,10 +58,10 @@ sub new {
     $self->{'radius_damp_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '*', '-']);
     $self->{'radius_damp_acc'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Acceleration ', 'accelaration of damping factor', 0, 100, 0);
     $self->{'radius_damp_acc_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '*', '/', '+', '-']);
-    $self->{'button'}{'reset_radius'} = Wx::Button->new( $self, -1, '1', [-1,-1], [35, 17] );
-    $self->{'button'}{'reset_radius'}->SetToolTip('reset radius to 100 %');
+    $self->{'reset_radius'} = Wx::Button->new( $self, -1, '1', [-1,-1], [35, 17] );
+    $self->{'reset_radius'}->SetToolTip('reset radius to 100 %');
 
-    Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'reset_radius'}, sub { $self->{'radius'}->SetValue(100) });
+    Wx::Event::EVT_BUTTON( $self, $self->{'reset_radius'}, sub { $self->{'radius'}->SetValue(100) });
     Wx::Event::EVT_CHECKBOX( $self, $self->{'on'},          sub { $self->update_enable(); $self->{'callback'}->() });
     Wx::Event::EVT_CHECKBOX( $self, $self->{'invert_freq'}, sub {                         $self->{'callback'}->() });
     Wx::Event::EVT_CHECKBOX( $self, $self->{'direction'},   sub {                         $self->{'callback'}->() });
@@ -69,6 +69,7 @@ sub new {
     Wx::Event::EVT_CHECKBOX( $self, $self->{'quarter_off'}, sub {                         $self->{'callback'}->() });
     Wx::Event::EVT_COMBOBOX( $self, $self->{'freq_factor'}, sub {                         $self->{'callback'}->() });
     Wx::Event::EVT_COMBOBOX( $self, $self->{'freq_damp_type'},       sub {                $self->{'callback'}->() });
+    Wx::Event::EVT_COMBOBOX( $self, $self->{'freq_damp_acc_type'},   sub {                $self->{'callback'}->() });
     Wx::Event::EVT_COMBOBOX( $self, $self->{'radius_damp_type'},     sub {                $self->{'callback'}->() });
     Wx::Event::EVT_COMBOBOX( $self, $self->{'radius_damp_acc_type'}, sub {                $self->{'callback'}->() });
 
@@ -112,7 +113,7 @@ sub new {
     my $r_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $r_sizer->Add( $self->{'radius'},   0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT,  50);
     $r_sizer->AddSpacer( 18 );
-    $r_sizer->Add( $self->{'button'}{'reset_radius'}, 0, $box_attr,  2);
+    $r_sizer->Add( $self->{'reset_radius'}, 0, $box_attr,  2);
     $r_sizer->AddSpacer( 12 );
     $r_sizer->Add( $self->{'neg_radius'}, 0, $box_attr |&Wx::wxLEFT,  0);
     $r_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
@@ -177,6 +178,7 @@ sub get_settings {
                         ($ff eq 'φ') ? $phi : ($ff eq 'e') ? $e  :                $GAMMA),
         freq_damp   => $self->{'freq_damp'}->GetValue,
         freq_damp_type => $self->{'freq_damp_type'}->GetValue,
+        freq_damp_acc => $self->{'freq_damp_acc'}->GetValue,
         freq_damp_type => $self->{'freq_damp_type'}->GetValue,
         freq_damp_acc_type  => $self->{'freq_damp_acc_type'}->GetValue,
         offset      => (0.5 * $self->{'half_off'}->IsChecked)
@@ -228,7 +230,7 @@ sub update_enable {
     $self->{$_}->Enable( $val ) for qw/
         freq_dez freq_factor invert_freq direction half_off quarter_off offset
         frequency freq_damp freq_damp_acc freq_damp_type freq_damp_acc_type
-        radius radius_damp radius_damp_acc radius_damp_type radius_damp_acc_type/;
+        radius neg_radius reset_radius radius_damp radius_damp_acc radius_damp_type radius_damp_acc_type/;
 }
 
 1;
