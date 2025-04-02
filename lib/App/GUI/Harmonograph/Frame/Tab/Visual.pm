@@ -9,7 +9,7 @@ use base qw/Wx::Panel/;
 use App::GUI::Harmonograph::Widget::SliderCombo;
 
 my $default_settings = {
-        draw => 'line', line_thickness => 0, duration=> 60, dot_density => 60,
+        draw => 'line', line_thickness => 0, duration=> 60, dot_density => 120,
         color_flow_type => 'no', color_flow_dynamic => 0, color_flow_speed => 4, colors_used => 2,
 };
 my @state_keys = keys %$default_settings;

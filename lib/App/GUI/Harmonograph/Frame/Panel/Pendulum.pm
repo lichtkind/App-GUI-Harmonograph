@@ -54,7 +54,7 @@ sub new {
     $self->{'radius'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Radius %', 'radius or amplitude of pendulum swing', 0, 150, 100);
     $self->{'neg_radius'} = Wx::CheckBox->new( $self, -1, ' Neg.');
     $self->{'neg_radius'}->SetToolTip('allow radius to become negative');
-    $self->{'radius_damp'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Damp  ', 'damping factor (diminishes amplitude over time)', 0, 100, 0);
+    $self->{'radius_damp'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Damp  ', 'damping factor (diminishes amplitude over time)', 0, 160, 0);
     $self->{'radius_damp_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '*', '-']);
     $self->{'radius_damp_acc'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Acceleration ', 'accelaration of damping factor', 0, 100, 0);
     $self->{'radius_damp_acc_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '*', '/', '+', '-']);
@@ -62,16 +62,11 @@ sub new {
     $self->{'reset_radius'}->SetToolTip('reset radius to 100 %');
 
     Wx::Event::EVT_BUTTON( $self, $self->{'reset_radius'}, sub { $self->{'radius'}->SetValue(100) });
-    Wx::Event::EVT_CHECKBOX( $self, $self->{'on'},          sub { $self->update_enable(); $self->{'callback'}->() });
-    Wx::Event::EVT_CHECKBOX( $self, $self->{'invert_freq'}, sub {                         $self->{'callback'}->() });
-    Wx::Event::EVT_CHECKBOX( $self, $self->{'direction'},   sub {                         $self->{'callback'}->() });
-    Wx::Event::EVT_CHECKBOX( $self, $self->{'half_off'},    sub {                         $self->{'callback'}->() });
-    Wx::Event::EVT_CHECKBOX( $self, $self->{'quarter_off'}, sub {                         $self->{'callback'}->() });
-    Wx::Event::EVT_COMBOBOX( $self, $self->{'freq_factor'}, sub {                         $self->{'callback'}->() });
-    Wx::Event::EVT_COMBOBOX( $self, $self->{'freq_damp_type'},       sub {                $self->{'callback'}->() });
-    Wx::Event::EVT_COMBOBOX( $self, $self->{'freq_damp_acc_type'},   sub {                $self->{'callback'}->() });
-    Wx::Event::EVT_COMBOBOX( $self, $self->{'radius_damp_type'},     sub {                $self->{'callback'}->() });
-    Wx::Event::EVT_COMBOBOX( $self, $self->{'radius_damp_acc_type'}, sub {                $self->{'callback'}->() });
+    Wx::Event::EVT_CHECKBOX( $self, $self->{'on'},         sub { $self->update_enable(); $self->{'callback'}->() });
+    Wx::Event::EVT_CHECKBOX( $self, $self->{ $_ },         sub { $self->{'callback'}->() })
+        for qw/invert_freq direction half_off quarter_off neg_radius/;
+    Wx::Event::EVT_COMBOBOX( $self, $self->{ $_ },         sub { $self->{'callback'}->() })
+        for qw/freq_factor freq_damp_type freq_damp_acc_type radius_damp_type radius_damp_acc_type/;
 
     my $base_attr = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW;
     my $box_attr = $base_attr | &Wx::wxTOP | &Wx::wxBOTTOM;
