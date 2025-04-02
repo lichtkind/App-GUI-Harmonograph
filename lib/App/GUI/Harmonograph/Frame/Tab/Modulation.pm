@@ -12,7 +12,7 @@ use App::GUI::Harmonograph::Widget::SliderCombo;
 my @function_names = (qw/sin cos tan cot sec csc sinh cosh tanh coth sech csch/);
 my @variable_names = ('X time',  'Y time', 'Z time', 'R time', 'eX time', 'eY time',
                       'X freq.', 'Y freq.', 'Z freq.', 'R freq.', 'eX freq.', 'eY freq.',
-                      'X radius','Y radius', 'Z radius', 'R radius', 'eX radius', 'eY radius', qw/zero one/); # variable names
+                      'X radius','Y radius', 'Z radius', 'R radius', 'eX radius', 'eY radius'); # variable names
 my @operator_names = (qw/= + - * \//);
 my @pendulum_names = (qw/x y zx zy r11 r12 r21 r22 ex ey/);
 

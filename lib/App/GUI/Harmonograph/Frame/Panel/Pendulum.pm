@@ -43,6 +43,8 @@ sub new {
     $self->{'freq_damp_acc_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '*', '/', '+', '-']);
     $self->{'invert_freq'} = Wx::CheckBox->new( $self, -1, ' Inv.');
     $self->{'invert_freq'}->SetToolTip('invert (1/x) pendulum frequency');
+    $self->{'neg_freq'} = Wx::CheckBox->new( $self, -1, ' Neg.');
+    $self->{'neg_freq'}->SetToolTip('allow frequency to become negative');
     $self->{'direction'} = Wx::CheckBox->new( $self, -1, ' Dir.');
     $self->{'direction'}->SetToolTip('invert pendulum direction (to counter clockwise)');
     $self->{'half_off'} = Wx::CheckBox->new( $self, -1, ' 180');
@@ -64,7 +66,7 @@ sub new {
     Wx::Event::EVT_BUTTON( $self, $self->{'reset_radius'}, sub { $self->{'radius'}->SetValue(100) });
     Wx::Event::EVT_CHECKBOX( $self, $self->{'on'},         sub { $self->update_enable(); $self->{'callback'}->() });
     Wx::Event::EVT_CHECKBOX( $self, $self->{ $_ },         sub { $self->{'callback'}->() })
-        for qw/invert_freq direction half_off quarter_off neg_radius/;
+        for qw/invert_freq direction neg_freq half_off quarter_off neg_radius/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{ $_ },         sub { $self->{'callback'}->() })
         for qw/freq_factor freq_damp_type freq_damp_acc_type radius_damp_type radius_damp_acc_type/;
 
@@ -90,6 +92,8 @@ sub new {
     $f_damp_sizer->Add( $self->{'freq_damp'},     0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT, 62);
     $f_damp_sizer->AddSpacer( 19 );
     $f_damp_sizer->Add( $self->{'freq_damp_type'}, 0, $box_attr |&Wx::wxLEFT, 0);
+    $f_damp_sizer->AddSpacer( 12 );
+    $f_damp_sizer->Add( $self->{'neg_freq'}, 0, $box_attr|&Wx::wxLEFT,  0);
     $f_damp_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $f_acc_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
@@ -109,14 +113,14 @@ sub new {
     $r_sizer->Add( $self->{'radius'},   0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT,  50);
     $r_sizer->AddSpacer( 18 );
     $r_sizer->Add( $self->{'reset_radius'}, 0, $box_attr,  2);
-    $r_sizer->AddSpacer( 12 );
-    $r_sizer->Add( $self->{'neg_radius'}, 0, $box_attr |&Wx::wxLEFT,  0);
     $r_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $r_damp_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $r_damp_sizer->Add( $self->{'radius_damp'},     0, &Wx::wxALIGN_LEFT|&Wx::wxGROW|&Wx::wxLEFT, 62);
     $r_damp_sizer->AddSpacer( 18 );
     $r_damp_sizer->Add( $self->{'radius_damp_type'}, 0, $box_attr |&Wx::wxLEFT,  0);
+    $r_damp_sizer->AddSpacer( 12 );
+    $r_damp_sizer->Add( $self->{'neg_radius'}, 0, $box_attr |&Wx::wxLEFT,  0);
     $r_damp_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $r_acc_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
@@ -154,7 +158,7 @@ sub init {
     $self->set_settings ({
         on => $self->{'initially_on'},
         frequency => 1, freq_factor => 1, freq_damp => 0, freq_damp_type => '*',
-        freq_damp_acc => 0,freq_damp_acc_type => '*', direction => 0, invert_freq => 0,
+        freq_damp_acc => 0,freq_damp_acc_type => '*', direction => 0, invert_freq => 0, neg_freq => 0,
         offset => 0, radius => 1, radius_damp => 0, radius_damp_acc => 0, neg_radius => 0,
         radius_damp_type => '*', radius_damp_acc_type => '*' } );
 }
@@ -167,6 +171,7 @@ sub get_settings {
         on          => $self->{ 'on' }->IsChecked ? 1 : 0,
         direction   => $self->{ 'direction'}->IsChecked ? 1 : 0,
         invert_freq => $self->{ 'invert_freq'}->IsChecked ? 1 : 0,
+        neg_freq    => $self->{ 'neg_freq'}->IsChecked ? 1 : 0,
         neg_radius  => $self->{ 'neg_radius'}->IsChecked ? 1 : 0,
         frequency   => $f,
         freq_factor => (($ff eq 1)   ? 1    : ($ff eq 'π') ? $PI : ($ff eq 'Φ') ? $PHI :
@@ -195,6 +200,7 @@ sub set_settings {
     $self->{ 'on' }->SetValue( $data->{'on'} );
     $self->{ 'direction' }->SetValue( $data->{'direction'} );
     $self->{ 'invert_freq' }->SetValue( $data->{'invert_freq'} );
+    $self->{ 'neg_freq' }->SetValue( $data->{'neg_freq'} );
     $self->{ 'neg_radius' }->SetValue( $data->{'neg_radius'} );
     $self->{ 'frequency'}->SetValue( int $data->{'frequency'}, 'passive' );
     $self->{ 'freq_dez' }->SetValue( int( 1000 * ($data->{'frequency'} - int $data->{'frequency'} ) ), 'passive' );
@@ -223,7 +229,7 @@ sub update_enable {
     my ($self) = @_;
     my $val = $self->{ 'on' }->IsChecked;
     $self->{$_}->Enable( $val ) for qw/
-        freq_dez freq_factor invert_freq direction half_off quarter_off offset
+        freq_dez freq_factor invert_freq direction neg_freq half_off quarter_off offset
         frequency freq_damp freq_damp_acc freq_damp_type freq_damp_acc_type
         radius neg_radius reset_radius radius_damp radius_damp_acc radius_damp_type radius_damp_acc_type/;
 }
