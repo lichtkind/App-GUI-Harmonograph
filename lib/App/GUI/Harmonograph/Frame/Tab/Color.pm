@@ -16,12 +16,13 @@ use App::GUI::Harmonograph::Widget::PositionMarker;
 use Graphics::Toolkit::Color qw/color/;
 
 our $default_color_def = $App::GUI::Harmonograph::Frame::Panel::ColorSetPicker::default_color;
+my $default_settings = { 1=> 'blue', 2=> 'red', dynamic => 1, delta_S => 0, delta_L => 0 };
 
 sub new {
     my ( $class, $parent, $config ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
 
-    $self->{'set_back'}  = sub {};
+    $self->{'call_back'}  = sub {};
     $self->{'config'}     = $config;
     $self->{'color_count'} = 11;  # max pos
     $self->{'active_color_count'} = 2;  # nr of currently used
@@ -60,7 +61,7 @@ sub new {
 
 
     $self->{'picker'}    = App::GUI::Harmonograph::Frame::Panel::ColorPicker->new( $self, $config->get_value('color') );
-    $self->{'setpicker'} = App::GUI::Harmonograph::Frame::Panel::ColorSetPicker->new( $self, $config->get_value('color_set'));
+    $self->{'setpicker'} = App::GUI::Harmonograph::Frame::Panel::ColorSetPicker->new( $self, $config->get_value('color_set'), $self->{'color_count'});
 
     $self->{'browser'}   = App::GUI::Harmonograph::Frame::Panel::ColorBrowser->new( $self, 'selected', {red => 0, green => 0, blue => 0} );
     $self->{'browser'}->SetCallBack( sub { $self->set_current_color( $_[0] ) });
@@ -139,7 +140,7 @@ sub new {
     $self->SetSizer( $sizer );
     $self->set_active_color_count( $self->{'active_color_count'} );
     $self->set_current_color_nr ( $self->{'current_color_nr'} );
-#    $self->init;
+    $self->init;
     $self;
 }
 
@@ -167,7 +168,14 @@ sub set_current_color_nr {
     $self->{'browser'}->set_data( $self->{'used_colors'}[$self->{'current_color_nr'}]->values(as => 'hash'), 'silent' );
 }
 
-sub init { $_[0]->set_settings( { list => ['blue', 'red'], dynamic => 1, delta_S => 0, delta_L => 0 } ) }
+sub init { $_[0]->set_settings( $default_settings ) }
+
+sub set_settings {
+    my ($self, $settings) = @_;
+    return unless ref $settings eq 'HASH' and exists $settings->{'dynamic'};
+    $self->{'widget'}{$_}->SetValue( $settings->{$_} // $default_settings->{$_} ) for qw/dynamic delta_S delta_L/;
+    $self->set_all_colors( grep {defined $_} map {$settings->{$_}} 1 .. $self->{'color_count'} );
+}
 
 sub get_state    { $_[0]->get_settings }
 sub get_settings {
@@ -177,19 +185,8 @@ sub get_settings {
         delta_S => $self->{'widget'}{'delta_S'}->GetValue,
         delta_L => $self->{'widget'}{'delta_L'}->GetValue,
     };
-    $data->{'list'} = [map {$_->values(as => 'string')} @{$self->{'used_colors'}}];
+    $data->{$_} = $self->{'used_colors'}[$_-1]->values(as => 'hex') for 1 .. $self->{'color_count'};
     $data;
-}
-
-sub set_settings {
-    my ($self, $settings) = @_;
-    return unless ref $settings eq 'HASH' and exists $settings->{'list'};
-    for (qw/dynamic delta_S delta_L/) {
-        $self->{'widget'}{$_}->SetValue( $settings->{$_} ) if exists $settings->{$_};
-    }
-    $self->{'active_color_count'} = @{ $settings->{'list'} };
-    $self->{'active_color_count'} = $self->{'color_count'} if $self->{'active_color_count'} > $self->{'color_count'};
-    $self->set_all_colors( @{ $settings->{'list'} } );
 }
 
 sub get_current_color {
@@ -214,7 +211,6 @@ sub set_all_colors {
         $colors[ $i ] = color( $temp ) if ref $temp ne 'Graphics::Toolkit::Color';
         return "value number $i: $temp is no color" if ref $colors[ $i ] ne 'Graphics::Toolkit::Color';
     }
-
     $self->{'used_colors'} = [@colors];
     $self->{'used_colors'}[$_] = color( $default_color_def ) for @colors .. $self->{'color_count'}-1;
     $self->{'color_display'}[$_]->set_color( $self->{'used_colors'}[$_]->values(as => 'hash') ) for 0 .. $self->{'color_count'}-1;

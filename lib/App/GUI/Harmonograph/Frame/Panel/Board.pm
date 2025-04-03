@@ -86,7 +86,7 @@ sub paint {
                       x_freq => '$dtX', y_freq => '$dtY', e_freq => '$dtE', f_freq => '$dtF', w_freq => '$dtW', r_freq => '$dtR',
                       x_radius => '$rX', y_radius => '$rY', e_radius => '$rE', f_radius => '$rF', w_radius => '$rW', r_radius => '$rR');
 
-    my $start_color = Wx::Colour->new( 0, 20, 200 ); # @{$val->{'start_color'}}{'red', 'green', 'blue'}
+    my $start_color = Wx::Colour->new( color($val->{'color'}{1})->values ); # @{$val->{'start_color'}}{'red', 'green', 'blue'}
     $dc->SetPen( Wx::Pen->new( $start_color, $val->{'visual'}{'line_thickness'}, &Wx::wxPENSTYLE_SOLID) );
     #$dc->SetBrush( Wx::Brush->new( $start_color, &Wx::wxBRUSHSTYLE_STIPPLE) );
 

@@ -39,7 +39,7 @@ App::GUI::Harmonograph - sculpting beautiful circular drawings
 
 =item 1.
 
-read this POD
+read this POD page
 
 =item 2.
 
@@ -47,7 +47,7 @@ start the program: > C<harmonograph>
 
 =item 3.
 
-move knobs in tabs and observe preview sketch reacting til settings are interesting
+move knobs in tabs and observe preview sketch reacting until the drawing is interesting
 
 =item 4.
 
@@ -67,15 +67,10 @@ an INI file. Load it from there later to restore settings for further tweaking.
 
 =back
 
-Please note that color changes do not trigger a new preview sketch and if
-you sketch is not visible, it is most likely due the combination in LINE
-SETTINGS of line being off (dots only), dot thinkness is low and dot density
-being also low.
-
 After first use of the program, a config file will be created under
 I<~/.config/harmonograph> in your home directory. It contains mainly
-stored colors and dirs where to load and store setting files.
-You may change it manually or deleted it to reset defaults.
+stored colors and dir entries that tell the app from where to load and
+store files. You may change it manually or deleted it to reset defaults.
 
 
 =head1 DESCRIPTION
@@ -134,20 +129,26 @@ Because when X goes right Y goes up and vice versa.
 But if we start one pendulum at the center and the other
 at the upmost position we get a circle.
 In other words: we added an offset of 90 degrees to Y (or X).
-Our third pendulum Z moves the paper in circulating manner and
-but not rotating the paper around its center.
-If both circular movements (of X, Y and Z) are concurrent -
-the pen just stays at one point over the paper.
+Our third pendulum W moves (wobbles) the paper in circulating manner around
+its center (but not rotating, so a dot in the left corner will always left).
+If both circular movements (of X, Y and the one of W) are concurrent -
+the pen just stays at one point over the paper and paint one dot.
 If both are countercurrent - we get a circle.
-Interesting things start to happen, if we alter the speed of of X, Y and Z.
+Interesting things start to happen, if we alter the speed of of X, Y and W.
 Than famous harmonic pattern appear.
 And for even more complex drawings I added R, which is not really
-a pendulum and not part of the original harmonograph,
-but an additional rotary movement of Z around its center.
+a pendulum and not part of the original Harmonograph,
+but an additional rotary movement of the paper around its center.
+I added even 2 more pendula (E and F), which draw an epicycle around the
+point where the dot would be normally drawn.
+
 The pendula out of metal do of course fizzle out over time,
 which you can see in the drawing, in a spiraling movement toward the center.
 We emulate this with two damping factors: one for amplitude and one for
-the frequency (speed).
+the frequency (speed). The radius / ampitude of endulum R is special and
+allows you to zoom in or out in case you wish to do so. Normally this is
+not necessary, since the program autoadjusts to the settings, so that the
+picture os always full visible and as big as possible.
 
 
 =head1 GUI
