@@ -36,21 +36,21 @@ sub new {
     $self->{'tab'}{'visual'}    = App::GUI::Harmonograph::Frame::Tab::Visual->new( $self->{'tabs'} );
     $self->{'tab'}{'color'}     = App::GUI::Harmonograph::Frame::Tab::Color->new( $self->{'tabs'}, $self->{'config'} );
     $self->{'tabs'}->AddPage( $self->{'tab'}{'linear'},   'Lateral Pendulum');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'circular'}, 'Rotary Pendulum');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'epicycle'}, 'Epi Pendulum');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'mod'},      'Modulation');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'circular'}, 'Rotary Pendulum');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'mod'},      'Equation');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'visual'},   'Visual');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},    'Colors');
 
-    $self->{'pendulum'}{'x'}    = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'linear'},   'X ','pendulum in x direction (left to right)', 1, 100);
-    $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'linear'},   'Y ','pendulum in y direction (up - down)',     1, 100);
-    $self->{'pendulum'}{'z'}    = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'circular'}, 'Z ','circular wobbling pendulum',              0, 100);
-    $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'circular'}, 'R ','rotation pendulum',                       0, 100);
-    $self->{'pendulum'}{'ex'}   = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'epicycle'}, 'x°','epicycle in x direction (left to right)',0, 100);
-    $self->{'pendulum'}{'ey'}   = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'epicycle'}, 'y°','epicycle in y direction (up - down)',    0, 100);
+    $self->{'pendulum'}{'x'}    = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'linear'},   'X ', 'pendulum in x direction (left to right)', 1, 100);
+    $self->{'pendulum'}{'y'}    = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'linear'},   'Y ', 'pendulum in y direction (up - down)',     1, 100);
+    $self->{'pendulum'}{'e'}    = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'epicycle'}, 'E ', 'epicycle in x direction (left to right)', 0, 100);
+    $self->{'pendulum'}{'f'}    = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'epicycle'}, 'F ', 'epicycle in y direction (up - down)',     0, 100);
+    $self->{'pendulum'}{'w'}    = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'circular'}, 'W' , 'circular wobbling pendulum',               0, 100);
+    $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'circular'}, 'R ', 'rotation pendulum',                       0, 100);
 
     $self->{'tab_names'} = [qw/mod visual color/];
-    $self->{'pendulum_names'} = [qw/x y z r ex ey/];
+    $self->{'pendulum_names'} = [qw/x y e f w r/];
     $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @{$self->{'pendulum_names'}};
     $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @{$self->{'tab_names'}};
 
@@ -84,13 +84,11 @@ sub new {
         my $path = $self->base_path . '.ini';
         $self->write_settings_file( $path);
         $self->{'config'}->add_setting_file( $path );
-  #      $self->{'last_file_settings'} = $settings;
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'save_next'},  sub {
         my $settings = $self->get_settings;
         my $path = $self->base_path . '.' . $self->{'config'}->get_value('file_base_ending');
         $self->write_image( $path );
-  #      $self->{'last_file_settings'} = $settings;
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'draw'},  sub { draw( $self ) });
     Wx::Event::EVT_CLOSE( $self, sub {
@@ -174,7 +172,7 @@ sub new {
 
     my $circular_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $circular_sizer->AddSpacer(10);
-    $circular_sizer->Add( $self->{'pendulum'}{'z'},   0, $std_attr| &Wx::wxLEFT, 15);
+    $circular_sizer->Add( $self->{'pendulum'}{'w'},   0, $std_attr| &Wx::wxLEFT, 15);
     $circular_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'circular'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
     $circular_sizer->AddSpacer(10);
     $circular_sizer->Add( $self->{'pendulum'}{'r'},   0, $std_attr| &Wx::wxLEFT, 15);
@@ -183,10 +181,10 @@ sub new {
 
     my $epi_sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     $epi_sizer->AddSpacer(10);
-    $epi_sizer->Add( $self->{'pendulum'}{'ex'},   0, $std_attr| &Wx::wxLEFT, 15);
+    $epi_sizer->Add( $self->{'pendulum'}{'e'},   0, $std_attr| &Wx::wxLEFT, 15);
     $epi_sizer->Add( Wx::StaticLine->new( $self->{'tab'}{'epicycle'}, -1, [-1,-1], [ 135, 2] ),  0, $vert_attr, 10);
     $epi_sizer->AddSpacer(10);
-    $epi_sizer->Add( $self->{'pendulum'}{'ey'},   0, $std_attr| &Wx::wxLEFT, 15);
+    $epi_sizer->Add( $self->{'pendulum'}{'f'},   0, $std_attr| &Wx::wxLEFT, 15);
     $epi_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->{'tab'}{'epicycle'}->SetSizer( $epi_sizer );
 

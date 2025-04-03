@@ -9,7 +9,6 @@ use Wx;
 use base qw/Wx::Panel/;
 use Benchmark;
 use Graphics::Toolkit::Color qw/color/;
-use App::GUI::Harmonograph::Compute::Function;
 use App::GUI::Harmonograph::Compute::Drawing;
 
 my $TAU = 6.283185307;
@@ -80,22 +79,12 @@ sub paint {
     my $Cy = (defined $height) ? ($height / 2) : $self->{'center'}{'y'};
     my $Cr = (defined $height) ? ($width > $height ? $Cx : $Cy) : $self->{'hard_radius'};
     $Cr -= 15;
-    my $max_xr = $val->{'x'}{'on'} ? $val->{'x'}{'radius'} : 1;
-    my $max_yr = $val->{'y'}{'on'} ? $val->{'y'}{'radius'} : 1;
-    $max_xr += $val->{'ex'}{'radius'} if $val->{'ex'}{'on'};
-    $max_yr += $val->{'ey'}{'radius'} if $val->{'ey'}{'on'};
-    $max_xr += $val->{'z'}{'radius'} if $val->{'z'}{'on'};
-    $max_yr += $val->{'z'}{'radius'} if $val->{'z'}{'on'};
-    $max_xr *= 1.5 if $val->{'r'}{'on'};
-    $max_yr *= 1.5 if $val->{'r'}{'on'};
-    $Cr /=  (($max_xr > $max_yr) ? $max_xr : $max_yr); # zoom out so everything is visible
 
    # my $ = App::GUI::Harmonograph::Compute::Drawing::prepare( $val, $Cr, $self->{'flag'}{'sketch'} );
 
-    my %var_names = ( x_time => '$tx', y_time => '$ty', z_time => '$tz', r_time => '$tr',
-                      x_freq => '$dtx', y_freq => '$dty', z_freq => '$dtz', r_freq => '$dtr',
-                      x_radius => '$rx', y_radius => '$ry', z_radius => '$rz', r_radius => '$rr',
-                      zero => '0', one => '1');
+    my %var_names = ( x_time => '$tX', y_time => '$tY', e_time => '$tE', f_time => '$tF', w_time => '$tW', r_time => '$tR',
+                      x_freq => '$dtX', y_freq => '$dtY', e_freq => '$dtE', f_freq => '$dtF', w_freq => '$dtW', r_freq => '$dtR',
+                      x_radius => '$rX', y_radius => '$rY', e_radius => '$rE', f_radius => '$rF', w_radius => '$rW', r_radius => '$rR');
 
     my $start_color = Wx::Colour->new( 0, 20, 200 ); # @{$val->{'start_color'}}{'red', 'green', 'blue'}
     $dc->SetPen( Wx::Pen->new( $start_color, $val->{'visual'}{'line_thickness'}, &Wx::wxPENSTYLE_SOLID) );
@@ -108,140 +97,127 @@ sub paint {
 
     my $fX = $val->{'x'}{'frequency'} * $val->{'x'}{'freq_factor'};
     my $fY = $val->{'y'}{'frequency'} * $val->{'y'}{'freq_factor'};
-    my $fZ = $val->{'z'}{'frequency'} * $val->{'z'}{'freq_factor'};
+    my $fE = $val->{'e'}{'frequency'} * $val->{'e'}{'freq_factor'};
+    my $fF = $val->{'f'}{'frequency'} * $val->{'f'}{'freq_factor'};
+    my $fW = $val->{'w'}{'frequency'} * $val->{'w'}{'freq_factor'};
     my $fR = $val->{'r'}{'frequency'} * $val->{'r'}{'freq_factor'};
-    my $fEX = $val->{'ex'}{'frequency'} * $val->{'ex'}{'freq_factor'};
-    my $fEY = $val->{'ey'}{'frequency'} * $val->{'ey'}{'freq_factor'};
-    my $dfX = $val->{'x'}{'freq_damp'} / $dot_per_sec / 5_000_000;
-    my $dfY = $val->{'y'}{'freq_damp'} / $dot_per_sec / 5_000_000;
-    my $dfZ = $val->{'z'}{'freq_damp'} / $dot_per_sec / 5_000_000;
-    my $dfR = $val->{'r'}{'freq_damp'} / $dot_per_sec / 5_000_000;
-    my $dfEX = $val->{'ex'}{'freq_damp'} / $dot_per_sec / 5_000_000;
-    my $dfEY = $val->{'ey'}{'freq_damp'} / $dot_per_sec / 5_000_000;
+    my $dfX = $val->{'x'}{'freq_damp'} * sqrt($val->{'x'}{'freq_damp'}) / $dot_per_sec / 10_000_000 * $fX;
+    my $dfY = $val->{'y'}{'freq_damp'} * sqrt($val->{'y'}{'freq_damp'}) / $dot_per_sec / 10_000_000 * $fY;
+    my $dfE = $val->{'e'}{'freq_damp'} * sqrt($val->{'e'}{'freq_damp'}) / $dot_per_sec / 10_000_000 * $fE;
+    my $dfF = $val->{'f'}{'freq_damp'} * sqrt($val->{'f'}{'freq_damp'}) / $dot_per_sec / 10_000_000 * $fF;
+    my $dfW = $val->{'w'}{'freq_damp'} * sqrt($val->{'w'}{'freq_damp'}) / $dot_per_sec / 10_000_000 * $fW;
+    my $dfR = $val->{'r'}{'freq_damp'} * sqrt($val->{'r'}{'freq_damp'}) / $dot_per_sec / 10_000_000 * $fR;
     my $ddfX = $val->{'x'}{'freq_damp_acc'} / $dot_per_sec / 50_000_000_000;
     my $ddfY = $val->{'y'}{'freq_damp_acc'} / $dot_per_sec / 50_000_000_000;
-    my $ddfZ = $val->{'z'}{'freq_damp_acc'} / $dot_per_sec / 50_000_000_000;
+    my $ddfE = $val->{'e'}{'freq_damp_acc'} / $dot_per_sec / 50_000_000_000;
+    my $ddfF = $val->{'f'}{'freq_damp_acc'} / $dot_per_sec / 50_000_000_000;
+    my $ddfW = $val->{'w'}{'freq_damp_acc'} / $dot_per_sec / 50_000_000_000;
     my $ddfR = $val->{'r'}{'freq_damp_acc'} / $dot_per_sec / 50_000_000_000;
-    my $ddfEX = $val->{'ex'}{'freq_damp_acc'} / $dot_per_sec / 50_000_000_000;
-    my $ddfEY = $val->{'ey'}{'freq_damp_acc'} / $dot_per_sec / 50_000_000_000;
-    if ($val->{'x'}{'direction'}){   $fX = - $fX;   $dfX = - $dfX;   $ddfX  = - $ddfX;}
-    if ($val->{'y'}{'direction'}){   $fY = - $fY;   $dfY = - $dfY;   $ddfY  = - $ddfY; }
-    if ($val->{'z'}{'direction'}){   $fZ = - $fZ;   $dfZ = - $dfZ;   $ddfZ  = - $ddfZ; }
-    if ($val->{'r'}{'direction'}){   $fR = - $fR;   $dfR = - $dfR;   $ddfR  = - $ddfR; }
-    if ($val->{'ex'}{'direction'}){ $fEX = - $fEX; $dfEX = - $dfEX;  $ddfEX = - $ddfEX; }
-    if ($val->{'ey'}{'direction'}){ $fEY = - $fEY; $dfEY = - $dfEY;  $ddfEY = - $ddfEY; }
+    if ($val->{'x'}{'direction'}){   $fX = - $fX;   $dfX = - $dfX;  $ddfX = - $ddfX;}
+    if ($val->{'y'}{'direction'}){   $fY = - $fY;   $dfY = - $dfY;  $ddfY = - $ddfY; }
+    if ($val->{'e'}{'direction'}){   $fE = - $fE;   $dfE = - $dfE;  $ddfE = - $ddfE; }
+    if ($val->{'f'}{'direction'}){   $fF = - $fF;   $dfF = - $dfF;  $ddfF = - $ddfF; }
+    if ($val->{'w'}{'direction'}){   $fW = - $fW;   $dfW = - $dfW;  $ddfW = - $ddfW; }
+    if ($val->{'r'}{'direction'}){   $fR = - $fR;   $dfR = - $dfR;  $ddfR = - $ddfR; }
     if ($val->{'x'}{'invert_freq'}){ $fX = 1 / $fX; $dfX = $dfX / $fX;  $ddfX = $ddfX / $fX; }
     if ($val->{'y'}{'invert_freq'}){ $fY = 1 / $fY; $dfY = $dfX / $fY;  $ddfY = $ddfX / $fY; }
-    if ($val->{'z'}{'invert_freq'}){ $fZ = 1 / $fZ; $dfZ = $dfZ / $fZ;  $ddfZ = $ddfZ / $fZ; }
+    if ($val->{'e'}{'invert_freq'}){ $fE = 1 / $fE; $dfE = $dfE / $fE;  $ddfE = $ddfE / $fE; }
+    if ($val->{'f'}{'invert_freq'}){ $fF = 1 / $fF; $dfF = $dfF / $fF;  $ddfF = $ddfF / $fF; }
+    if ($val->{'w'}{'invert_freq'}){ $fW = 1 / $fW; $dfW = $dfW / $fW;  $ddfW = $ddfW / $fW; }
     if ($val->{'r'}{'invert_freq'}){ $fR = 1 / $fR; $dfR = $dfR / $fR;  $ddfR = $ddfR / $fR; }
-    if ($val->{'ex'}{'invert_freq'}){$fEX = 1 / $fEX; $dfEX = $dfEX / $fEX;  $ddfEX = $ddfEX / $fEX; }
-    if ($val->{'ey'}{'invert_freq'}){$fEY = 1 / $fEY; $dfEY = $dfEY / $fEY;  $ddfEY = $ddfEY / $fEY; }
     $dfX = 1 - ($dfX * 20) if $val->{'x'}{'freq_damp_type'} eq '*';
     $dfY = 1 - ($dfY * 20) if $val->{'y'}{'freq_damp_type'} eq '*';
-    $dfZ = 1 - ($dfZ * 20) if $val->{'z'}{'freq_damp_type'} eq '*';
+    $dfE = 1 - ($dfE * 20) if $val->{'e'}{'freq_damp_type'} eq '*';
+    $dfF = 1 - ($dfF * 20) if $val->{'f'}{'freq_damp_type'} eq '*';
+    $dfW = 1 - ($dfW * 20) if $val->{'w'}{'freq_damp_type'} eq '*';
     $dfR = 1 - ($dfR * 20) if $val->{'r'}{'freq_damp_type'} eq '*';
-    $dfEX = 1 - ($dfEX * 20) if $val->{'ex'}{'freq_damp_type'} eq '*';
-    $dfEY = 1 - ($dfEY * 20) if $val->{'ey'}{'freq_damp_type'} eq '*';
     $ddfX = 1 - ($ddfX * 20) if $val->{'x'}{'freq_damp_acc_type'} eq '*' or $val->{'x'}{'freq_damp_acc_type'} eq '/';
     $ddfY = 1 - ($ddfY * 20) if $val->{'y'}{'freq_damp_acc_type'} eq '*' or $val->{'y'}{'freq_damp_acc_type'} eq '/';
-    $ddfZ = 1 - ($ddfZ * 20) if $val->{'z'}{'freq_damp_acc_type'} eq '*' or $val->{'z'}{'freq_damp_acc_type'} eq '/';
+    $ddfE = 1 - ($ddfE * 20) if $val->{'e'}{'freq_damp_acc_type'} eq '*' or $val->{'e'}{'freq_damp_acc_type'} eq '/';
+    $ddfF = 1 - ($ddfF * 20) if $val->{'f'}{'freq_damp_acc_type'} eq '*' or $val->{'f'}{'freq_damp_acc_type'} eq '/';
+    $ddfW = 1 - ($ddfW * 20) if $val->{'w'}{'freq_damp_acc_type'} eq '*' or $val->{'w'}{'freq_damp_acc_type'} eq '/';
     $ddfR = 1 - ($ddfR * 20) if $val->{'r'}{'freq_damp_acc_type'} eq '*' or $val->{'r'}{'freq_damp_acc_type'} eq '/';
-    $ddfEX = 1 - ($ddfX * 20) if $val->{'ex'}{'freq_damp_acc_type'} eq '*' or $val->{'ex'}{'freq_damp_acc_type'} eq '/';
-    $ddfEY = 1 - ($ddfY * 20) if $val->{'ey'}{'freq_damp_acc_type'} eq '*' or $val->{'ey'}{'freq_damp_acc_type'} eq '/';
 
-    my $rX = $val->{'x'}{'radius'} * $Cr;
-    my $rY = $val->{'y'}{'radius'} * $Cr;
-    my $rZ = $val->{'z'}{'radius'} * $Cr;
+    my $rX = $val->{'x'}{'radius'} * $val->{'x'}{'radius_factor'};
+    my $rY = $val->{'y'}{'radius'} * $val->{'y'}{'radius_factor'};
+    my $rE = $val->{'e'}{'radius'} * $val->{'e'}{'radius_factor'};
+    my $rF = $val->{'f'}{'radius'} * $val->{'f'}{'radius_factor'};
+    my $rW = $val->{'w'}{'radius'} * $val->{'w'}{'radius_factor'};
     my $rR = $val->{'r'}{'radius'};
-    my $rEX = $val->{'ex'}{'radius'} * $Cr;
-    my $rEY = $val->{'ey'}{'radius'} * $Cr;
-    my $drX = $val->{'x'}{'radius_damp'} / $dot_per_sec / 1_000 * $Cr;
-    my $drY = $val->{'y'}{'radius_damp'} / $dot_per_sec / 1_000 * $Cr;
-    my $drZ = $val->{'z'}{'radius_damp'} / $dot_per_sec / 1_000 * $Cr;
-    my $drR = $val->{'r'}{'radius_damp'} / $dot_per_sec / 1_000 * $Cr;
-    my $drEX = $val->{'ex'}{'radius_damp'} / $dot_per_sec / 1_000 * $Cr;
-    my $drEY = $val->{'ey'}{'radius_damp'} / $dot_per_sec / 1_000 * $Cr;
+    my $max_xr = $val->{'x'}{'on'} ? $rX : 1;
+    my $max_yr = $val->{'y'}{'on'} ? $rY : 1;
+    $max_xr += $rE if $val->{'e'}{'on'};
+    $max_yr += $rF if $val->{'f'}{'on'};
+    $max_xr += $rW if $val->{'w'}{'on'};
+    $max_yr += $rW if $val->{'w'}{'on'};
+    $max_xr *= 1.4 if $val->{'r'}{'on'};
+    $max_yr *= 1.4 if $val->{'r'}{'on'};
+    $Cr /=  (($max_xr > $max_yr) ? $max_xr : $max_yr); # zoom out so everything is visible
+    $rX *= $Cr;
+    $rY *= $Cr;
+    $rE *= $Cr;
+    $rF *= $Cr;
+    $rW *= $Cr;
+
+    my $drX = $val->{'x'}{'radius_damp'} / $dot_per_sec / 10_000 * $rX;
+    my $drY = $val->{'y'}{'radius_damp'} / $dot_per_sec / 10_000 * $rY;
+    my $drE = $val->{'e'}{'radius_damp'} / $dot_per_sec / 10_000 * $rE;
+    my $drF = $val->{'f'}{'radius_damp'} / $dot_per_sec / 10_000 * $rF;
+    my $drW = $val->{'w'}{'radius_damp'} / $dot_per_sec / 10_000 * $rW;
+    my $drR = $val->{'r'}{'radius_damp'} / $dot_per_sec / 10_000 * $rR * $Cr;
     my $ddrX = $val->{'x'}{'radius_damp_acc'} / $dot_per_sec / 20_000;
     my $ddrY = $val->{'y'}{'radius_damp_acc'} / $dot_per_sec / 20_000;
-    my $ddrZ = $val->{'z'}{'radius_damp_acc'} / $dot_per_sec / 20_000;
+    my $ddrE = $val->{'e'}{'radius_damp_acc'} / $dot_per_sec / 20_000;
+    my $ddrF = $val->{'f'}{'radius_damp_acc'} / $dot_per_sec / 20_000;
+    my $ddrW = $val->{'w'}{'radius_damp_acc'} / $dot_per_sec / 20_000;
     my $ddrR = $val->{'r'}{'radius_damp_acc'} / $dot_per_sec / 20_000;
-    my $ddrEX = $val->{'ex'}{'radius_damp_acc'} / $dot_per_sec / 20_000;
-    my $ddrEY = $val->{'ey'}{'radius_damp_acc'} / $dot_per_sec / 20_000;
-    if ($val->{'x'}{'radius_damp_type'} eq '*'){
-        $drX = 1 - ($drX / 300);
-        $ddrX = 1 - ($ddrX / 400) if $val->{'x'}{'radius_damp_acc_type'} eq '*'
-                                  or $val->{'x'}{'radius_damp_acc_type'} eq '/';
-    } else {
-        $ddrX = 1 - ($ddrX * 40) if $val->{'x'}{'radius_damp_acc_type'} eq '*'
-                                 or $val->{'x'}{'radius_damp_acc_type'} eq '/';
-    }
-    if ($val->{'y'}{'radius_damp_type'} eq '*'){
-        $drY = 1 - ($drY / 300);
-        $ddrY = 1 - ($ddrY / 400) if $val->{'y'}{'radius_damp_acc_type'} eq '*'
-                                  or $val->{'y'}{'radius_damp_acc_type'} eq '/';
-    } else {
-        $ddrY = 1 - ($ddrY * 40) if $val->{'y'}{'radius_damp_acc_type'} eq '*'
-                                 or $val->{'y'}{'radius_damp_acc_type'} eq '/';
-    }
-    if ($val->{'z'}{'radius_damp_type'} eq '*'){
-        $drZ = 1 - ($drZ / 300);
-        $ddrZ = 1 - ($ddrZ / 400) if $val->{'z'}{'radius_damp_acc_type'} eq '*'
-                                  or $val->{'z'}{'radius_damp_acc_type'} eq '/';
-    } else {
-        $ddrZ = 1 - ($ddrZ * 40) if $val->{'z'}{'radius_damp_acc_type'} eq '*'
-                                 or $val->{'z'}{'radius_damp_acc_type'} eq '/';
-    }
-    if ($val->{'r'}{'radius_damp_type'} eq '*'){
-        $drR = 1 - ($drR / 300);
-        $ddrR = 1 - ($ddrR / 400) if $val->{'r'}{'radius_damp_acc_type'} eq '*'
-                                  or $val->{'r'}{'radius_damp_acc_type'} eq '/';
-    } else {
-        $ddrR = 1 - ($ddrR * 40) if $val->{'r'}{'radius_damp_acc_type'} eq '*'
-                                 or $val->{'r'}{'radius_damp_acc_type'} eq '/';
-    }
-    if ($val->{'ex'}{'radius_damp_type'} eq '*'){
-        $drEX = 1 - ($drEX / 300);
-        $ddrEX = 1 - ($ddrEX / 400) if $val->{'ex'}{'radius_damp_acc_type'} eq '*'
-                                    or $val->{'ex'}{'radius_damp_acc_type'} eq '/';
-    } else {
-        $ddrEX = 1 - ($ddrEX * 40) if $val->{'ex'}{'radius_damp_acc_type'} eq '*'
-                                   or $val->{'ex'}{'radius_damp_acc_type'} eq '/';
-    }
-    if ($val->{'ey'}{'radius_damp_type'} eq '*'){
-        $drEY = 1 - ($drEY / 300);
-        $ddrEY = 1 - ($ddrEY / 400) if $val->{'ey'}{'radius_damp_acc_type'} eq '*'
-                                    or $val->{'ey'}{'radius_damp_acc_type'} eq '/';
-    } else {
-        $ddrEY = 1 - ($ddrEY * 40) if $val->{'ey'}{'radius_damp_acc_type'} eq '*'
-                                   or $val->{'ey'}{'radius_damp_acc_type'} eq '/';
-    }
+    my %acc_mul = map {$_ => ($val->{$_}{'radius_damp_acc_type'} eq '*' or
+                              $val->{$_}{'radius_damp_acc_type'} eq '/')   } qw/x y e f w r/;
+    if ($val->{'x'}{'radius_damp_type'} eq '*'){ $drX  = 1 - ($drX / 300);
+                                                 $ddrX = 1 - ($ddrX / 400) if $acc_mul{'x'};
+    } else {                                     $ddrX = 1 - ($ddrX * 40) if $acc_mul{'x'}; }
+    if ($val->{'y'}{'radius_damp_type'} eq '*'){ $drY  = 1 - ($drY / 300);
+                                                 $ddrY = 1 - ($ddrY / 400) if $acc_mul{'y'};
+    } else {                                     $ddrY = 1 - ($ddrY * 40) if $acc_mul{'y'}; }
+    if ($val->{'e'}{'radius_damp_type'} eq '*'){ $drE  = 1 - ($drE / 300);
+                                                 $ddrE = 1 - ($ddrE / 400) if $acc_mul{'e'};
+    } else {                                     $ddrE = 1 - ($ddrE * 40) if $acc_mul{'e'}; }
+    if ($val->{'f'}{'radius_damp_type'} eq '*'){ $drF  = 1 - ($drF / 300);
+                                                 $ddrF = 1 - ($ddrF / 400) if $acc_mul{'f'};
+    } else {                                     $ddrF = 1 - ($ddrF * 40) if $acc_mul{'f'}; }
+    if ($val->{'w'}{'radius_damp_type'} eq '*'){ $drW  = 1 - ($drW / 300);
+                                                 $ddrW = 1 - ($ddrW / 400) if $acc_mul{'w'};
+    } else {                                     $ddrW = 1 - ($ddrW * 40) if $acc_mul{'w'}; }
+    if ($val->{'r'}{'radius_damp_type'} eq '*'){ $drR  = 1 - ($drR / 300);
+                                                 $ddrR = 1 - ($ddrR / 400) if $acc_mul{'r'};
+    } else {                                     $ddrR = 1 - ($ddrR * 40) if $acc_mul{'r'}; }
 
     my $tX = $val->{'x'}{'offset'} * $TAU;
     my $tY = $val->{'y'}{'offset'} * $TAU;
-    my $tZ = $val->{'z'}{'offset'} * $TAU;
+    my $tE = $val->{'e'}{'offset'} * $TAU;
+    my $tF = $val->{'f'}{'offset'} * $TAU;
+    my $tW = $val->{'w'}{'offset'} * $TAU;
     my $tR = $val->{'r'}{'offset'} * $TAU;
-    my $tEX = $val->{'ex'}{'offset'} * $TAU;
-    my $tEY = $val->{'ey'}{'offset'} * $TAU;
     my $dtX = $TAU * $fX / $dot_per_sec;
     my $dtY = $TAU * $fY / $dot_per_sec;
-    my $dtZ = $TAU * $fZ / $dot_per_sec;
+    my $dtE = $TAU * $fE / $dot_per_sec;
+    my $dtF = $TAU * $fF / $dot_per_sec;
+    my $dtW = $TAU * $fW / $dot_per_sec;
     my $dtR = $TAU * $fR / $dot_per_sec;
-    my $dtEX = $TAU * $fEX / $dot_per_sec;
-    my $dtEY = $TAU * $fEY / $dot_per_sec;
     my ($x_old, $y_old);
     my $x = $val->{'x'}{'on'} ? ($rX * cos($tX)) : 0;
     my $y = $val->{'y'}{'on'} ? ($rY * sin($tY)) : 0;
-    $x += $val->{'ex'}{'on'} ? ($rEX * cos($tEX)) : 0;
-    $y += $val->{'ey'}{'on'} ? ($rEY * sin($tEY)) : 0;
-    $x += $val->{'z'}{'on'}  ? ($rZ * cos($tZ)) : 0;
-    $y += $val->{'z'}{'on'}  ? ($rZ * sin($tZ)) : 0;
+    $x += $val->{'e'}{'on'} ? ($rE * cos($tE)) : 0;
+    $y += $val->{'f'}{'on'} ? ($rF * sin($tF)) : 0;
+    $x += $val->{'w'}{'on'}  ? ($rW * cos($tW)) : 0;
+    $y += $val->{'w'}{'on'}  ? ($rW * sin($tW)) : 0;
     my $xr = $val->{'r'}{'on'} ? ($rR * (($x * cos($tR)) - ($y * sin($tR)))) : $x;
     my $yr = $val->{'r'}{'on'} ? ($rR * (($x * sin($tR)) + ($y * cos($tR)))) : $y;
     $x = $xr + $Cx;
     $y = $yr + $Cy;
 
-    my %delta_code = ( x=> [], y=> [], z=> [], r=> [], ex=> [], ey=> [] );
-    for my $pendulum_name (qw/x y z r ex ey/){
+    my %delta_code = ( x=> [], y=> [], w=> [], r=> [], e=> [], f=> [] );
+    for my $pendulum_name (qw/x y w r e f/){
         next unless $val->{$pendulum_name}{'on'};
         my $val = $val->{ $pendulum_name };
         my $index = uc $pendulum_name;
@@ -263,12 +239,12 @@ sub paint {
 
     my @code = ('for (1 .. $t_iter){');
     push @code, '  ($x_old, $y_old) = ($x, $y)' if $val->{'visual'}{'connect_dots'};
-    push @code, @{$delta_code{$_}} for qw/x y z r ex ey/;
+    push @code, @{$delta_code{$_}} for qw/x y w r e f/;
     push @code, ($val->{'x'}{'on'}  ? '  $x = $rX * cos($tX)' : '  $x = 0');
     push @code, ($val->{'y'}{'on'}  ? '  $y = $rY * sin($tY)' : '  $y = 0');
-    push @code,                       '  $x += $rEX * cos($tEX)' if $val->{'ex'}{'on'};
-    push @code,                       '  $y += $rEY * sin($tEY)' if $val->{'ey'}{'on'};
-    push @code, '  $x += $rZ * cos($tZ)', '  $y += $rZ * sin($tZ)' if $val->{'z'}{'on'};
+    push @code,                       '  $x += $rE * cos($tE)' if $val->{'e'}{'on'};
+    push @code,                       '  $y += $rF * sin($tF)' if $val->{'f'}{'on'};
+    push @code, '  $x += $rW * cos($tW)', '  $y += $rW * sin($tW)' if $val->{'w'}{'on'};
     push @code, ' ($x, $y) = ($rR * (($x * cos($tR)) - ($y * sin($tR)))'
                            .',$rR * (($x * sin($tR)) + ($y * cos($tR))))' if $val->{'r'}{'on'};
     push @code, '  $x += $Cx', '  $y += $Cy';
