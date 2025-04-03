@@ -17,8 +17,9 @@ my @widget_keys;
 my @state_widgets = qw/line_thickness color_flow_type color_flow_dynamic color_flow_speed colors_used/;
 
 sub new {
-    my ($class, $parent) = @_;
+    my ($class, $parent, $color_tab) = @_;
     my $self = $class->SUPER::new( $parent, -1 );
+    return unless ref $color_tab eq 'App::GUI::Harmonograph::Frame::Tab::Color';
     $self->{'callback'} = sub {};
 
     $self->{'label'}{'line'}  = Wx::StaticText->new($self, -1, 'Drawn Line' );
@@ -46,7 +47,11 @@ sub new {
     @widget_keys = keys %{$self->{'widget'}};
 
     Wx::Event::EVT_RADIOBOX( $self, $self->{'widget'}{'draw'}, sub { $self->{'callback'}->() });
-    Wx::Event::EVT_CHECKBOX( $self, $self->{'widget'}{$_},     sub { $self->{'callback'}->() }) for qw/color_flow_type colors_used/;
+    Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{'color_flow_type'}, sub { $self->{'callback'}->() });
+    Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{'colors_used'},     sub {
+        $color_tab->set_active_color_count( $self->{'widget'}{'colors_used'}->GetString($_[1]->GetInt) );
+        $self->{'callback'}->();
+    });
     $self->{'widget'}{ $_ }->SetCallBack( sub {  $self->{'callback'}->() } )
         for qw/line_thickness duration_min duration_s 100dots_per_second dots_per_second color_flow_dynamic color_flow_speed/;
 

@@ -32,14 +32,14 @@ sub new {
     $self->{'tab'}{'linear'}    = Wx::Panel->new($self->{'tabs'});
     $self->{'tab'}{'circular'}  = Wx::Panel->new($self->{'tabs'});
     $self->{'tab'}{'epicycle'}  = Wx::Panel->new($self->{'tabs'});
-    $self->{'tab'}{'mod'}       = App::GUI::Harmonograph::Frame::Tab::Modulation->new( $self->{'tabs'} );
-    $self->{'tab'}{'visual'}    = App::GUI::Harmonograph::Frame::Tab::Visual->new( $self->{'tabs'} );
+    $self->{'tab'}{'funct'}     = App::GUI::Harmonograph::Frame::Tab::Modulation->new( $self->{'tabs'} );
     $self->{'tab'}{'color'}     = App::GUI::Harmonograph::Frame::Tab::Color->new( $self->{'tabs'}, $self->{'config'} );
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'linear'},   'Lateral Pendulum');
+    $self->{'tab'}{'visual'}    = App::GUI::Harmonograph::Frame::Tab::Visual->new( $self->{'tabs'}, $self->{'tab'}{'color'} );
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'linear'},   'Linearl Pendulum');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'epicycle'}, 'Epi Pendulum');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'circular'}, 'Rotary Pendulum');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'mod'},      'Equation');
-    $self->{'tabs'}->AddPage( $self->{'tab'}{'visual'},   'Visual');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'funct'},    'Functions');
+    $self->{'tabs'}->AddPage( $self->{'tab'}{'visual'},   'Visuals');
     $self->{'tabs'}->AddPage( $self->{'tab'}{'color'},    'Colors');
 
     $self->{'pendulum'}{'x'}    = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'linear'},   'X ', 'pendulum in x direction (left to right)', 1, 100);
@@ -49,7 +49,7 @@ sub new {
     $self->{'pendulum'}{'w'}    = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'circular'}, 'W' , 'circular wobbling pendulum',               0, 100);
     $self->{'pendulum'}{'r'}    = App::GUI::Harmonograph::Frame::Panel::Pendulum->new( $self->{'tab'}{'circular'}, 'R ', 'rotation pendulum',                       0, 100);
 
-    $self->{'tab_names'} = [qw/mod visual color/];
+    $self->{'tab_names'} = [qw/funct visual color/];
     $self->{'pendulum_names'} = [qw/x y e f w r/];
     $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @{$self->{'pendulum_names'}};
     $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @{$self->{'tab_names'}};
