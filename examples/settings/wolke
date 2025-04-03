@@ -1,0 +1,177 @@
+
+  [color]
+
+delta_L = 0
+delta_S = 0
+dynamic = 1
+list = ARRAY(0x5564c7f322c0)
+
+  [e]
+
+direction = 0
+freq_damp = 0
+freq_damp_acc = 0
+freq_damp_acc_type = +
+freq_damp_type = -
+freq_factor = 1
+frequency = 9
+invert_freq = 0
+neg_freq = 0
+neg_radius = 0
+offset = 0
+on = 1
+radius = 0.26
+radius_damp = 0
+radius_damp_acc = 0
+radius_damp_acc_type = +
+radius_damp_type = -
+radius_factor = 1
+
+  [f]
+
+direction = 0
+freq_damp = 0
+freq_damp_acc = 0
+freq_damp_acc_type = +
+freq_damp_type = -
+freq_factor = 1
+frequency = 9
+invert_freq = 0
+neg_freq = 0
+neg_radius = 0
+offset = 0
+on = 1
+radius = 0.11
+radius_damp = 0
+radius_damp_acc = 0
+radius_damp_acc_type = +
+radius_damp_type = -
+radius_factor = 1
+
+  [mod]
+
+e_function = cos
+e_operator = =
+e_variable = E time
+f_function = sin
+f_operator = =
+f_variable = F time
+r11_function = cos
+r11_operator = =
+r11_variable = R time
+r12_function = sin
+r12_operator = =
+r12_variable = R time
+r21_function = sin
+r21_operator = =
+r21_variable = R time
+r22_function = cos
+r22_operator = =
+r22_variable = R time
+wx_function = cos
+wx_operator = =
+wx_variable = W time
+wy_function = sin
+wy_operator = =
+wy_variable = W time
+x_function = cos
+x_operator = =
+x_variable = X time
+y_function = sin
+y_operator = =
+y_variable = Y time
+
+  [r]
+
+direction = 0
+freq_damp = 0
+freq_damp_acc = 0
+freq_damp_acc_type = +
+freq_damp_type = -
+freq_factor = 1
+frequency = 1
+invert_freq = 0
+neg_freq = 0
+neg_radius = 0
+offset = 0
+on = 0
+radius = 1
+radius_damp = 0
+radius_damp_acc = 0
+radius_damp_acc_type = +
+radius_damp_type = -
+radius_factor = 1
+
+  [visual]
+
+color_flow_dynamic = 0
+color_flow_speed = 4
+color_flow_type = no
+colors_used = 2
+dot_density = 220
+draw = Line
+duration = 120
+line_thickness = 0
+
+  [w]
+
+direction = 0
+freq_damp = 0
+freq_damp_acc = 0
+freq_damp_acc_type = +
+freq_damp_type = -
+freq_factor = 1
+frequency = 1
+invert_freq = 0
+neg_freq = 0
+neg_radius = 0
+offset = 0
+on = 0
+radius = 1
+radius_damp = 0
+radius_damp_acc = 0
+radius_damp_acc_type = +
+radius_damp_type = -
+radius_factor = 1
+
+  [x]
+
+direction = 0
+freq_damp = 2
+freq_damp_acc = 0
+freq_damp_acc_type = +
+freq_damp_type = -
+freq_factor = 1
+frequency = 1
+invert_freq = 0
+neg_freq = 0
+neg_radius = 0
+offset = 0
+on = 1
+radius = 1
+radius_damp = 0
+radius_damp_acc = 0
+radius_damp_acc_type = +
+radius_damp_type = -
+radius_factor = 1
+
+  [y]
+
+direction = 0
+freq_damp = 0
+freq_damp_acc = 0
+freq_damp_acc_type = +
+freq_damp_type = -
+freq_factor = 1
+frequency = 1
+invert_freq = 0
+neg_freq = 0
+neg_radius = 0
+offset = 0
+on = 1
+radius = 1
+radius_damp = 0
+radius_damp_acc = 0
+radius_damp_acc_type = +
+radius_damp_type = -
+radius_factor = 1
