@@ -54,7 +54,7 @@ sub new {
     $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @{$self->{'pendulum_names'}};
     $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @{$self->{'tab_names'}};
 
-    $self->{'progress'}         = App::GUI::Harmonograph::Widget::ProgressBar->new( $self, 465,  10, { red => 20, green => 20, blue => 110 });
+    $self->{'progress'}         = App::GUI::Harmonograph::Widget::ProgressBar->new( $self, 465,  10, [20, 20, 110] );
     $self->{'board'}            = App::GUI::Harmonograph::Frame::Panel::Board->new( $self , 600, 600 );
     $self->{'dialog'}{'about'}  = App::GUI::Harmonograph::Dialog::About->new();
 
@@ -284,13 +284,14 @@ sub draw {
     my ($self) = @_;
     $self->SetStatusText( "drawing .....", 0 );
     my @colors = $self->{'tab'}{'color'}->get_all_colors;
-    $self->{'progress'}->set_color( $colors[0]->values( as => 'hash' ) );
+    $self->{'progress'}->set_color( $colors[0]->values( ) );
     $self->{'board'}->draw( $self->get_settings );
     $self->SetStatusText( "done complete drawing", 0 );
 }
 sub sketch {
     my ($self) = @_;
     $self->SetStatusText( "sketching a preview .....", 0 );
+    $self->{'progress'}->reset();
     $self->{'board'}->sketch( $self->get_settings );
     $self->SetStatusText( "done sketching a preview", 0 );
     if ($self->{'saved'}){

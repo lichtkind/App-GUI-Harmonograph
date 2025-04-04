@@ -268,8 +268,8 @@ sub paint {
         push @code, '$x += $Cx', '$y += $Cy';
     }
     push @code, 'my $color_timer = 0';
-    push @code, '$dc->SetPen( Wx::Pen->new( shift @wx_colors, $pen_size, $pen_style ) )';
-    push @code, 'for (1 .. $t_max){';
+    push @code, '$dc->SetPen( Wx::Pen->new( shift @wx_colors, $pen_size, $pen_style ) )', 'shift @colors';
+    push @code, 'for my $i (1 .. $t_max){';
     push @code, '  ($x_old, $y_old) = ($x, $y)' if $val->{'visual'}{'connect_dots'};
     push @code, @{$iter_code{$_}} for @pendulum_names;
     push @code, ($val->{'x'}{'on'}  ? '  $x = $rX * cos($tX)' : '  $x = 0');
@@ -280,13 +280,18 @@ sub paint {
     push @code, ' ($x, $y) = ($rR * (($x * cos($tR)) - ($y * sin($tR)))'
                            .',$rR * (($x * sin($tR)) + ($y * cos($tR))))' if $val->{'r'}{'on'};
     push @code, '  $x += $Cx', '  $y += $Cy';
-    push @code, '  if ($color_timer++ == $color_swap_time){', '$color_timer = 0',
-                '  $dc->SetPen( Wx::Pen->new( shift @wx_colors, $pen_size, $pen_style) )','}' if $color_swap_time;
+    if ($color_swap_time){
+        push @code, '  if ($color_timer++ == $color_swap_time){', '    $color_timer = 0',
+            '    $dc->SetPen( Wx::Pen->new( shift @wx_colors, $pen_size, $pen_style) )';
+        push @code, '    $progress->add_percentage( ($i/ $t_max*100), [(shift @colors)->values] )' unless exists $self->{'flag'}{'sketch'};
+        push @code, '}';
+    }
+
     push @code, ($val->{'visual'}{'connect_dots'}
               ? '  $dc->DrawLine( $x_old, $y_old, $x, $y)'
               : '  $dc->DrawPoint( $x, $y )');
 
-   # push @code, '$progress->add_percentage( $_ / $t_max * 100, $color[$color_index] ) unless $_ % $step_in_circle;'."\n" unless defined $self->{'flag'}{'sketch'};
+    $progress->add_percentage( 100, [$colors[0]->values] ) unless exists $self->{'flag'}{'sketch'} or $color_swap_time;
 
     my $code = join '', map {$_.";\n"} @code, '}}'; # say $code;
     my $code_ref = eval $code;
