@@ -304,16 +304,12 @@ sub paint {
         push @{$iter_code{$pendulum_name}}, @code;
     }
     my $pen_size = $val->{'visual'}{'line_thickness'};
-    # &Wx::wxPENSTYLE_DOT
-    # &Wx::wxPENSTYLE_SHORT_DASH
-    # &Wx::wxPENSTYLE_SOLID
-    # &Wx::wxPENSTYLE_BDIAGONAL_HATCH
-    # &Wx::wxPENSTYLE_CROSSDIAG_HATCH
-    # &Wx::wxPENSTYLE_CROSS_HATCH
-    # &Wx::wxPENSTYLE_VERTICAL_HATCH
-    # &Wx::wxPENSTYLE_HORIZONTAL_HATCH
-    $dc->SetPen( Wx::Pen->new( shift @wx_colors, $pen_size, &Wx::wxPENSTYLE_VERTICAL_HATCH ) );
-    #$dc->SetBrush( Wx::Brush->new( $start_color, &Wx::wxPENSTYLE_HORIZONTAL_HATCH) );
+    my $wxpen_style = { dotted => &Wx::wxPENSTYLE_DOT,        short_dash => &Wx::wxPENSTYLE_SHORT_DASH,
+                        solid => &Wx::wxPENSTYLE_SOLID,       vertical => &Wx::wxPENSTYLE_VERTICAL_HATCH,
+                        horizontal => &Wx::wxPENSTYLE_HORIZONTAL_HATCH, cross => &Wx::wxPENSTYLE_CROSS_HATCH,
+                        diagonal => &Wx::wxPENSTYLE_BDIAGONAL_HATCH, bidiagonal => &Wx::wxPENSTYLE_CROSSDIAG_HATCH};
+    my $pen_style = $wxpen_style->{ $val->{'visual'}{'pen_style'} };
+    $dc->SetPen( Wx::Pen->new( shift @wx_colors, $pen_size, $pen_style ) );
 
     #my @code = ('sub {','= @_');
     my @code = ();
@@ -330,7 +326,7 @@ sub paint {
                            .',$rR * (($x * sin($tR)) + ($y * cos($tR))))' if $val->{'r'}{'on'};
     push @code, '  $x += $Cx', '  $y += $Cy';
     push @code, '  if ($color_timer++ == $color_swap_time){', '$color_timer = 0',
-                '  $dc->SetPen( Wx::Pen->new( shift @wx_colors, $pen_size, &Wx::wxPENSTYLE_SOLID) )','}' if $color_swap_time;
+                '  $dc->SetPen( Wx::Pen->new( shift @wx_colors, $pen_size, $pen_style) )','}' if $color_swap_time;
     push @code, ($val->{'visual'}{'connect_dots'}
               ? '  $dc->DrawLine( $x_old, $y_old, $x, $y)'
               : '  $dc->DrawPoint( $x, $y )');

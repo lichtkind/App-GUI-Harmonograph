@@ -9,11 +9,11 @@ use base qw/Wx::Panel/;
 use App::GUI::Harmonograph::Widget::SliderCombo;
 
 my $default_settings = {
-        draw => 'line', line_thickness => 0, duration=> 60, dot_density => 120,
+        draw => 'line', pen_style => 'solid', line_thickness => 0, duration=> 60, dot_density => 120,
         color_flow_type => 'no', color_flow_dynamic => 0, color_flow_speed => 4, colors_used => 2,
 };
 my @state_keys = keys %$default_settings;
-my @state_widgets = qw/line_thickness color_flow_type color_flow_dynamic color_flow_speed colors_used/;
+my @state_widgets = qw/line_thickness pen_style color_flow_type color_flow_dynamic color_flow_speed colors_used/;
 my @widget_keys;
 
 sub new {
@@ -22,16 +22,20 @@ sub new {
     return unless ref $color_tab eq 'App::GUI::Harmonograph::Frame::Tab::Color';
     $self->{'callback'} = sub {};
 
-    $self->{'label'}{'line'}  = Wx::StaticText->new($self, -1, 'Drawn Line' );
-    $self->{'label'}{'time'}  = Wx::StaticText->new($self, -1, 'Drawing Duration (Line Length)' );
-    $self->{'label'}{'dense'} = Wx::StaticText->new($self, -1, 'Dot Density' );
-    $self->{'label'}{'flow'}  = Wx::StaticText->new($self, -1, 'Color Change' );
+    $self->{'label'}{'line'}   = Wx::StaticText->new($self, -1, 'Drawn Line' );
+    $self->{'label'}{'time'}   = Wx::StaticText->new($self, -1, 'Drawing Duration (Line Length)' );
+    $self->{'label'}{'dense'}  = Wx::StaticText->new($self, -1, 'Dot Density' );
+    $self->{'label'}{'flow'}   = Wx::StaticText->new($self, -1, 'Color Change' );
     $self->{'label'}{'flow_type'} = Wx::StaticText->new( $self, -1, 'Change Type:');
     $self->{'label'}{'colors'} = Wx::StaticText->new( $self, -1, 'Colors:');
+    $self->{'label'}{'pen'}    = Wx::StaticText->new( $self, -1, 'Pen Style:');
 
     $self->{'widget'}{'draw'} = Wx::RadioBox->new( $self, -1, 'Draw', [-1, -1], [120, -1], ['Dots', 'Line']);
     $self->{'widget'}{'draw'}->SetToolTip('draw just dots (off) or connect them with lines (on)');
-    $self->{'widget'}{'line_thickness'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 180, 'Thickness','dot size or thickness of drawn line in pixel',  0,  45,  0);
+    $self->{'widget'}{'pen_style'} = Wx::ComboBox->new( $self, -1, 'solid', [-1,-1], [125, -1],
+        [qw/dotted short_dash solid vertical horizontal cross diagonal bidiagonal/], &Wx::wxTE_READONLY );
+    $self->{'widget'}{'pen_style'}->SetToolTip('which pattern is engraved in drawn line / dots');
+    $self->{'widget'}{'line_thickness'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 350, 'Thickness','dot size or thickness of drawn line in pixel',  0,  55,  0);
     $self->{'widget'}{'duration_min'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 85, 'Minutes','', 0,  100,  10);
     $self->{'widget'}{'duration_s'}   = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 85, 'Seconds','', 0,  59,  10);
     $self->{'widget'}{'100dots_per_second'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 110, 'Coarse','how many dots is drawn in a second in batches of 50 ?',  0,  90,  10);
@@ -47,6 +51,7 @@ sub new {
     @widget_keys = keys %{$self->{'widget'}};
 
     Wx::Event::EVT_RADIOBOX( $self, $self->{'widget'}{'draw'},            sub { $self->{'callback'}->() });
+    Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{'pen_style'},       sub { $self->{'callback'}->(); });
     Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{'color_flow_type'}, sub { $self->update_enable; $self->{'callback'}->(); });
     Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{'colors_used'},     sub {
         $color_tab->set_active_color_count( $self->{'widget'}{'colors_used'}->GetString($_[1]->GetInt) );
@@ -60,39 +65,46 @@ sub new {
     my $all_attr = &Wx::wxALL | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW;
 
     my $line_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-    $line_sizer->AddSpacer( 20 );
-    $line_sizer->Add( $self->{'widget'}{'draw'},  0, $std_attr| &Wx::wxBOTTOM, 8);
-    $line_sizer->AddSpacer( 50 );
-    $line_sizer->Add( $self->{'widget'}{'line_thickness'},  0, $box_attr, 5);
+    $line_sizer->AddSpacer( 60 );
+    $line_sizer->Add( $self->{'widget'}{'draw'},        0, $std_attr| &Wx::wxBOTTOM, 10);
+    $line_sizer->AddSpacer( 85 );
+    $line_sizer->Add( $self->{'label'}{'pen'},           0, $all_attr, 18);
+    $line_sizer->AddSpacer( 2 );
+    $line_sizer->Add( $self->{'widget'}{'pen_style'},    0, $box_attr,  8);
     $line_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+
+    my $l2_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
+    $l2_sizer->AddSpacer( 20 );
+    $l2_sizer->Add( $self->{'widget'}{'line_thickness'},  0, $box_attr, 5);
+    $l2_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $time_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $time_sizer->AddSpacer( 20 );
     $time_sizer->Add( $self->{'widget'}{'duration_min'},  0, $box_attr, 5);
     $time_sizer->AddSpacer( 20 );
-    $time_sizer->Add( $self->{'widget'}{'duration_s'},  0, $box_attr, 5);
+    $time_sizer->Add( $self->{'widget'}{'duration_s'},    0, $box_attr, 5);
     $time_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $dense_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $dense_sizer->AddSpacer( 20 );
     $dense_sizer->Add( $self->{'widget'}{'100dots_per_second'},  0, $box_attr, 5);
     $dense_sizer->AddSpacer( 20 );
-    $dense_sizer->Add( $self->{'widget'}{'dots_per_second'},  0, $box_attr, 5);
+    $dense_sizer->Add( $self->{'widget'}{'dots_per_second'},     0, $box_attr, 5);
     $dense_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $color_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $color_sizer->AddSpacer( 20 );
-    $color_sizer->Add( $self->{'label'}{'flow_type'},  0, $box_attr, 11);
+    $color_sizer->Add( $self->{'label'}{'flow_type'},            0, $box_attr, 11);
     $color_sizer->AddSpacer( 10 );
-    $color_sizer->Add( $self->{'widget'}{'color_flow_type'},  0, $box_attr, 5);
+    $color_sizer->Add( $self->{'widget'}{'color_flow_type'},     0, $box_attr, 5);
     $color_sizer->AddSpacer( 20 );
     $color_sizer->Add( $self->{'widget'}{'color_flow_dynamic'},  0, $box_attr, 5);
     $color_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     my $flow_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
     $flow_sizer->AddSpacer( 20 );
-    $flow_sizer->Add( $self->{'label'}{'colors'},  0, $box_attr, 11);
+    $flow_sizer->Add( $self->{'label'}{'colors'},             0, $box_attr, 11);
     $flow_sizer->AddSpacer( 10 );
-    $flow_sizer->Add( $self->{'widget'}{'colors_used'},  0, $box_attr, 5);
+    $flow_sizer->Add( $self->{'widget'}{'colors_used'},       0, $box_attr, 5);
     $flow_sizer->AddSpacer( 100 );
     $flow_sizer->Add( $self->{'widget'}{'color_flow_speed'},  0, $box_attr, 5);
     $flow_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
@@ -101,8 +113,8 @@ sub new {
     $sizer->AddSpacer( 10 );
     $sizer->Add( $self->{'label'}{'line'},        0, &Wx::wxALIGN_CENTER_HORIZONTAL,  0);
     $sizer->Add( $line_sizer,                     0, $std_attr|&Wx::wxTOP,           10);
-    $sizer->Add( Wx::StaticLine->new($self, -1),  0, $box_attr,                       5);
-    $sizer->AddSpacer( 5 );
+    $sizer->Add( $l2_sizer,                       0, $std_attr|&Wx::wxTOP,           10);
+    $sizer->Add( Wx::StaticLine->new($self, -1),  0, $box_attr,                      10);
     $sizer->Add( $self->{'label'}{'time'},        0, &Wx::wxALIGN_CENTER_HORIZONTAL,  0);
     $sizer->Add( $time_sizer,                     0, $std_attr|&Wx::wxTOP,           10);
     $sizer->Add( Wx::StaticLine->new($self, -1),  0, $box_attr,                      10);
