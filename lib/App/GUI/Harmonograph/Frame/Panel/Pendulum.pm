@@ -9,11 +9,12 @@ use warnings;
 use Wx;
 use App::GUI::Harmonograph::Widget::SliderCombo;
 
-my $PI    = 3.1415926535;
-my $PHI   = 1.618033988;
-my $phi   = 0.618033988;
-my $e     = 2.718281828;
-my $GAMMA = 1.7724538509055160;
+my @const_names = (1, 2, 3, '√2', '√3', '√5', 'π', 'φ', 'Φ', 'e', ' γ', 'Γ', 'G', 'A');
+my %const = (1 => 1, 2 => 2, 3 => 3, '√2' => 1.4142135623731, '√3' => 1.73205080756888, '√5' => 2.236067977499789,
+            'π' => 3.1415926535, 'φ' => 0.618033988, 'Φ' => 1.618033988,
+              e => 2.718281828,  'γ' => 0.57721566490153286, 'Γ' => 1.7724538509055160,
+              G => 0.9159655941772190150, A => 1.28242712910062,
+);
 
 sub new {
     my ( $class, $parent, $label, $help, $on, $max ) = @_;
@@ -35,8 +36,7 @@ sub new {
                         ( $self, 100, 'Frequency', 'frequency of '.$help, 1, $max, 1 );
     $self->{'freq_dez'} = App::GUI::Harmonograph::Widget::SliderCombo->new
                         ( $self, 100, 'Precise   ', 'decimals of frequency at '.$help, 0, 1000, 0);
-    my @factor = grep {lc $_ ne lc $self->{'name'}} qw/1 π Φ φ e Γ/;
-    $self->{'freq_factor'} = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[70, 20], \@factor);
+    $self->{'freq_factor'} = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[70, 20], [@const_names]);
     $self->{'freq_factor'}->SetToolTip('base factor the frequency will be multiplied with: one (no), or a math constants as shown');
     $self->{'freq_damp'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Damp  ', 'damping factor (diminishes frequency over time)', 0, 200, 0);
     $self->{'freq_damp_type'} = Wx::ComboBox->new( $self, -1, '*', [-1,-1],[70, 20], [ '*', '-']);
@@ -55,7 +55,7 @@ sub new {
     $self->{'offset'} = App::GUI::Harmonograph::Widget::SliderCombo->new
                             ($self, 110, 'Offset', "additional offset $help starts with (0 - quater rotation)", 0, 100, 0);
     $self->{'radius'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Radius %', "radius / amplitude of $help swing", 0, 150, 100);
-    $self->{'radius_factor'} = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[70, 20], \@factor);
+    $self->{'radius_factor'} = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[70, 20], [@const_names]);
     $self->{'radius_factor'}->SetToolTip('base factor the radius will be multiplied with: one (no), or a math constants as shown');
     $self->{'neg_radius'} = Wx::CheckBox->new( $self, -1, ' Neg.');
     $self->{'neg_radius'}->SetToolTip('allow radius to become negative');
@@ -170,18 +170,14 @@ sub init {
 
 sub get_settings {
     my ( $self ) = @_;
-    my $f = $self->{'frequency'}->GetValue + $self->{'freq_dez'}->GetValue/1000;
-    my $ff = $self->{'freq_factor'}->GetValue;
-    my $rf = $self->{'radius_factor'}->GetValue;
     {
         on          => $self->{ 'on' }->IsChecked ? 1 : 0,
         direction   => $self->{ 'direction'}->IsChecked ? 1 : 0,
         invert_freq => $self->{ 'invert_freq'}->IsChecked ? 1 : 0,
         neg_freq    => $self->{ 'neg_freq'}->IsChecked ? 1 : 0,
         neg_radius  => $self->{ 'neg_radius'}->IsChecked ? 1 : 0,
-        frequency   => $f,
-        freq_factor => (($ff eq 1)   ? 1    : ($ff eq 'π') ? $PI : ($ff eq 'Φ') ? $PHI :
-                        ($ff eq 'φ') ? $phi : ($ff eq 'e') ? $e  :                $GAMMA),
+        frequency   => $self->{'frequency'}->GetValue + $self->{'freq_dez'}->GetValue/1000,
+        freq_factor => $const{$self->{'freq_factor'}->GetValue},
         freq_damp   => $self->{'freq_damp'}->GetValue,
         freq_damp_type => $self->{'freq_damp_type'}->GetValue,
         freq_damp_acc => $self->{'freq_damp_acc'}->GetValue,
@@ -190,48 +186,54 @@ sub get_settings {
         offset      => (0.5 * $self->{'half_off'}->IsChecked)
                      + (0.25 * $self->{'quarter_off'}->IsChecked)
                      + ($self->{'offset'}->GetValue / 400),
-        radius      => $self->{'radius'}->GetValue / 100,
-        radius_factor => (($rf eq 1)   ? 1    : ($rf eq 'π') ? $PI : ($rf eq 'Φ') ? $PHI :
-                          ($rf eq 'φ') ? $phi : ($rf eq 'e') ? $e  :                $GAMMA),
-        radius_damp => $self->{'radius_damp'}->GetValue,
-        radius_damp_acc  => $self->{'radius_damp_acc'}->GetValue,
+        radius       => $self->{'radius'}->GetValue / 100,
+        radius_factor => $const{$self->{'radius_factor'}->GetValue},
+        radius_damp    => $self->{'radius_damp'}->GetValue,
+        radius_damp_acc => $self->{'radius_damp_acc'}->GetValue,
         radius_damp_type => $self->{'radius_damp_type'}->GetValue,
-        radius_damp_acc_type  => $self->{'radius_damp_acc_type'}->GetValue,
+        radius_damp_acc_type => $self->{'radius_damp_acc_type'}->GetValue,
     }
 }
 
 sub set_settings {
-    my ( $self, $data ) = @_;
-    return unless ref $data eq 'HASH' and exists $data->{'frequency'}
-        and exists $data->{'offset'} and exists $data->{'radius'} and exists $data->{'radius_damp'};
-    $self->{ 'data'} = $data;
-    $self->{ 'on' }->SetValue( $data->{'on'} );
-    $self->{ 'direction' }->SetValue( $data->{'direction'} );
-    $self->{ 'invert_freq' }->SetValue( $data->{'invert_freq'} );
-    $self->{ 'neg_freq' }->SetValue( $data->{'neg_freq'} );
-    $self->{ 'neg_radius' }->SetValue( $data->{'neg_radius'} );
-    $self->{ 'frequency'}->SetValue( int $data->{'frequency'}, 'passive' );
-    $self->{ 'freq_dez' }->SetValue( int( 1000 * ($data->{'frequency'} - int $data->{'frequency'} ) ), 'passive' );
-    my $ff = $data->{ 'freq_factor'} // 1;
-    my $rf = $data->{ 'radius_factor'} // 1;
-    $self->{ 'freq_factor'}->SetValue( ($ff == 1) ? 1  : ($ff < 1) ? 'φ' : ($ff > 3) ? 'π' :
-                                       ($ff > 2) ? 'e' : ($ff > 1.7) ? 'Γ' :           'Φ' );
-    $self->{ 'freq_damp' }->SetValue( $data->{'freq_damp'}, 'passive' );
-    $self->{ 'freq_damp_acc' }->SetValue( $data->{'freq_damp_acc'}, 'passive' );
-    $self->{ 'freq_damp_type'}->SetValue(  $data->{ 'freq_damp_type'} // '-' );
-    $self->{ 'freq_damp_acc_type'}->SetValue(  $data->{ 'freq_damp_acc_type'} // '+' );
-    $self->{ 'half_off' }->SetValue( $data->{'offset'} >= 0.5 );
-    $data->{ 'offset' } -= 0.5 if $data->{'offset'} >= 0.5;
-    $self->{ 'quarter_off' }->SetValue( $data->{'offset'} >= 0.25 );
-    $data->{ 'offset' } -= 0.25 if $data->{'offset'} >= 0.25;
-    $self->{ 'offset'}->SetValue( int( $data->{'offset'} * 400 ), 'passive');
-    $self->{ 'radius' }->SetValue( $data->{'radius'} * 100, 'passive' );
-    $self->{ 'radius_factor'}->SetValue( ($rf == 1) ? 1  : ($rf < 1) ? 'φ' : ($rf > 3) ? 'π' :
-                                         ($rf > 2) ? 'e' : ($rf > 1.7) ? 'Γ' :           'Φ' );
-    $self->{ 'radius_damp' }->SetValue( $data->{'radius_damp'}, 'passive' );
-    $self->{ 'radius_damp_acc' }->SetValue( $data->{'radius_damp_acc'}, 'passive');
-    $self->{ 'radius_damp_type'}->SetValue(  $data->{ 'radius_damp_type'} // '-' );
-    $self->{ 'radius_damp_acc_type'}->SetValue(  $data->{ 'radius_damp_acc_type'} // '+' );
+    my ( $self, $settings ) = @_;
+    return unless ref $settings eq 'HASH' and exists $settings->{'frequency'}
+        and exists $settings->{'offset'} and exists $settings->{'radius'};
+
+    $self->{ 'freq_factor'}->SetValue( 1 );
+    $self->{ 'radius_factor'}->SetValue( 1 );
+    if (exists $settings->{'freq_factor'} and $settings->{'freq_factor'}){
+        for my $label (@const_names) {
+            $self->{ 'freq_factor'}->SetValue( $label ) if abs($const{ $label } - $settings->{'freq_factor'}) < 0.0001;
+        }
+    }
+    if (exists $settings->{'radius_factor'} and $settings->{'radius_factor'}){
+        for my $label (@const_names) {
+            $self->{ 'radius_factor'}->SetValue( $label ) if abs($const{ $label } - $settings->{'radius_factor'}) < 0.0001;
+        }
+    }
+    $self->{ 'on' }->SetValue( $settings->{'on'} );
+    $self->{ 'direction' }->SetValue( $settings->{'direction'} );
+    $self->{ 'invert_freq' }->SetValue( $settings->{'invert_freq'} );
+    $self->{ 'neg_freq' }->SetValue( $settings->{'neg_freq'} );
+    $self->{ 'neg_radius' }->SetValue( $settings->{'neg_radius'} );
+    $self->{ 'frequency'}->SetValue( int $settings->{'frequency'}, 'passive' );
+    $self->{ 'freq_dez' }->SetValue( int( 1000 * ($settings->{'frequency'} - int $settings->{'frequency'} ) ), 'passive' );
+
+    $self->{ 'freq_damp' }->SetValue( $settings->{'freq_damp'}, 'passive' );
+    $self->{ 'freq_damp_acc' }->SetValue( $settings->{'freq_damp_acc'}, 'passive' );
+    $self->{ 'freq_damp_type'}->SetValue(  $settings->{ 'freq_damp_type'} // '-' );
+    $self->{ 'freq_damp_acc_type'}->SetValue(  $settings->{ 'freq_damp_acc_type'} // '+' );
+    $self->{ 'half_off' }->SetValue( $settings->{'offset'} >= 0.5 );
+    $settings->{ 'offset' } -= 0.5 if $settings->{'offset'} >= 0.5;
+    $self->{ 'quarter_off' }->SetValue( $settings->{'offset'} >= 0.25 );
+    $settings->{ 'offset' } -= 0.25 if $settings->{'offset'} >= 0.25;
+    $self->{ 'offset'}->SetValue( int( $settings->{'offset'} * 400 ), 'passive');
+    $self->{ 'radius' }->SetValue( $settings->{'radius'} * 100, 'passive' );
+    $self->{ 'radius_damp' }->SetValue( $settings->{'radius_damp'}, 'passive' );
+    $self->{ 'radius_damp_acc' }->SetValue( $settings->{'radius_damp_acc'}, 'passive');
+    $self->{ 'radius_damp_type'}->SetValue(  $settings->{ 'radius_damp_type'} // '-' );
+    $self->{ 'radius_damp_acc_type'}->SetValue(  $settings->{ 'radius_damp_acc_type'} // '+' );
     $self->update_enable;
     1;
 }

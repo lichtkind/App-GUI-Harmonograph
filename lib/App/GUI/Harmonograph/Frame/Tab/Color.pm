@@ -1,5 +1,5 @@
 
-# color panel tab
+# color selection page
 
 use v5.12;
 use warnings;
@@ -24,7 +24,7 @@ sub new {
 
     $self->{'call_back'}  = sub {};
     $self->{'config'}     = $config;
-    $self->{'color_count'} = 11;  # max pos
+    $self->{'color_count'} = 10;  # max pos
     $self->{'active_color_count'} = 2;  # nr of currently used
     $self->{'current_color_nr'} = 1;
     $self->{'display_size'} = 32;
@@ -105,7 +105,7 @@ sub new {
     $f_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $state_sizer = $self->{'state_sizer'} = Wx::BoxSizer->new(&Wx::wxHORIZONTAL); # $self->{'plate_sizer'}->Clear(1);
-    $state_sizer->AddSpacer( 10 );
+    $state_sizer->AddSpacer( 15 );
     my @option_sizer;
     for my $nr (0 .. $self->{'color_count'}-1){
         $option_sizer[$nr] = Wx::BoxSizer->new( &Wx::wxVERTICAL );
@@ -113,7 +113,7 @@ sub new {
         $option_sizer[$nr]->Add( $self->{'color_display'}[$nr],0, $all_attr, 3);
         $option_sizer[$nr]->Add( $self->{'color_marker'}[$nr], 0, $all_attr, 3);
         $state_sizer->Add( $option_sizer[$nr],                 0, $all_attr, 6);
-        $state_sizer->AddSpacer( 1 );
+        $state_sizer->AddSpacer( 5 );
     }
     $state_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
@@ -128,7 +128,8 @@ sub new {
     $sizer->Add( Wx::StaticLine->new( $self, -1),     0, $all_attr,                        0);
     $sizer->AddSpacer( 10 );
     $sizer->Add( $self->{'label'}{'used_colors'},     0, &Wx::wxALIGN_CENTER_HORIZONTAL,   0);
-    $sizer->Add( $state_sizer,                        0, $std_attr,                        0);
+    $sizer->Add( $state_sizer,                        0, $all_attr,                        5);
+    $sizer->AddSpacer(  5 );
     $sizer->Add( Wx::StaticLine->new( $self, -1),     0, $all_attr,                        0);
     $sizer->AddSpacer( 10 );
     $sizer->Add( $self->{'label'}{'selected_color'},  0, &Wx::wxALIGN_CENTER_HORIZONTAL,  10);

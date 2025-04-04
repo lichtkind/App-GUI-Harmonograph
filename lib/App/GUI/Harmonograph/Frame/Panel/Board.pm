@@ -114,10 +114,10 @@ sub paint {
         my $gradient_steps = ($dots_per_gradient > 500) ? 50 :
                              ($dots_per_gradient > 50)  ? 10 : $dots_per_gradient;
         my @gtc_color_objects = @colors;
-        my @color_flow = ($gtc_color_objects[0]);
+        my @c = ($gtc_color_objects[0]);
         for my $i (0 .. $val->{'visual'}{'colors_used'}-2){
-            pop @color_flow;
-            push @color_flow, $gtc_color_objects[$i]->gradient(
+            pop @c;
+            push @c, $gtc_color_objects[$i]->gradient(
                     to => $gtc_color_objects[$i+1],
                     steps => $gradient_steps,
                     dynamic => $self->{'color_flow_dynamic'},
@@ -126,37 +126,37 @@ sub paint {
         $color_swap_time = int ($dots_per_gradient / $gradient_steps);
         my $colors_needed = int($t_max / ($color_swap_time + 1));
         $colors_needed++ if $colors_needed * ($color_swap_time + 1) < $t_max;
-        @colors = @color_flow;
+        @colors = @c;
         while ($colors_needed > @colors){
-            @color_flow = reverse @color_flow;
-            push @colors, @color_flow[1 .. $#color_flow];
+            @c = reverse @c;
+            push @colors, @c[1 .. $#c];
         }
     } elsif ($val->{'visual'}{'color_flow_type'} eq 'circular'){
         my $dots_per_gradient = int ($dot_per_sec * 60 / $val->{'visual'}{'color_flow_speed'});
         my $gradient_steps = ($dots_per_gradient > 500) ? 50 :
                              ($dots_per_gradient > 50)  ? 10 : $dots_per_gradient;
         my @gtc_color_objects = @colors;
-        my @color_flow = ($gtc_color_objects[0]);
+        my @c = ($gtc_color_objects[0]);
         for my $i (0 .. $val->{'visual'}{'colors_used'}-2){
-            pop @color_flow;
-            push @color_flow, $gtc_color_objects[$i]->gradient(
+            pop @c;
+            push @c, $gtc_color_objects[$i]->gradient(
                     to => $gtc_color_objects[$i+1],
                     steps => $gradient_steps,
                     dynamic => $self->{'color_flow_dynamic'},
             );
         }
-        pop @color_flow;
-        push @color_flow, $gtc_color_objects[-1]->gradient(
+        pop @c;
+        push @c, $gtc_color_objects[-1]->gradient(
                 to => $gtc_color_objects[0],
                 steps => $gradient_steps,
                 dynamic => $self->{'color_flow_dynamic'},
         );
-        pop @color_flow;
+        pop @c;
         $color_swap_time = int ($dots_per_gradient / $gradient_steps);
         my $colors_needed = int($t_max / ($color_swap_time + 1));
         $colors_needed++ if $colors_needed * ($color_swap_time + 1) < $t_max;
-        @colors = @color_flow;
-        push @colors, @color_flow while $colors_needed > @colors;
+        @colors = @c;
+        push @colors, @c while $colors_needed > @colors;
     }
     my @wx_colors = map { Wx::Colour->new( $_->values ) } @colors;
 

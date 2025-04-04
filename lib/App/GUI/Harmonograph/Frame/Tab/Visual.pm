@@ -13,8 +13,8 @@ my $default_settings = {
         color_flow_type => 'no', color_flow_dynamic => 0, color_flow_speed => 4, colors_used => 2,
 };
 my @state_keys = keys %$default_settings;
-my @widget_keys;
 my @state_widgets = qw/line_thickness color_flow_type color_flow_dynamic color_flow_speed colors_used/;
+my @widget_keys;
 
 sub new {
     my ($class, $parent, $color_tab) = @_;
@@ -41,12 +41,12 @@ sub new {
     $self->{'label'}{'flow_type'}->SetToolTip("type of color flow: - linear - from start to end color \n  - alter(nate) - linearly between start and end color \n   - cicular - around the rainbow from start color visiting end color");
     $self->{'widget'}{'color_flow_dynamic'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 115, 'Dynamic', '0 = equally paced color change, larger = starting with slow color change becoming faster - or vice versa when dir activated', -12,  12,  0, .01);
     $self->{'widget'}{'color_flow_speed'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 140, 'Speed','color changes per minute', 1, 120, 1);
-    $self->{'widget'}{'colors_used'} = Wx::ComboBox->new( $self, -1, 2, [-1,-1], [75, -1], [2 .. 11], &Wx::wxTE_READONLY );
+    $self->{'widget'}{'colors_used'} = Wx::ComboBox->new( $self, -1, 2, [-1,-1], [75, -1], [2 .. 10], &Wx::wxTE_READONLY );
     $self->{'widget'}{'colors_used'}->SetToolTip("Select how many colors will be used / changed between.");
     $self->{'label'}{'colors'}->SetToolTip("Select how many colors will be used / changed between.");
     @widget_keys = keys %{$self->{'widget'}};
 
-    Wx::Event::EVT_RADIOBOX( $self, $self->{'widget'}{'draw'}, sub { $self->{'callback'}->() });
+    Wx::Event::EVT_RADIOBOX( $self, $self->{'widget'}{'draw'},            sub { $self->{'callback'}->() });
     Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{'color_flow_type'}, sub { $self->{'callback'}->() });
     Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{'colors_used'},     sub {
         $color_tab->set_active_color_count( $self->{'widget'}{'colors_used'}->GetString($_[1]->GetInt) );
@@ -115,7 +115,6 @@ sub new {
     $sizer->Add( Wx::StaticLine->new($self, -1),  0, $box_attr,                      10);
     $sizer->Add( 0, 1, $std_attr );
     $self->SetSizer( $sizer );
-
     $self->init();
     $self;
 }
