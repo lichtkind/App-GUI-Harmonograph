@@ -36,8 +36,10 @@ sub new {
     $self->{'color_display'}[$_] = App::GUI::Harmonograph::Widget::ColorDisplay->new
         ($self, $self->{'display_size'}-2, $self->{'display_size'},
          $_, $self->{'used_colors'}[$_]->values(as => 'hash')      ) for 0 .. $self->{'color_count'}-1;
-    $self->{'color_marker'}[$_]->SetToolTip("used color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'color_count'}-1;
-    $self->{'color_display'}[$_]->SetToolTip("used color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 0 .. $self->{'color_count'}-1;
+    $self->{'color_marker'}[$_-1]->SetToolTip("used color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 2 .. $self->{'color_count'};
+    $self->{'color_display'}[$_-1]->SetToolTip("used color number $_ to change (marked by arrow - crosses mark currently passive colors)") for 2 .. $self->{'color_count'};
+    $self->{'color_marker'}[0]->SetToolTip("color number 1, is always used, even when color flow is deactivated, click on it before change it with sliders below");
+    $self->{'color_display'}[0]->SetToolTip("color number 1, is always used, even when color flow is deactivated, click on it before change it with sliders below");
 
     $self->{'label'}{'color_set_store'} = Wx::StaticText->new($self, -1, 'Color Set Store' );
     $self->{'label'}{'color_set_funct'} = Wx::StaticText->new($self, -1, 'Colors Set Function' );

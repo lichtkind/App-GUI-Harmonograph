@@ -80,20 +80,85 @@ sub paint {
     my $Cr = (defined $height) ? ($width > $height ? $Cx : $Cy) : $self->{'hard_radius'};
     $Cr -= 15;
 
-   # my $ = App::GUI::Harmonograph::Compute::Drawing::prepare( $val, $Cr, $self->{'flag'}{'sketch'} );
+   # my $code_ref = App::GUI::Harmonograph::Compute::Drawing::prepare( $self->{'flag'}{'sketch'} );
 
     my %var_names = ( x_time => '$tX', y_time => '$tY', e_time => '$tE', f_time => '$tF', w_time => '$tW', r_time => '$tR',
                       x_freq => '$dtX', y_freq => '$dtY', e_freq => '$dtE', f_freq => '$dtF', w_freq => '$dtW', r_freq => '$dtR',
                       x_radius => '$rX', y_radius => '$rY', e_radius => '$rE', f_radius => '$rF', w_radius => '$rW', r_radius => '$rR');
 
-    my $start_color = Wx::Colour->new( color($val->{'color'}{1})->values ); # @{$val->{'start_color'}}{'red', 'green', 'blue'}
-    $dc->SetPen( Wx::Pen->new( $start_color, $val->{'visual'}{'line_thickness'}, &Wx::wxPENSTYLE_SOLID) );
-    #$dc->SetBrush( Wx::Brush->new( $start_color, &Wx::wxBRUSHSTYLE_STIPPLE) );
-
     my $dot_per_sec = ($val->{'visual'}{'dot_density'} || 1);
-    my $t_iter = (exists $self->{'flag'}{'sketch'}) ? 5 : $val->{'visual'}{'duration'};
-    $t_iter *= $dot_per_sec;
+    my $t_max = (exists $self->{'flag'}{'sketch'}) ? 5 : $val->{'visual'}{'duration'};
+    $t_max *= $dot_per_sec;
     $val->{'visual'}{'connect_dots'} = int ($val->{'visual'}{'draw'} eq 'Line');
+    my $color_swap_time;
+    my $color_timer = 0;
+    my @colors = map { color( $val->{'color'}{$_} ) } 1 .. $val->{'visual'}{'colors_used'};
+    if      ($val->{'visual'}{'color_flow_type'} eq 'one_time'){
+        my $dots_per_gradient = int( $t_max / ($val->{'visual'}{'colors_used'}-1) );
+        my $gradient_steps = ($dots_per_gradient > 500) ? 50 :
+                             ($dots_per_gradient > 50)  ? 10 : $dots_per_gradient;
+        my @gtc_color_objects = @colors;
+        @colors = ($gtc_color_objects[0]);
+        for my $i (0 .. $val->{'visual'}{'colors_used'}-2){
+            pop @colors;
+            push @colors, $gtc_color_objects[$i]->gradient(
+                    to => $gtc_color_objects[$i+1],
+                    steps => $gradient_steps,
+                    dynamic => $self->{'color_flow_dynamic'},
+            );
+        }
+        $color_swap_time = int( $t_max / @colors );
+        $color_swap_time++ if $color_swap_time * @colors < $t_max;
+    } elsif ($val->{'visual'}{'color_flow_type'} eq 'alternate'){
+        my $dots_per_gradient = int ($dot_per_sec * 60 / $val->{'visual'}{'color_flow_speed'});
+        my $gradient_steps = ($dots_per_gradient > 500) ? 50 :
+                             ($dots_per_gradient > 50)  ? 10 : $dots_per_gradient;
+        my @gtc_color_objects = @colors;
+        my @color_flow = ($gtc_color_objects[0]);
+        for my $i (0 .. $val->{'visual'}{'colors_used'}-2){
+            pop @color_flow;
+            push @color_flow, $gtc_color_objects[$i]->gradient(
+                    to => $gtc_color_objects[$i+1],
+                    steps => $gradient_steps,
+                    dynamic => $self->{'color_flow_dynamic'},
+            );
+        }
+        $color_swap_time = int ($dots_per_gradient / $gradient_steps);
+        my $colors_needed = int($t_max / ($color_swap_time + 1));
+        $colors_needed++ if $colors_needed * ($color_swap_time + 1) < $t_max;
+        @colors = @color_flow;
+        while ($colors_needed > @colors){
+            @color_flow = reverse @color_flow;
+            push @colors, @color_flow[1 .. $#color_flow];
+        }
+    } elsif ($val->{'visual'}{'color_flow_type'} eq 'circular'){
+        my $dots_per_gradient = int ($dot_per_sec * 60 / $val->{'visual'}{'color_flow_speed'});
+        my $gradient_steps = ($dots_per_gradient > 500) ? 50 :
+                             ($dots_per_gradient > 50)  ? 10 : $dots_per_gradient;
+        my @gtc_color_objects = @colors;
+        my @color_flow = ($gtc_color_objects[0]);
+        for my $i (0 .. $val->{'visual'}{'colors_used'}-2){
+            pop @color_flow;
+            push @color_flow, $gtc_color_objects[$i]->gradient(
+                    to => $gtc_color_objects[$i+1],
+                    steps => $gradient_steps,
+                    dynamic => $self->{'color_flow_dynamic'},
+            );
+        }
+        pop @color_flow;
+        push @color_flow, $gtc_color_objects[-1]->gradient(
+                to => $gtc_color_objects[0],
+                steps => $gradient_steps,
+                dynamic => $self->{'color_flow_dynamic'},
+        );
+        pop @color_flow;
+        $color_swap_time = int ($dots_per_gradient / $gradient_steps);
+        my $colors_needed = int($t_max / ($color_swap_time + 1));
+        $colors_needed++ if $colors_needed * ($color_swap_time + 1) < $t_max;
+        @colors = @color_flow;
+        push @colors, @color_flow while $colors_needed > @colors;
+    }
+    my @wx_colors = map { Wx::Colour->new( $_->values ) } @colors;
 
     my $fX = $val->{'x'}{'frequency'} * $val->{'x'}{'freq_factor'};
     my $fY = $val->{'y'}{'frequency'} * $val->{'y'}{'freq_factor'};
@@ -216,8 +281,10 @@ sub paint {
     $x = $xr + $Cx;
     $y = $yr + $Cy;
 
-    my %delta_code = ( x=> [], y=> [], w=> [], r=> [], e=> [], f=> [] );
-    for my $pendulum_name (qw/x y w r e f/){
+    my @pendulum_names = qw/x y w r e f/;
+    my %init_code  = (map {$_ => []} @pendulum_names);
+    my %iter_code = (map {$_ => []} @pendulum_names);
+    for my $pendulum_name (@pendulum_names){
         next unless $val->{$pendulum_name}{'on'};
         my $val = $val->{ $pendulum_name };
         my $index = uc $pendulum_name;
@@ -234,12 +301,18 @@ sub paint {
             push @code, $code;
             push @code, '  $dr'.$index.' '.$val->{'radius_damp_acc_type'}.'= $ddr'.$index if $val->{'radius_damp_acc'};
         }
-        push @{$delta_code{$pendulum_name}}, @code;
+        push @{$iter_code{$pendulum_name}}, @code;
     }
+    my $pen_size = $val->{'visual'}{'line_thickness'};
+    $dc->SetPen( Wx::Pen->new( shift @wx_colors, $pen_size, &Wx::wxPENSTYLE_SOLID) );
+    #$dc->SetBrush( Wx::Brush->new( $start_color, &Wx::wxBRUSHSTYLE_STIPPLE) );
 
-    my @code = ('for (1 .. $t_iter){');
+    #my @code = ('sub {','= @_');
+    my @code = ();
+    push @code, @{$init_code{$_}} for @pendulum_names;
+    push @code, 'for (1 .. $t_max){';
     push @code, '  ($x_old, $y_old) = ($x, $y)' if $val->{'visual'}{'connect_dots'};
-    push @code, @{$delta_code{$_}} for qw/x y w r e f/;
+    push @code, @{$iter_code{$_}} for @pendulum_names;
     push @code, ($val->{'x'}{'on'}  ? '  $x = $rX * cos($tX)' : '  $x = 0');
     push @code, ($val->{'y'}{'on'}  ? '  $y = $rY * sin($tY)' : '  $y = 0');
     push @code,                       '  $x += $rE * cos($tE)' if $val->{'e'}{'on'};
@@ -248,12 +321,14 @@ sub paint {
     push @code, ' ($x, $y) = ($rR * (($x * cos($tR)) - ($y * sin($tR)))'
                            .',$rR * (($x * sin($tR)) + ($y * cos($tR))))' if $val->{'r'}{'on'};
     push @code, '  $x += $Cx', '  $y += $Cy';
+    push @code, '  if ($color_timer++ == $color_swap_time){', '$color_timer = 0',
+                '  $dc->SetPen( Wx::Pen->new( shift @wx_colors, $pen_size, &Wx::wxPENSTYLE_SOLID) )','}' if $color_swap_time;
     push @code, ($val->{'visual'}{'connect_dots'}
               ? '  $dc->DrawLine( $x_old, $y_old, $x, $y)'
               : '  $dc->DrawPoint( $x, $y )');
 
    # push @code, ' $dc->SetPen( Wx::Pen->new( $start_color ), 1, &Wx::wxPENSTYLE_SOLID);';
-   # push @code, '$progress->add_percentage( $_ / $t_iter * 100, $color[$color_index] ) unless $_ % $step_in_circle;'."\n" unless defined $self->{'flag'}{'sketch'};
+   # push @code, '$progress->add_percentage( $_ / $t_max * 100, $color[$color_index] ) unless $_ % $step_in_circle;'."\n" unless defined $self->{'flag'}{'sketch'};
 
     my $code = join '', map {$_.";\n"} @code, '}'; # say $code;
     eval $code;

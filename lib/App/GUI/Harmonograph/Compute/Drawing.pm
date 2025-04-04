@@ -7,10 +7,12 @@ use Benchmark;
 my $TAU = 6.283185307;
 
 
-sub prepare {
-    my ($data, $main_radius, $sketch) = @_;
+sub ref {
+    my ($data, $main_radius, $draw_context, $sketch) = @_;
     my $val = $data;
-    my $ret = {};
+    my $Cr = $main_radius;
+    my $dc = $draw_context;
+
 
     my $step_in_circle = ($val->{'line'}{'density'}**2);
     my $t_iter = (defined $sketch) ? 5 : $val->{'line'}{'length'} * 10;

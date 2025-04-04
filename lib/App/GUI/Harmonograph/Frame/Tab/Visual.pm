@@ -41,7 +41,7 @@ sub new {
     $self->{'label'}{'flow_type'}->SetToolTip("type of color flow: - linear - from start to end color \n  - alter(nate) - linearly between start and end color \n   - cicular - around the rainbow from start color visiting end color");
     $self->{'widget'}{'color_flow_dynamic'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 115, 'Dynamic', '0 = equally paced color change, larger = starting with slow color change becoming faster - or vice versa when dir activated', -12,  12,  0, .01);
     $self->{'widget'}{'color_flow_speed'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 140, 'Speed','color changes per minute', 1, 120, 1);
-    $self->{'widget'}{'colors_used'} = Wx::ComboBox->new( $self, -1, 2, [-1,-1], [75, -1], [1..11], &Wx::wxTE_READONLY );
+    $self->{'widget'}{'colors_used'} = Wx::ComboBox->new( $self, -1, 2, [-1,-1], [75, -1], [2 .. 11], &Wx::wxTE_READONLY );
     $self->{'widget'}{'colors_used'}->SetToolTip("Select how many colors will be used / changed between.");
     $self->{'label'}{'colors'}->SetToolTip("Select how many colors will be used / changed between.");
     @widget_keys = keys %{$self->{'widget'}};
