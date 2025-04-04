@@ -82,16 +82,31 @@ sub paint {
 
    # my $code_ref = App::GUI::Harmonograph::Compute::Drawing::prepare( $self->{'flag'}{'sketch'} );
 
-    my %var_names = ( x_time => '$tX', y_time => '$tY', e_time => '$tE', f_time => '$tF', w_time => '$tW', r_time => '$tR',
-                      x_freq => '$dtX', y_freq => '$dtY', e_freq => '$dtE', f_freq => '$dtF', w_freq => '$dtW', r_freq => '$dtR',
-                      x_radius => '$rX', y_radius => '$rY', e_radius => '$rE', f_radius => '$rF', w_radius => '$rW', r_radius => '$rR');
+    my %var_names = ( 'X time' => '$tX', 'X freq.' => '$dtX', 'X radius' => '$rX',
+                      'Y time' => '$tY', 'Y freq.' => '$dtY', 'Y radius' => '$rY',
+                      'E time' => '$tE', 'E freq.' => '$dtE', 'E radius' => '$rE',
+                      'F time' => '$tF', 'F freq.' => '$dtF', 'F radius' => '$rF',
+                      'W time' => '$tW', 'W freq.' => '$dtW', 'W radius' => '$rW',
+                      'R time' => '$tR', 'R freq.' => '$dtR', 'R radius' => '$rR');
+
+#~ my $default_settings = {
+    #~ x_function   => 'cos', x_operator   => '=', x_factor => '1',   x_constant => '1',   x_variable  => 'X time',
+    #~ y_function   => 'sin', y_operator   => '=', y_factor => '1',   y_constant => '1',   y_variable  => 'Y time',
+    #~ e_function   => 'cos', e_operator   => '=', e_factor => '1',   e_constant => '1',   e_variable  => 'E time',
+    #~ f_function   => 'sin', f_operator   => '=', f_factor => '1',   f_variable   => 'F time',
+    #~ wx_function  => 'cos', wx_operator  => '=', wx_factor => '1',  wx_variable  => 'W time',
+    #~ wy_function  => 'sin', wy_operator  => '=', wy_factor => '1',  wy_variable  => 'W time',
+    #~ r11_function => 'cos', r11_operator => '=', r11_factor => '1', r11_variable => 'R time',
+    #~ r12_function => 'sin', r12_operator => '=', r12_factor => '1', r12_variable => 'R time',
+    #~ r21_function => 'sin', r21_operator => '=', r21_factor => '1', r21_variable => 'R time',
+    #~ r22_function => 'cos', r22_operator => '=', r22_factor => '1', r22_variable => 'R time',
+#~ };
 
     my $dot_per_sec = ($val->{'visual'}{'dot_density'} || 1);
     my $t_max = (exists $self->{'flag'}{'sketch'}) ? 5 : $val->{'visual'}{'duration'};
     $t_max *= $dot_per_sec;
     $val->{'visual'}{'connect_dots'} = int ($val->{'visual'}{'draw'} eq 'Line');
     my $color_swap_time;
-    my $color_timer = 0;
     my @colors = map { color( $val->{'color'}{$_} ) } 1 .. $val->{'visual'}{'colors_used'};
     if      ($val->{'visual'}{'color_flow_type'} eq 'one_time'){
         my $dots_per_gradient = int( $t_max / ($val->{'visual'}{'colors_used'}-1) );
@@ -160,130 +175,47 @@ sub paint {
     }
     my @wx_colors = map { Wx::Colour->new( $_->values ) } @colors;
 
-    my $fX = $val->{'x'}{'frequency'} * $val->{'x'}{'freq_factor'};
-    my $fY = $val->{'y'}{'frequency'} * $val->{'y'}{'freq_factor'};
-    my $fE = $val->{'e'}{'frequency'} * $val->{'e'}{'freq_factor'};
-    my $fF = $val->{'f'}{'frequency'} * $val->{'f'}{'freq_factor'};
-    my $fW = $val->{'w'}{'frequency'} * $val->{'w'}{'freq_factor'};
-    my $fR = $val->{'r'}{'frequency'} * $val->{'r'}{'freq_factor'};
-    my $dfX = $val->{'x'}{'freq_damp'} * sqrt($val->{'x'}{'freq_damp'}) / $dot_per_sec / 10_000_000 * $fX;
-    my $dfY = $val->{'y'}{'freq_damp'} * sqrt($val->{'y'}{'freq_damp'}) / $dot_per_sec / 10_000_000 * $fY;
-    my $dfE = $val->{'e'}{'freq_damp'} * sqrt($val->{'e'}{'freq_damp'}) / $dot_per_sec / 10_000_000 * $fE;
-    my $dfF = $val->{'f'}{'freq_damp'} * sqrt($val->{'f'}{'freq_damp'}) / $dot_per_sec / 10_000_000 * $fF;
-    my $dfW = $val->{'w'}{'freq_damp'} * sqrt($val->{'w'}{'freq_damp'}) / $dot_per_sec / 10_000_000 * $fW;
-    my $dfR = $val->{'r'}{'freq_damp'} * sqrt($val->{'r'}{'freq_damp'}) / $dot_per_sec / 10_000_000 * $fR;
-    my $ddfX = $val->{'x'}{'freq_damp_acc'} / $dot_per_sec / 50_000_000_000;
-    my $ddfY = $val->{'y'}{'freq_damp_acc'} / $dot_per_sec / 50_000_000_000;
-    my $ddfE = $val->{'e'}{'freq_damp_acc'} / $dot_per_sec / 50_000_000_000;
-    my $ddfF = $val->{'f'}{'freq_damp_acc'} / $dot_per_sec / 50_000_000_000;
-    my $ddfW = $val->{'w'}{'freq_damp_acc'} / $dot_per_sec / 50_000_000_000;
-    my $ddfR = $val->{'r'}{'freq_damp_acc'} / $dot_per_sec / 50_000_000_000;
-    if ($val->{'x'}{'direction'}){   $fX = - $fX;   $dfX = - $dfX;  $ddfX = - $ddfX;}
-    if ($val->{'y'}{'direction'}){   $fY = - $fY;   $dfY = - $dfY;  $ddfY = - $ddfY; }
-    if ($val->{'e'}{'direction'}){   $fE = - $fE;   $dfE = - $dfE;  $ddfE = - $ddfE; }
-    if ($val->{'f'}{'direction'}){   $fF = - $fF;   $dfF = - $dfF;  $ddfF = - $ddfF; }
-    if ($val->{'w'}{'direction'}){   $fW = - $fW;   $dfW = - $dfW;  $ddfW = - $ddfW; }
-    if ($val->{'r'}{'direction'}){   $fR = - $fR;   $dfR = - $dfR;  $ddfR = - $ddfR; }
-    if ($val->{'x'}{'invert_freq'}){ $fX = 1 / $fX; $dfX = $dfX / $fX;  $ddfX = $ddfX / $fX; }
-    if ($val->{'y'}{'invert_freq'}){ $fY = 1 / $fY; $dfY = $dfX / $fY;  $ddfY = $ddfX / $fY; }
-    if ($val->{'e'}{'invert_freq'}){ $fE = 1 / $fE; $dfE = $dfE / $fE;  $ddfE = $ddfE / $fE; }
-    if ($val->{'f'}{'invert_freq'}){ $fF = 1 / $fF; $dfF = $dfF / $fF;  $ddfF = $ddfF / $fF; }
-    if ($val->{'w'}{'invert_freq'}){ $fW = 1 / $fW; $dfW = $dfW / $fW;  $ddfW = $ddfW / $fW; }
-    if ($val->{'r'}{'invert_freq'}){ $fR = 1 / $fR; $dfR = $dfR / $fR;  $ddfR = $ddfR / $fR; }
-    $dfX = 1 - ($dfX * 20) if $val->{'x'}{'freq_damp_type'} eq '*';
-    $dfY = 1 - ($dfY * 20) if $val->{'y'}{'freq_damp_type'} eq '*';
-    $dfE = 1 - ($dfE * 20) if $val->{'e'}{'freq_damp_type'} eq '*';
-    $dfF = 1 - ($dfF * 20) if $val->{'f'}{'freq_damp_type'} eq '*';
-    $dfW = 1 - ($dfW * 20) if $val->{'w'}{'freq_damp_type'} eq '*';
-    $dfR = 1 - ($dfR * 20) if $val->{'r'}{'freq_damp_type'} eq '*';
-    $ddfX = 1 - ($ddfX * 20) if $val->{'x'}{'freq_damp_acc_type'} eq '*' or $val->{'x'}{'freq_damp_acc_type'} eq '/';
-    $ddfY = 1 - ($ddfY * 20) if $val->{'y'}{'freq_damp_acc_type'} eq '*' or $val->{'y'}{'freq_damp_acc_type'} eq '/';
-    $ddfE = 1 - ($ddfE * 20) if $val->{'e'}{'freq_damp_acc_type'} eq '*' or $val->{'e'}{'freq_damp_acc_type'} eq '/';
-    $ddfF = 1 - ($ddfF * 20) if $val->{'f'}{'freq_damp_acc_type'} eq '*' or $val->{'f'}{'freq_damp_acc_type'} eq '/';
-    $ddfW = 1 - ($ddfW * 20) if $val->{'w'}{'freq_damp_acc_type'} eq '*' or $val->{'w'}{'freq_damp_acc_type'} eq '/';
-    $ddfR = 1 - ($ddfR * 20) if $val->{'r'}{'freq_damp_acc_type'} eq '*' or $val->{'r'}{'freq_damp_acc_type'} eq '/';
-
-    my $rX = $val->{'x'}{'radius'} * $val->{'x'}{'radius_factor'};
-    my $rY = $val->{'y'}{'radius'} * $val->{'y'}{'radius_factor'};
-    my $rE = $val->{'e'}{'radius'} * $val->{'e'}{'radius_factor'};
-    my $rF = $val->{'f'}{'radius'} * $val->{'f'}{'radius_factor'};
-    my $rW = $val->{'w'}{'radius'} * $val->{'w'}{'radius_factor'};
-    my $rR = $val->{'r'}{'radius'};
-    my $max_xr = $val->{'x'}{'on'} ? $rX : 1;
-    my $max_yr = $val->{'y'}{'on'} ? $rY : 1;
-    $max_xr += $rE if $val->{'e'}{'on'};
-    $max_yr += $rF if $val->{'f'}{'on'};
-    $max_xr += $rW if $val->{'w'}{'on'};
-    $max_yr += $rW if $val->{'w'}{'on'};
-    $max_xr *= 1.4 if $val->{'r'}{'on'};
-    $max_yr *= 1.4 if $val->{'r'}{'on'};
-    $Cr /=  (($max_xr > $max_yr) ? $max_xr : $max_yr); # zoom out so everything is visible
-    $rX *= $Cr;
-    $rY *= $Cr;
-    $rE *= $Cr;
-    $rF *= $Cr;
-    $rW *= $Cr;
-
-    my $drX = $val->{'x'}{'radius_damp'} / $dot_per_sec / 10_000 * $rX;
-    my $drY = $val->{'y'}{'radius_damp'} / $dot_per_sec / 10_000 * $rY;
-    my $drE = $val->{'e'}{'radius_damp'} / $dot_per_sec / 10_000 * $rE;
-    my $drF = $val->{'f'}{'radius_damp'} / $dot_per_sec / 10_000 * $rF;
-    my $drW = $val->{'w'}{'radius_damp'} / $dot_per_sec / 10_000 * $rW;
-    my $drR = $val->{'r'}{'radius_damp'} / $dot_per_sec / 10_000 * $rR * $Cr;
-    my $ddrX = $val->{'x'}{'radius_damp_acc'} / $dot_per_sec / 20_000;
-    my $ddrY = $val->{'y'}{'radius_damp_acc'} / $dot_per_sec / 20_000;
-    my $ddrE = $val->{'e'}{'radius_damp_acc'} / $dot_per_sec / 20_000;
-    my $ddrF = $val->{'f'}{'radius_damp_acc'} / $dot_per_sec / 20_000;
-    my $ddrW = $val->{'w'}{'radius_damp_acc'} / $dot_per_sec / 20_000;
-    my $ddrR = $val->{'r'}{'radius_damp_acc'} / $dot_per_sec / 20_000;
-    my %acc_mul = map {$_ => ($val->{$_}{'radius_damp_acc_type'} eq '*' or
-                              $val->{$_}{'radius_damp_acc_type'} eq '/')   } qw/x y e f w r/;
-    if ($val->{'x'}{'radius_damp_type'} eq '*'){ $drX  = 1 - ($drX / 300);
-                                                 $ddrX = 1 - ($ddrX / 400) if $acc_mul{'x'};
-    } else {                                     $ddrX = 1 - ($ddrX * 40) if $acc_mul{'x'}; }
-    if ($val->{'y'}{'radius_damp_type'} eq '*'){ $drY  = 1 - ($drY / 300);
-                                                 $ddrY = 1 - ($ddrY / 400) if $acc_mul{'y'};
-    } else {                                     $ddrY = 1 - ($ddrY * 40) if $acc_mul{'y'}; }
-    if ($val->{'e'}{'radius_damp_type'} eq '*'){ $drE  = 1 - ($drE / 300);
-                                                 $ddrE = 1 - ($ddrE / 400) if $acc_mul{'e'};
-    } else {                                     $ddrE = 1 - ($ddrE * 40) if $acc_mul{'e'}; }
-    if ($val->{'f'}{'radius_damp_type'} eq '*'){ $drF  = 1 - ($drF / 300);
-                                                 $ddrF = 1 - ($ddrF / 400) if $acc_mul{'f'};
-    } else {                                     $ddrF = 1 - ($ddrF * 40) if $acc_mul{'f'}; }
-    if ($val->{'w'}{'radius_damp_type'} eq '*'){ $drW  = 1 - ($drW / 300);
-                                                 $ddrW = 1 - ($ddrW / 400) if $acc_mul{'w'};
-    } else {                                     $ddrW = 1 - ($ddrW * 40) if $acc_mul{'w'}; }
-    if ($val->{'r'}{'radius_damp_type'} eq '*'){ $drR  = 1 - ($drR / 300);
-                                                 $ddrR = 1 - ($ddrR / 400) if $acc_mul{'r'};
-    } else {                                     $ddrR = 1 - ($ddrR * 40) if $acc_mul{'r'}; }
-
-    my $tX = $val->{'x'}{'offset'} * $TAU;
-    my $tY = $val->{'y'}{'offset'} * $TAU;
-    my $tE = $val->{'e'}{'offset'} * $TAU;
-    my $tF = $val->{'f'}{'offset'} * $TAU;
-    my $tW = $val->{'w'}{'offset'} * $TAU;
-    my $tR = $val->{'r'}{'offset'} * $TAU;
-    my $dtX = $TAU * $fX / $dot_per_sec;
-    my $dtY = $TAU * $fY / $dot_per_sec;
-    my $dtE = $TAU * $fE / $dot_per_sec;
-    my $dtF = $TAU * $fF / $dot_per_sec;
-    my $dtW = $TAU * $fW / $dot_per_sec;
-    my $dtR = $TAU * $fR / $dot_per_sec;
-    my ($x_old, $y_old);
-    my $x = $val->{'x'}{'on'} ? ($rX * cos($tX)) : 0;
-    my $y = $val->{'y'}{'on'} ? ($rY * sin($tY)) : 0;
-    $x += $val->{'e'}{'on'} ? ($rE * cos($tE)) : 0;
-    $y += $val->{'f'}{'on'} ? ($rF * sin($tF)) : 0;
-    $x += $val->{'w'}{'on'}  ? ($rW * cos($tW)) : 0;
-    $y += $val->{'w'}{'on'}  ? ($rW * sin($tW)) : 0;
-    my $xr = $val->{'r'}{'on'} ? ($rR * (($x * cos($tR)) - ($y * sin($tR)))) : $x;
-    my $yr = $val->{'r'}{'on'} ? ($rR * (($x * sin($tR)) + ($y * cos($tR)))) : $y;
-    $x = $xr + $Cx;
-    $y = $yr + $Cy;
-
-    my @pendulum_names = qw/x y w r e f/;
+    my @pendulum_names = qw/x y e f w r/;
     my %init_code  = (map {$_ => []} @pendulum_names);
     my %iter_code = (map {$_ => []} @pendulum_names);
+
+    for my $pendulum_name (@pendulum_names){
+        next unless $val->{$pendulum_name}{'on'};
+        my $val = $val->{ $pendulum_name };
+        my $index = uc $pendulum_name;
+        my @code = ();
+        push @code, 'my $f'.$index.' = '.($val->{'invert_dir'} ? '-' : '+').'1 '.
+                                         ($val->{'invert_freq'} ? '/ ': '* ').($val->{'frequency'} * $val->{'freq_factor'});
+        if ($val->{'freq_damp'}){
+            push @code, 'my $df'.$index.' = $f'.$index.' / $dot_per_sec * '.($val->{'freq_damp'} * sqrt($val->{'freq_factor'}) / 10_000_000 );
+            push @code, '$df'.$index.' /= $f'.$index if $val->{'invert_freq'};
+            push @code, '$df'.$index.' = - $df'.$index if $val->{'invert_dir'};
+            push @code, '$df'.$index.' = 1 - ($df'.$index.' * 20)' if $val->{'freq_damp_type'} eq '*';
+            if ($val->{'freq_damp_acc'}){
+                push @code, 'my $ddf'.$index.' = '.($val->{'freq_damp_acc'} / 50_000_000_000).' / $dot_per_sec';
+                push @code, '$ddf'.$index.' /= $f'.$index if $val->{'invert_freq'};
+                push @code, '$ddf'.$index.' = - $ddf'.$index if $val->{'invert_dir'};
+                push @code, '$ddf'.$index.' = 1 - ($ddf'.$index.' * 20)'
+                    if $val->{'freq_damp_acc_type'} eq '*' or $val->{'freq_damp_acc_type'} eq '/';
+            }
+        }
+        push @code, '$r'.$index.' *= $Cr' unless $pendulum_name eq 'r';
+
+        if ($val->{'radius_damp'}){
+            my $code = 'my $dr'.$index.' = '.$val->{'radius_damp'}.' / $dot_per_sec / 10_000 * $r'.$index;
+            $code .= '* $Cr' if $pendulum_name eq 'r';
+            push @code, $code;
+            push @code, '$dr'.$index.' = 1 - ($dr'.$index.' / 300 )' if $val->{'radius_damp_type'} eq '*';
+            if ($val->{'radius_damp_acc'}){
+                push @code, 'my $ddr'.$index.' = '.$val->{'radius_damp_acc'}.' / $dot_per_sec / 20_000';
+                push @code, '$ddr'.$index.' = 1 - ($ddr'.$index.(($val->{'radius_damp_type'} eq '*') ? '/ 400 ' : '* 40 ').' )'
+                    if $val->{'radius_damp_acc_type'} eq '*' or $val->{'radius_damp_acc_type'} eq '/';
+            }
+        }
+        push @code, 'my $t'.$index.' = '.$val->{'offset'}.' * '.$TAU,
+                    'my $dt'.$index.' = $f'.$index.' / $dot_per_sec * '.$TAU;
+        push @{$init_code{$pendulum_name}}, @code;
+    }
     for my $pendulum_name (@pendulum_names){
         next unless $val->{$pendulum_name}{'on'};
         my $val = $val->{ $pendulum_name };
@@ -309,11 +241,34 @@ sub paint {
                         horizontal => &Wx::wxPENSTYLE_HORIZONTAL_HATCH, cross => &Wx::wxPENSTYLE_CROSS_HATCH,
                         diagonal => &Wx::wxPENSTYLE_BDIAGONAL_HATCH, bidiagonal => &Wx::wxPENSTYLE_CROSSDIAG_HATCH};
     my $pen_style = $wxpen_style->{ $val->{'visual'}{'pen_style'} };
-    $dc->SetPen( Wx::Pen->new( shift @wx_colors, $pen_size, $pen_style ) );
 
-    #my @code = ('sub {','= @_');
-    my @code = ();
+    my @code = ('sub {','my ($dc, $val) = @_');
+    push @code, 'my $r'.uc($_).' = '.($val->{$_}{'radius'} * $val->{$_}{'radius_factor'}) for qw/x y e f w/;
+    push @code, 'my $rR = '.$val->{'r'}{'radius'};
+    push @code, ($val->{'x'}{'on'} ? 'my $max_xr = $rX' : 'my $max_xr = 1');
+    push @code, ($val->{'y'}{'on'} ? 'my $max_yr = $rY' : 'my $max_yr = 1');
+    push @code, '$max_xr += $rE' if $val->{'e'}{'on'};
+    push @code, '$max_yr += $rF' if $val->{'f'}{'on'};
+    push @code, '$max_xr += $rW', '$max_yr += $rW' if $val->{'w'}{'on'};
+    push @code, '$max_xr *= 1.4', '$max_yr *= 1.4' if $val->{'r'}{'on'};
+
+
+    push @code, '$Cr /=  (($max_xr > $max_yr) ? $max_xr : $max_yr)'; # zoom out so everything is visible
     push @code, @{$init_code{$_}} for @pendulum_names;
+    push @code, 'my ($x, $y)';
+    if ($val->{'visual'}{'connect_dots'}){
+        push @code, 'my ($x_old, $y_old)';
+        push @code, ($val->{'x'}{'on'}  ? '$x = $rX * cos($tX)' : '$x = 0');
+        push @code, ($val->{'y'}{'on'}  ? '$y = $rY * sin($tY)' : '$y = 0');
+        push @code,                       '$x += $rE * cos($tE)' if $val->{'e'}{'on'};
+        push @code,                       '$y += $rF * sin($tF)' if $val->{'f'}{'on'};
+        push @code, '$x += $rW * cos($tW)', '$y += $rW * sin($tW)' if $val->{'w'}{'on'};
+        push @code, '($x, $y) = ($rR * (($x * cos($tR)) - ($y * sin($tR)))'
+                              .',$rR * (($x * sin($tR)) + ($y * cos($tR))))' if $val->{'r'}{'on'};
+        push @code, '$x += $Cx', '$y += $Cy';
+    }
+    push @code, 'my $color_timer = 0';
+    push @code, '$dc->SetPen( Wx::Pen->new( shift @wx_colors, $pen_size, $pen_style ) )';
     push @code, 'for (1 .. $t_max){';
     push @code, '  ($x_old, $y_old) = ($x, $y)' if $val->{'visual'}{'connect_dots'};
     push @code, @{$iter_code{$_}} for @pendulum_names;
@@ -333,10 +288,11 @@ sub paint {
 
    # push @code, '$progress->add_percentage( $_ / $t_max * 100, $color[$color_index] ) unless $_ % $step_in_circle;'."\n" unless defined $self->{'flag'}{'sketch'};
 
-    my $code = join '', map {$_.";\n"} @code, '}'; # say $code;
-    eval $code;
+    my $code = join '', map {$_.";\n"} @code, '}}'; # say $code;
+    my $code_ref = eval $code;
     die "bad iter code - $@ : $code" if $@; #
     say "comp: ",timestr( timediff( Benchmark->new(), $t) );
+    $code_ref->( $dc );
 
     delete $self->{'flag'};
     $dc;

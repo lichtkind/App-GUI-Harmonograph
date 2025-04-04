@@ -27,7 +27,7 @@ sub new {
     $self->{'color_count'} = 10;  # max pos
     $self->{'active_color_count'} = 2;  # nr of currently used
     $self->{'current_color_nr'} = 1;
-    $self->{'display_size'} = 32;
+    $self->{'display_size'} = 33;
 
     $self->{'used_colors'}       = [ color('blue')->gradient( to => 'red', steps => $self->{'active_color_count'}) ];
     $self->{'used_colors'}[$_]   = color( $default_color_def ) for $self->{'active_color_count'} .. $self->{'color_count'}-1;
@@ -113,7 +113,7 @@ sub new {
         $option_sizer[$nr]->Add( $self->{'color_display'}[$nr],0, $all_attr, 3);
         $option_sizer[$nr]->Add( $self->{'color_marker'}[$nr], 0, $all_attr, 3);
         $state_sizer->Add( $option_sizer[$nr],                 0, $all_attr, 6);
-        $state_sizer->AddSpacer( 5 );
+        $state_sizer->AddSpacer( 3 );
     }
     $state_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 

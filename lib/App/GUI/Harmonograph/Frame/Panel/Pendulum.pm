@@ -47,8 +47,8 @@ sub new {
     $self->{'invert_freq'}->SetToolTip('invert (1/x) pendulum frequency');
     $self->{'neg_freq'} = Wx::CheckBox->new( $self, -1, ' Neg.');
     $self->{'neg_freq'}->SetToolTip('allow frequency to become negative');
-    $self->{'direction'} = Wx::CheckBox->new( $self, -1, ' Dir.');
-    $self->{'direction'}->SetToolTip('invert pendulum direction (to counter clockwise)');
+    $self->{'invert_dir'} = Wx::CheckBox->new( $self, -1, ' Dir.');
+    $self->{'invert_dir'}->SetToolTip('invert pendulum direction (to counter clockwise)');
     $self->{'half_off'} = Wx::CheckBox->new( $self, -1, ' 180');
     $self->{'half_off'}->SetToolTip("$help starts with offset of half rotation");
     $self->{'quarter_off'} = Wx::CheckBox->new( $self, -1, ' 90');
@@ -70,7 +70,7 @@ sub new {
     Wx::Event::EVT_BUTTON( $self, $self->{'reset_radius'}, sub { $self->{'radius'}->SetValue(100) });
     Wx::Event::EVT_CHECKBOX( $self, $self->{'on'},         sub { $self->update_enable(); $self->{'callback'}->() });
     Wx::Event::EVT_CHECKBOX( $self, $self->{ $_ },         sub { $self->{'callback'}->() })
-        for qw/invert_freq direction neg_freq half_off quarter_off neg_radius/;
+        for qw/invert_freq invert_dir neg_freq half_off quarter_off neg_radius/;
     Wx::Event::EVT_COMBOBOX( $self, $self->{ $_ },         sub { $self->{'callback'}->() })
         for qw/freq_factor freq_damp_type freq_damp_acc_type radius_damp_type radius_damp_acc_type/;
 
@@ -89,7 +89,7 @@ sub new {
     $fdez_sizer->Add( $self->{'freq_dez'},    0, $base_attr|&Wx::wxLEFT, 51);
     $fdez_sizer->AddSpacer( 5 );
     $fdez_sizer->Add( $self->{'invert_freq'}, 0, $base_attr|&Wx::wxLEFT, 9);
-    $fdez_sizer->Add( $self->{'direction'},   0, $base_attr|&Wx::wxLEFT, 7);
+    $fdez_sizer->Add( $self->{'invert_dir'},   0, $base_attr|&Wx::wxLEFT, 7);
     $fdez_sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $f_damp_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
@@ -164,7 +164,7 @@ sub init {
     $self->set_settings ({
         on => $self->{'initially_on'},
         frequency => 1, freq_factor => 1, freq_damp => 0, freq_damp_type => '-',
-        freq_damp_acc => 0,freq_damp_acc_type => '+', direction => 0, invert_freq => 0, neg_freq => 0,
+        freq_damp_acc => 0,freq_damp_acc_type => '+', invert_dir => 0, invert_freq => 0, neg_freq => 0,
         offset => 0, radius => 1, radius_factor => 1, radius_damp => 0, radius_damp_acc => 0,
         neg_radius => 0, radius_damp_type => '-', radius_damp_acc_type => '+' } );
 }
@@ -173,7 +173,7 @@ sub get_settings {
     my ( $self ) = @_;
     {
         on          => $self->{ 'on' }->IsChecked ? 1 : 0,
-        direction   => $self->{ 'direction'}->IsChecked ? 1 : 0,
+        invert_dir  => $self->{ 'invert_dir'}->IsChecked ? 1 : 0,
         invert_freq => $self->{ 'invert_freq'}->IsChecked ? 1 : 0,
         neg_freq    => $self->{ 'neg_freq'}->IsChecked ? 1 : 0,
         neg_radius  => $self->{ 'neg_radius'}->IsChecked ? 1 : 0,
@@ -214,7 +214,7 @@ sub set_settings {
         }
     }
     $self->{ 'on' }->SetValue( $settings->{'on'} );
-    $self->{ 'direction' }->SetValue( $settings->{'direction'} );
+    $self->{ 'invert_dir' }->SetValue( $settings->{'invert_dir'} );
     $self->{ 'invert_freq' }->SetValue( $settings->{'invert_freq'} );
     $self->{ 'neg_freq' }->SetValue( $settings->{'neg_freq'} );
     $self->{ 'neg_radius' }->SetValue( $settings->{'neg_radius'} );
@@ -243,7 +243,7 @@ sub update_enable {
     my ($self) = @_;
     my $val = $self->{ 'on' }->IsChecked;
     $self->{$_}->Enable( $val ) for qw/
-        freq_dez freq_factor invert_freq direction neg_freq half_off quarter_off offset
+        freq_dez freq_factor invert_freq invert_dir neg_freq half_off quarter_off offset
         frequency freq_damp freq_damp_acc freq_damp_type freq_damp_acc_type
         radius radius_factor neg_radius reset_radius
         radius_damp radius_damp_acc radius_damp_type radius_damp_acc_type/;
