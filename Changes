@@ -2,9 +2,9 @@
 -------
     * = major feature release
     * * added 2 epicycle pendula
-    * * copy color tab from cellgraph
-    * * much more pen setting
-    * * extended modulation tab
+    * * reworked visual settings tab with more options
+    * * reworked functions tab with more options
+    * * same color selector tab from cellgraph
     * ? more GUI documentation
     * + frequency damping acceleration settings (parallel radius settings)
 
