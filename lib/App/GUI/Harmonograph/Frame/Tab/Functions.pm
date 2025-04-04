@@ -15,10 +15,10 @@ my @variable_names = ('X time',  'Y time', 'W time', 'R time', 'E time', 'F time
                       'X radius','Y radius', 'W radius', 'R radius', 'E radius', 'F radius'); # variable names
 my @operator_names = (qw/= + - * \//);
 my @pendulum_names = (qw/x y e f wx wy r11 r12 r21 r22/);
-my @const_names = (1, 2, 3, '√2', '√3', '√5', 'π', 'φ', 'Φ', 'e', ' γ', 'Γ', 'G', 'A');
-
+my @const_names = (1, 2, 3, '√2', '√3', '√5', 'π', 'τ', 'φ', 'Φ', 'e', 'γ', 'Γ', 'G', 'A');
 my %const = (1 => 1, 2 => 2, 3 => 3, '√2' => 1.4142135623731, '√3' => 1.73205080756888, '√5' => 2.236067977499789,
-            'π' => 3.1415926535, 'φ' => 0.618033988, 'Φ' => 1.618033988,
+            'π' => 3.1415926535,  'τ' => 6.2831853071795,
+            'φ' => 0.61803398874989, 'Φ' => 1.61803398874989,
               e => 2.718281828,  'γ' => 0.57721566490153286, 'Γ' => 1.7724538509055160,
               G => 0.9159655941772190150, A => 1.28242712910062,
 );
@@ -137,13 +137,29 @@ sub init { $_[0]->set_settings ( $default_settings ) }
 sub set_settings {
     my ( $self, $settings ) = @_;
     return unless ref $settings eq 'HASH' and exists $settings->{'x_function'};
-    $self->{ $_ }->SetValue( ($settings->{$_} // $default_settings->{$_}) )
-        for keys %$default_settings;
+
+    for my $val_type (qw/_function _operator _factor _variable/){
+        $self->{ $_.$val_type }->SetValue( ($settings->{$_.$val_type} // $default_settings->{$_.$val_type}) ) for @pendulum_names;
+    }
+    for my $pendulum (@pendulum_names){
+        my $key = $pendulum.'_constant';
+        $self->{ $key }->SetValue( 1 );
+        if (exists $settings->{$key} and $settings->{$key}){
+            for my $label (@const_names) {
+                $self->{$key}->SetValue( $label ) if abs($const{ $label } - $settings->{$key}) < 0.0001;
+            }
+        }
+    }
     1;
 }
 sub get_settings {
     my ( $self ) = @_;
-    return { map { $_, $self->{$_}->GetValue } keys %$default_settings };
+    my $settings = {};
+    for my $val_type (qw/_function _operator _factor _variable/){
+        $settings->{ $_.$val_type } = $self->{$_.$val_type}->GetValue() for @pendulum_names;
+    }
+    $settings->{ $_.'_constant' } = $const{ $self->{$_.'_constant'}->GetValue } for @pendulum_names;
+    $settings;
 }
 
 sub SetCallBack {

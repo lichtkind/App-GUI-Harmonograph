@@ -47,7 +47,7 @@ sub new {
     @widget_keys = keys %{$self->{'widget'}};
 
     Wx::Event::EVT_RADIOBOX( $self, $self->{'widget'}{'draw'},            sub { $self->{'callback'}->() });
-    Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{'color_flow_type'}, sub { $self->{'callback'}->() });
+    Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{'color_flow_type'}, sub { $self->update_enable; $self->{'callback'}->(); });
     Wx::Event::EVT_COMBOBOX( $self, $self->{'widget'}{'colors_used'},     sub {
         $color_tab->set_active_color_count( $self->{'widget'}{'colors_used'}->GetString($_[1]->GetInt) );
         $self->{'callback'}->();
@@ -132,6 +132,7 @@ sub set_settings {
     $self->{'widget'}{ 'duration_s' }->SetValue(       $settings->{ 'duration'} % 60, 'passive');
     $self->{'widget'}{ '100dots_per_second'}->SetValue( int($settings->{ 'dot_density'} / 100), 'passive');
     $self->{'widget'}{ 'dots_per_second' }->SetValue(       $settings->{ 'dot_density'} % 100, 'passive');
+    $self->update_enable;
     1;
 }
 sub get_settings {
@@ -143,6 +144,19 @@ sub get_settings {
                                 + $self->{'widget'}{ 'dots_per_second' }->GetValue;
     $settings->{'draw'} = $self->{'widget'}{'draw'}->GetString( $self->{'widget'}{ 'draw' }->GetSelection );
     $settings;
+}
+
+sub update_enable {
+    my ( $self ) = @_;
+    my $type = $self->{'widget'}{'color_flow_type'}->GetValue;
+    if      ($type eq 'no'){
+        $self->{'widget'}{$_}->Enable(0) for qw/color_flow_speed colors_used color_flow_dynamic/;
+    } elsif ($type eq 'one_time'){
+        $self->{'widget'}{$_}->Enable(1) for qw/color_flow_speed colors_used color_flow_dynamic/;
+        $self->{'widget'}{'color_flow_speed'}->Enable(0);
+    } else {
+        $self->{'widget'}{$_}->Enable(1) for qw/color_flow_speed colors_used color_flow_dynamic/;
+    }
 }
 
 sub SetCallBack {

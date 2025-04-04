@@ -304,8 +304,16 @@ sub paint {
         push @{$iter_code{$pendulum_name}}, @code;
     }
     my $pen_size = $val->{'visual'}{'line_thickness'};
-    $dc->SetPen( Wx::Pen->new( shift @wx_colors, $pen_size, &Wx::wxPENSTYLE_SOLID) );
-    #$dc->SetBrush( Wx::Brush->new( $start_color, &Wx::wxBRUSHSTYLE_STIPPLE) );
+    # &Wx::wxPENSTYLE_DOT
+    # &Wx::wxPENSTYLE_SHORT_DASH
+    # &Wx::wxPENSTYLE_SOLID
+    # &Wx::wxPENSTYLE_BDIAGONAL_HATCH
+    # &Wx::wxPENSTYLE_CROSSDIAG_HATCH
+    # &Wx::wxPENSTYLE_CROSS_HATCH
+    # &Wx::wxPENSTYLE_VERTICAL_HATCH
+    # &Wx::wxPENSTYLE_HORIZONTAL_HATCH
+    $dc->SetPen( Wx::Pen->new( shift @wx_colors, $pen_size, &Wx::wxPENSTYLE_VERTICAL_HATCH ) );
+    #$dc->SetBrush( Wx::Brush->new( $start_color, &Wx::wxPENSTYLE_HORIZONTAL_HATCH) );
 
     #my @code = ('sub {','= @_');
     my @code = ();
@@ -327,7 +335,6 @@ sub paint {
               ? '  $dc->DrawLine( $x_old, $y_old, $x, $y)'
               : '  $dc->DrawPoint( $x, $y )');
 
-   # push @code, ' $dc->SetPen( Wx::Pen->new( $start_color ), 1, &Wx::wxPENSTYLE_SOLID);';
    # push @code, '$progress->add_percentage( $_ / $t_max * 100, $color[$color_index] ) unless $_ % $step_in_circle;'."\n" unless defined $self->{'flag'}{'sketch'};
 
     my $code = join '', map {$_.";\n"} @code, '}'; # say $code;
