@@ -10,9 +10,9 @@ use base qw/Wx::Panel/;
 use App::GUI::Harmonograph::Widget::SliderCombo;
 
 my @function_names = (qw/sin cos tan cot sec csc sinh cosh tanh coth sech csch/);
-my @variable_names = ('X time',  'Y time', 'W time', 'R time', 'E time', 'F time',
-                      'X freq.', 'Y freq.', 'W freq.', 'R freq.', 'E freq.', 'F freq.',
-                      'X radius','Y radius', 'W radius', 'R radius', 'E radius', 'F radius'); # variable names
+my @variable_names = ('X time',  'Y time', 'E time', 'F time', 'W time', 'R time',
+                      'X freq.', 'Y freq.', 'E freq.', 'F freq.', 'W freq.', 'R freq.',
+                      'X radius','Y radius', 'E radius', 'F radius', 'W radius', 'R radius'); # variable names
 my @operator_names = (qw/= + - * \//);
 my @pendulum_names = (qw/x y e f wx wy r11 r12 r21 r22/);
 my @const_names = (1, '√2', '√3', '√5', 'π', 'τ', 'φ', 'Φ', 'e', 'γ', 'Γ', 'G', 'A');

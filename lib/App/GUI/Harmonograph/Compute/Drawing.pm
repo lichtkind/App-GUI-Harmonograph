@@ -10,27 +10,84 @@ use Benchmark;
 
 my $TAU = 6.283185307;
 
-my %var_names = ( 'X time' => '$tX', 'X freq.' => '$dtX', 'X radius' => '$rX',
-                  'Y time' => '$tY', 'Y freq.' => '$dtY', 'Y radius' => '$rY',
-                  'E time' => '$tE', 'E freq.' => '$dtE', 'E radius' => '$rE',
-                  'F time' => '$tF', 'F freq.' => '$dtF', 'F radius' => '$rF',
-                  'W time' => '$tW', 'W freq.' => '$dtW', 'W radius' => '$rW',
-                  'R time' => '$tR', 'R freq.' => '$dtR', 'R radius' => '$rR');
-
-#~ my $default_settings = {
-    #~ x_function   => 'cos', x_operator   => '=', x_factor => '1',   x_constant => '1',   x_variable  => 'X time',
-    #~ y_function   => 'sin', y_operator   => '=', y_factor => '1',   y_constant => '1',   y_variable  => 'Y time',
-    #~ e_function   => 'cos', e_operator   => '=', e_factor => '1',   e_constant => '1',   e_variable  => 'E time',
-    #~ f_function   => 'sin', f_operator   => '=', f_factor => '1',   f_variable   => 'F time',
-    #~ wx_function  => 'cos', wx_operator  => '=', wx_factor => '1',  wx_variable  => 'W time',
-    #~ wy_function  => 'sin', wy_operator  => '=', wy_factor => '1',  wy_variable  => 'W time',
-    #~ r11_function => 'cos', r11_operator => '=', r11_factor => '1', r11_variable => 'R time',
-    #~ r12_function => 'sin', r12_operator => '=', r12_factor => '1', r12_variable => 'R time',
-    #~ r21_function => 'sin', r21_operator => '=', r21_factor => '1', r21_variable => 'R time',
-    #~ r22_function => 'cos', r22_operator => '=', r22_factor => '1', r22_variable => 'R time',
-#~ };
+sub gradient_steps {
+    my $dots_per_gradient = shift;
+    return ($dots_per_gradient > 500) ? 50 :
+           ($dots_per_gradient > 50)  ? 10 : $dots_per_gradient;
+}
 
 sub calculate_colors {
+    my ($val, $dot_count, $dot_per_sec) = @_;
+    my $color_swap_time;
+    my @colors = map { color( $val->{'color'}{$_} ) } 1 .. $val->{'visual'}{'colors_used'};
+    $val = $val->{'visual'};
+
+    if      ($val->{'color_flow_type'} eq 'one_time'){
+        my $dots_per_gradient = int( $dot_count / $val->{'colors_used'} );
+        my @color_objects = @colors;
+        @colors = ($color_objects[0]);
+        for my $i (0 .. $val->{'colors_used'}-2){
+            pop @colors;
+            push @colors, $color_objects[$i]->gradient(
+                    to => $color_objects[$i+1],
+                    steps => gradient_steps( $dots_per_gradient ),
+                    dynamic => $val->{'color_flow_dynamic'},
+            );
+        }
+        $color_swap_time = int( $dot_count / @colors );
+        $color_swap_time++ if $color_swap_time * @colors < $dot_count;
+    }
+
+    elsif ($val->{'color_flow_type'} eq 'alternate'){
+        my $dots_per_gradient = int ($dot_per_sec * 60 / $val->{'color_flow_speed'});
+        my $gradient_steps = gradient_steps( $dots_per_gradient );
+        my @color_objects = @colors;
+        my @c = ($color_objects[0]);
+        for my $i (0 .. $val->{'colors_used'}-2){
+            pop @c;
+            push @c, $color_objects[$i]->gradient(
+                    to => $color_objects[$i+1],
+                    steps => $gradient_steps,
+                    dynamic => $val->{'color_flow_dynamic'},
+            );
+        }
+        $color_swap_time = int( $dots_per_gradient / $gradient_steps );
+        my $colors_needed = int( $dot_count / ($color_swap_time + 1) );
+        $colors_needed++ if $colors_needed * ($color_swap_time + 1) < $dot_count;
+        @colors = @c;
+        while ($colors_needed > @colors){
+            @c = reverse @c;
+            push @colors, @c[1 .. $#c];
+        }
+    }
+
+    elsif ($val->{'color_flow_type'} eq 'circular'){
+        my $dots_per_gradient = int ($dot_per_sec * 60 / $val->{'color_flow_speed'});
+        my $gradient_steps = gradient_steps( $dots_per_gradient );
+        my @color_objects = @colors;
+        my @c = ($color_objects[0]);
+        for my $i (0 .. $val->{'colors_used'}-2){
+            pop @c;
+            push @c, $color_objects[$i]->gradient(
+                    to => $color_objects[$i+1],
+                    steps => $gradient_steps,
+                    dynamic => $val->{'color_flow_dynamic'},
+            );
+        }
+        pop @c;
+        push @c, $color_objects[-1]->gradient(
+                to => $color_objects[0],
+                steps => $gradient_steps,
+                dynamic => $$val->{'color_flow_dynamic'},
+        );
+        pop @c;
+        $color_swap_time = int ($dots_per_gradient / $gradient_steps);
+        my $colors_needed = int($dot_count / ($color_swap_time + 1));
+        $colors_needed++ if $colors_needed * ($color_swap_time + 1) < $dot_count;
+        @colors = @c;
+        push @colors, @c while $colors_needed > @colors;
+    }
+    return \@colors, $color_swap_time;
 }
 
 sub compile {
@@ -43,82 +100,19 @@ sub compile {
     my $dot_count = ((defined $sketch) ? 5 : $val->{'visual'}{'duration'}) * $dot_per_sec;
 
     $val->{'visual'}{'connect_dots'} = int ($val->{'visual'}{'draw'} eq 'Line');
-    my $color_swap_time;
-    my @colors = map { color( $val->{'color'}{$_} ) } 1 .. $val->{'visual'}{'colors_used'};
-    if      ($val->{'visual'}{'color_flow_type'} eq 'one_time'){
-        my $dots_per_gradient = int( $dot_count / ($val->{'visual'}{'colors_used'}-1) );
-        my $gradient_steps = ($dots_per_gradient > 500) ? 50 :
-                             ($dots_per_gradient > 50)  ? 10 : $dots_per_gradient;
-        my @gtc_color_objects = @colors;
-        @colors = ($gtc_color_objects[0]);
-        for my $i (0 .. $val->{'visual'}{'colors_used'}-2){
-            pop @colors;
-            push @colors, $gtc_color_objects[$i]->gradient(
-                    to => $gtc_color_objects[$i+1],
-                    steps => $gradient_steps,
-                    dynamic => $val->{'visual'}{'color_flow_dynamic'},
-            );
-        }
-        $color_swap_time = int( $dot_count / @colors );
-        $color_swap_time++ if $color_swap_time * @colors < $dot_count;
-    } elsif ($val->{'visual'}{'color_flow_type'} eq 'alternate'){
-        my $dots_per_gradient = int ($dot_per_sec * 60 / $val->{'visual'}{'color_flow_speed'});
-        my $gradient_steps = ($dots_per_gradient > 500) ? 50 :
-                             ($dots_per_gradient > 50)  ? 10 : $dots_per_gradient;
-        my @gtc_color_objects = @colors;
-        my @c = ($gtc_color_objects[0]);
-        for my $i (0 .. $val->{'visual'}{'colors_used'}-2){
-            pop @c;
-            push @c, $gtc_color_objects[$i]->gradient(
-                    to => $gtc_color_objects[$i+1],
-                    steps => $gradient_steps,
-                    dynamic => $val->{'visual'}{'color_flow_dynamic'},
-            );
-        }
-        $color_swap_time = int( $dots_per_gradient / $gradient_steps );
-        my $colors_needed = int( $dot_count / ($color_swap_time + 1) );
-        $colors_needed++ if $colors_needed * ($color_swap_time + 1) < $dot_count;
-        @colors = @c;
-        while ($colors_needed > @colors){
-            @c = reverse @c;
-            push @colors, @c[1 .. $#c];
-        }
-    } elsif ($val->{'visual'}{'color_flow_type'} eq 'circular'){
-        my $dots_per_gradient = int ($dot_per_sec * 60 / $val->{'visual'}{'color_flow_speed'});
-        my $gradient_steps = ($dots_per_gradient > 500) ? 50 :
-                             ($dots_per_gradient > 50)  ? 10 : $dots_per_gradient;
-        my @gtc_color_objects = @colors;
-        my @c = ($gtc_color_objects[0]);
-        for my $i (0 .. $val->{'visual'}{'colors_used'}-2){
-            pop @c;
-            push @c, $gtc_color_objects[$i]->gradient(
-                    to => $gtc_color_objects[$i+1],
-                    steps => $gradient_steps,
-                    dynamic => $val->{'visual'}{'color_flow_dynamic'},
-            );
-        }
-        pop @c;
-        push @c, $gtc_color_objects[-1]->gradient(
-                to => $gtc_color_objects[0],
-                steps => $gradient_steps,
-                dynamic => $$val->{'visual'}{'color_flow_dynamic'},
-        );
-        pop @c;
-        $color_swap_time = int ($dots_per_gradient / $gradient_steps);
-        my $colors_needed = int($dot_count / ($color_swap_time + 1));
-        $colors_needed++ if $colors_needed * ($color_swap_time + 1) < $dot_count;
-        @colors = @c;
-        push @colors, @c while $colors_needed > @colors;
-    }
+
+    my ($colors, $color_swap_time) = calculate_colors( $val, $dot_count, $dot_per_sec );
+    my @colors = @$colors;
     my @wx_colors = map { Wx::Colour->new( $_->values ) } @colors;
 
     my @pendulum_names = qw/x y e f w r/;
     my %init_code = (map {$_ => []} @pendulum_names);
     my %iter_code = (map {$_ => []} @pendulum_names);
-    my %comp_code = (map {$_ => []} @pendulum_names);
+    my @compute_pen_coordinates;
 
+    # init variables
     for my $pendulum_name (@pendulum_names){
-        next unless $val->{$pendulum_name}{'on'};
+        # next unless $val->{$pendulum_name}{'on'}; # need all for mod matrix
         my $val = $val->{ $pendulum_name };
         my $index = uc $pendulum_name;
         my @code = ();
@@ -140,7 +134,7 @@ sub compile {
         push @code, '$r'.$index.' *= $Cr' unless $pendulum_name eq 'r';
 
         if ($val->{'radius_damp'}){
-            my $code = 'my $dr'.$index.' = '.$val->{'radius_damp'}.' / $dot_per_sec / 10_000 * $r'.$index;
+            my $code = 'my $dr'.$index.' = '.$val->{'radius_damp'}.' / $dot_per_sec / 8_000 * $r'.$index;
             $code .= '* $Cr' if $pendulum_name eq 'r';
             push @code, $code;
             push @code, '$dr'.$index.' = 1 - ($dr'.$index.' / 300 )' if $val->{'radius_damp_type'} eq '*';
@@ -154,8 +148,10 @@ sub compile {
                     'my $dt'.$index.' = $f'.$index.' / $dot_per_sec * '.$TAU;
         push @{$init_code{$pendulum_name}}, @code;
     }
+
+    # update variables
     for my $pendulum_name (@pendulum_names){
-        next unless $val->{$pendulum_name}{'on'};
+        # next unless $val->{$pendulum_name}{'on'}; # need all for mod matrix
         my $val = $val->{ $pendulum_name };
         my $index = uc $pendulum_name;
         my @code = ('  $t'.$index.' += $dt'.$index);
@@ -173,6 +169,59 @@ sub compile {
         }
         push @{$iter_code{$pendulum_name}}, @code;
     }
+
+    my %var_names = ( 'X time' => '$tX', 'X freq.' => '$dtX', 'X radius' => '$rX',
+                      'Y time' => '$tY', 'Y freq.' => '$dtY', 'Y radius' => '$rY',
+                      'E time' => '$tE', 'E freq.' => '$dtE', 'E radius' => '$rE',
+                      'F time' => '$tF', 'F freq.' => '$dtF', 'F radius' => '$rF',
+                      'W time' => '$tW', 'W freq.' => '$dtW', 'W radius' => '$rW',
+                      'R time' => '$tR', 'R freq.' => '$dtR', 'R radius' => '$rR');
+ #  sin  cos
+ #  tan  =  sin / cos
+ #  cot  =  cos / sin
+ #  sec  =  1 / cos
+ #  csc  =  1 / sin
+ #  sinh =  exp $x - exp (- $x)
+ #  cosh =  exp $x + exp (- $x)
+ #  tanh = sinh / cosh
+ #  coth = coth / sinh
+ #  sech = 1 / cosh
+ #  csch = 1 / sinh
+
+    # compute coordinates
+    my @pendulum_eq = (qw/x y e f wx wy r11 r12 r21 r22/);
+    for (@pendulum_eq){
+        push @compute_pen_coordinates,'next unless '.$var_names{ $val->{'function'}{$_.'_variable'} }
+            if $val->{'function'}{$_.'_operator'} eq '/';
+    }
+    my $fun_factor = { map {$_ => $val->{'function'}{$_.'_factor'} *
+                                  $val->{'function'}{$_.'_constant'} } @pendulum_eq};
+    if ($val->{'x'}{'on'}){
+        my $val = $val->{'function'};
+        my $term = 'my $termX = ('.$fun_factor->{'x'}.' * '.$var_names{ $val->{'x_variable'} }.')';
+        $term .= ' + $tX' if $val->{'x_operator'} eq '=';
+        push @compute_pen_coordinates, $term, '  $x = $rX * cos( $termX )';
+    } else { push @compute_pen_coordinates, '  $x = 0' }
+    if ($val->{'y'}{'on'}){
+        push @compute_pen_coordinates, '  $y = $rY * sin($tY)';
+    } else { push @compute_pen_coordinates, '  $y = 0' }
+    if ($val->{'e'}{'on'}){
+        push @compute_pen_coordinates, '  $x += $rE * cos($tE)';
+    }
+    if ($val->{'f'}{'on'}){
+        push @compute_pen_coordinates, '  $y += $rF * cos($tF)';
+    }
+    if ($val->{'w'}{'on'}){
+        push @compute_pen_coordinates,
+            '  $x += $rW * cos($tW)',
+            '  $y += $rW * sin($tW)';
+    }
+    if ($val->{'r'}{'on'}){
+        push @compute_pen_coordinates,
+            ' ($x, $y) = ($rR * (($x * cos($tR)) - ($y * sin($tR)))'
+                       .',$rR * (($x * sin($tR)) + ($y * cos($tR))))';
+    }
+
     my $pen_size = $val->{'visual'}{'line_thickness'};
     my $wxpen_style = { dotted => &Wx::wxPENSTYLE_DOT,        short_dash => &Wx::wxPENSTYLE_SHORT_DASH,
                         solid => &Wx::wxPENSTYLE_SOLID,       vertical => &Wx::wxPENSTYLE_VERTICAL_HATCH,
@@ -194,18 +243,10 @@ sub compile {
     push @code, '$Cr /= (($max_xr > $max_yr) ? $max_xr : $max_yr)'; # zoom out so everything is visible
     push @code, @{$init_code{$_}} for @pendulum_names;
     push @code, 'my ($x, $y)';
-    if ($val->{'visual'}{'connect_dots'}){
-        push @code, 'my ($x_old, $y_old)';
-        push @code, ($val->{'x'}{'on'}  ? '$x = $rX * cos($tX)' : '$x = 0');
-        push @code, ($val->{'y'}{'on'}  ? '$y = $rY * sin($tY)' : '$y = 0');
-        push @code,                       '$x += $rE * cos($tE)' if $val->{'e'}{'on'};
-        push @code,                       '$y += $rF * sin($tF)' if $val->{'f'}{'on'};
-        push @code, '$x += $rW * cos($tW)', '$y += $rW * sin($tW)' if $val->{'w'}{'on'};
-        push @code, '($x, $y) = ($rR * (($x * cos($tR)) - ($y * sin($tR)))'
-                              .',$rR * (($x * sin($tR)) + ($y * cos($tR))))' if $val->{'r'}{'on'};
-        push @code, '$x += $Cx', '$y += $Cy';
-    }
-    push @code, '$dc->SetPen( Wx::Pen->new( shift @wx_colors, $pen_size, $pen_style ) )', 'shift @colors';
+    push @code, 'my ($x_old, $y_old)', @compute_pen_coordinates, '$x += $Cx', '$y += $Cy'
+        if $val->{'visual'}{'connect_dots'};
+    push @code, '$dc->SetPen( Wx::Pen->new( shift @wx_colors, $pen_size, $pen_style ) )',
+                'my $first_color = shift @colors';
     push @code, 'my $color_timer = 0' if $color_swap_time;
     push @code, 'for my $i (1 .. $dot_count){';
     push @code, '  ($x_old, $y_old) = ($x, $y)' if $val->{'visual'}{'connect_dots'};
@@ -216,21 +257,14 @@ sub compile {
         push @code, '}';
     }
     push @code, @{$iter_code{$_}} for @pendulum_names;
-    push @code, ($val->{'x'}{'on'}  ? '  $x = $rX * cos($tX)' : '  $x = 0');
-    push @code, ($val->{'y'}{'on'}  ? '  $y = $rY * sin($tY)' : '  $y = 0');
-    push @code,                       '  $x += $rE * cos($tE)' if $val->{'e'}{'on'};
-    push @code,                       '  $y += $rF * sin($tF)' if $val->{'f'}{'on'};
-    push @code, '  $x += $rW * cos($tW)', '  $y += $rW * sin($tW)' if $val->{'w'}{'on'};
-    push @code, ' ($x, $y) = ($rR * (($x * cos($tR)) - ($y * sin($tR)))'
-                           .',$rR * (($x * sin($tR)) + ($y * cos($tR))))' if $val->{'r'}{'on'};
-    push @code, '  $x += $Cx', '  $y += $Cy';
+    push @code, @compute_pen_coordinates, '  $x += $Cx', '  $y += $Cy';
     push @code, ($val->{'visual'}{'connect_dots'}
               ? '  $dc->DrawLine( $x_old, $y_old, $x, $y)'
               : '  $dc->DrawPoint( $x, $y )');
+    push @code, '}';
+    push @code, '$progress_bar->add_percentage( 100, [$first_color->values] )' unless defined $sketch or $color_swap_time ;
 
-   # $progress_bar->add_percentage( 100, [$colors[0]->values] ) unless exists $self->{'flag'}{'sketch'} or $color_swap_time;
-
-    my $code = join '', map {$_.";\n"} @code, '}}'; # say $code;
+    my $code = join '', map {$_.";\n"} @code, '}'; # say $code;
     my $code_ref = eval $code;
     die "bug '$@' in drawing code: $code" if $@; #
     say "comp: ",timestr( timediff( Benchmark->new(), $t) );
@@ -238,17 +272,3 @@ sub compile {
 }
 
 1;
-__END__
-
- sin
- cos
- tan  =  sin / cos
- cot  =  cos / sin
- sec  =  1 / cos
- csc  =  1 / sin
- sinh =  exp $x - exp (- $x)
- cosh =  exp $x + exp (- $x)
- tanh = sinh / cosh
- coth = coth / sinh
- sech = 1 / cosh
- csch = 1 / sinh
