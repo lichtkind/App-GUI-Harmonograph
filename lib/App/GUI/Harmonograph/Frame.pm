@@ -1,8 +1,8 @@
+
+package App::GUI::Harmonograph::Frame;
 use v5.12;
 use warnings;
 use utf8;
-
-package App::GUI::Harmonograph::Frame;
 use base qw/Wx::Frame/;
 use Wx::AUI;
 use App::GUI::Harmonograph::Dialog::About;
