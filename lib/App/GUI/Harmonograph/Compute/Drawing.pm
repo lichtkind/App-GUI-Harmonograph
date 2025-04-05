@@ -78,7 +78,7 @@ sub calculate_colors {
         push @c, $color_objects[-1]->gradient(
                 to => $color_objects[0],
                 steps => $gradient_steps,
-                dynamic => $$val->{'color_flow_dynamic'},
+                dynamic => $val->{'color_flow_dynamic'},
         );
         pop @c;
         $color_swap_time = int ($dots_per_gradient / $gradient_steps);
@@ -189,37 +189,36 @@ sub compile {
  #  csch = 1 / sinh
 
     # compute coordinates
-    my @pendulum_eq = (qw/x y e f wx wy r11 r12 r21 r22/);
-    for (@pendulum_eq){
-        push @compute_pen_coordinates,'next unless '.$var_names{ $val->{'function'}{$_.'_variable'} }
-            if $val->{'function'}{$_.'_operator'} eq '/';
+    my ($factor, $term, $function);
+    for my $eq (qw/x y e f wx wy r11 r12 r21 r22/){
+        push @compute_pen_coordinates,'next unless '.$var_names{ $val->{'function'}{$eq.'_variable'} }
+            if $val->{'function'}{$eq.'_operator'} eq '/';
+        $factor->{$eq} = $val->{'function'}{$eq.'_factor'} * $val->{'function'}{$eq.'_constant'};
+        $term->{$eq} = 'my $term'.uc($eq).' = ('.$factor->{$eq}.' * '.
+                      $var_names{ $val->{'function'}{$eq.'_variable'} }.')'.
+                      ($val->{'function'}{$eq.'_operator'} eq '=' ? ' + $t'.uc(substr($eq, 0, 1)) : '' );
     }
-    my $fun_factor = { map {$_ => $val->{'function'}{$_.'_factor'} *
-                                  $val->{'function'}{$_.'_constant'} } @pendulum_eq};
     if ($val->{'x'}{'on'}){
-        my $val = $val->{'function'};
-        my $term = 'my $termX = ('.$fun_factor->{'x'}.' * '.$var_names{ $val->{'x_variable'} }.')';
-        $term .= ' + $tX' if $val->{'x_operator'} eq '=';
-        push @compute_pen_coordinates, $term, '  $x = $rX * cos( $termX )';
+        push @compute_pen_coordinates, $term->{'x'}, '  $x = $rX * cos($termX)';
     } else { push @compute_pen_coordinates, '  $x = 0' }
     if ($val->{'y'}{'on'}){
-        push @compute_pen_coordinates, '  $y = $rY * sin($tY)';
+        push @compute_pen_coordinates, $term->{'y'}, '  $y = $rY * sin($termY)';
     } else { push @compute_pen_coordinates, '  $y = 0' }
     if ($val->{'e'}{'on'}){
-        push @compute_pen_coordinates, '  $x += $rE * cos($tE)';
+        push @compute_pen_coordinates, $term->{'e'}, '  $x += $rE * cos($termE)';
     }
     if ($val->{'f'}{'on'}){
-        push @compute_pen_coordinates, '  $y += $rF * cos($tF)';
+        push @compute_pen_coordinates, $term->{'f'}, '  $y += $rF * cos($termF)';
     }
     if ($val->{'w'}{'on'}){
-        push @compute_pen_coordinates,
-            '  $x += $rW * cos($tW)',
-            '  $y += $rW * sin($tW)';
+        push @compute_pen_coordinates, $term->{'wx'}, $term->{'wy'},
+            '  $x += $rW * cos($termWX)',
+            '  $y += $rW * sin($termWY)';
     }
     if ($val->{'r'}{'on'}){
-        push @compute_pen_coordinates,
-            ' ($x, $y) = ($rR * (($x * cos($tR)) - ($y * sin($tR)))'
-                       .',$rR * (($x * sin($tR)) + ($y * cos($tR))))';
+        push @compute_pen_coordinates, $term->{'r11'}, $term->{'r12'}, $term->{'r21'},$term->{'r22'},
+            ' ($x, $y) = ($rR * (($x * cos($termR11)) - ($y * sin($termR12)))'
+                       .',$rR * (($x * sin($termR21)) + ($y * cos($termR22))))';
     }
 
     my $pen_size = $val->{'visual'}{'line_thickness'};
