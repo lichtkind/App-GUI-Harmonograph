@@ -76,10 +76,11 @@ sub paint {
     my $Cx = (defined $width)  ? ($width / 2)  : $self->{'center'}{'x'};
     my $Cy = (defined $height) ? ($height / 2) : $self->{'center'}{'y'};
     my $Cr = (defined $height) ? ($width > $height ? $Cx : $Cy) : $self->{'hard_radius'};
+    my $board_size = $Cr;
     $Cr -= 15;
 
     my $code_ref = App::GUI::Harmonograph::Compute::Drawing::compile(
-        $self->{'settings'}, $progress_bar, $Cr, $self->{'flag'}{'sketch'}
+        $self->{'settings'}, $progress_bar, $Cr, $board_size, $self->{'flag'}{'sketch'}
     );
     $code_ref->( $dc, $Cx, $Cy );
 

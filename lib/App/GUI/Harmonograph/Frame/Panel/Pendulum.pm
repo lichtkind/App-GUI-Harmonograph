@@ -55,7 +55,7 @@ sub new {
     $self->{'quarter_off'}->SetToolTip("$help starts with offset of quater rotation");
     $self->{'offset'} = App::GUI::Harmonograph::Widget::SliderCombo->new
                             ($self, 110, 'Offset', "additional offset $help starts with (0 - quater rotation)", 0, 100, 0);
-    $self->{'radius'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Radius %', "radius / amplitude of $help swing", 0, 150, 100);
+    $self->{'radius'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 100, 'Radius %', "radius / amplitude of $help swing", 0, 200, 100);
     $self->{'radius_factor'} = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[70, 20], [@const_names]);
     $self->{'radius_factor'}->SetToolTip('base factor the radius will be multiplied with: one (no), or a math constants as shown');
     $self->{'neg_radius'} = Wx::CheckBox->new( $self, -1, ' Neg.');

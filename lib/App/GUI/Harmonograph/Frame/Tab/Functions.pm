@@ -43,8 +43,8 @@ sub new {
 
     $self->{$_.'_function'} = Wx::ComboBox->new( $self, -1, '', [-1,-1], [ 82, -1], [@function_names], &Wx::wxTE_READONLY) for @pendulum_names;
     $self->{$_.'_operator'} = Wx::ComboBox->new( $self, -1, '', [-1,-1], [ 65, -1], [@operator_names], &Wx::wxTE_READONLY) for @pendulum_names;
-    $self->{$_.'_factor'}   = Wx::ComboBox->new( $self, -1,  1, [-1,-1], [ 75, -1], [1..17],           &Wx::wxTE_READONLY) for @pendulum_names;
-    $self->{$_.'_constant'} = Wx::ComboBox->new( $self, -1,  1, [-1,-1], [ 75, -1], [@const_names],    &Wx::wxTE_READONLY) for @pendulum_names;
+    $self->{$_.'_factor'}   = Wx::ComboBox->new( $self, -1,  1, [-1,-1], [ 75, -1], [-1,1..17]       , &Wx::wxTE_READONLY) for @pendulum_names;
+    $self->{$_.'_constant'} = Wx::ComboBox->new( $self, -1,  1, [-1,-1], [ 75, -1], [@const_names]   , &Wx::wxTE_READONLY) for @pendulum_names;
     $self->{$_.'_variable'} = Wx::ComboBox->new( $self, -1, '', [-1,-1], [105, -1], [@variable_names], &Wx::wxTE_READONLY) for @pendulum_names;
 
     $self->{'x_function'}->SetToolTip('function that computes pendulum X');

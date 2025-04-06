@@ -31,7 +31,7 @@ __END__
 
 =head1 NAME
 
-App::GUI::Harmonograph - sculpting beautiful circular drawings
+App::GUI::Harmonograph - drawing by lateral and rotary pendula
 
 =head1 SYNOPSIS
 
