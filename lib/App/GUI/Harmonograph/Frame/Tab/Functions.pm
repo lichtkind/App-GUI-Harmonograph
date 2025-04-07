@@ -47,7 +47,7 @@ sub new {
     $self->{$_.'_constant'} = Wx::ComboBox->new( $self, -1,  1, [-1,-1], [ 75, -1], [@const_names]   , &Wx::wxTE_READONLY) for @pendulum_names;
     $self->{$_.'_variable'} = Wx::ComboBox->new( $self, -1, '', [-1,-1], [105, -1], [@variable_names], &Wx::wxTE_READONLY) for @pendulum_names;
 
-    $self->{'x_function'}->SetToolTip('function that computes pendulum X');
+    $self->{'x_function'}->SetToolTip('function that computes pendulum X: sine, cosine, tangent, cotangent, secans, cosecans, hyperbolic functions');
     $self->{'y_function'}->SetToolTip('function that computes pendulum Y');
     $self->{'e_function'}->SetToolTip('function that computes epicycle pendulum in x direction');
     $self->{'f_function'}->SetToolTip('function that computes epicycle pendulum in y direction');

@@ -43,7 +43,7 @@ read this POD page
 
 =item 2.
 
-start the program: > C<harmonograph>
+start the program in shell: > C<harmonograph>
 
 =item 3.
 
@@ -124,41 +124,36 @@ The classic Harmonograph is sturdy metal rack which does not move while
 because it only moves along the x-axis (left to right and back).
 In the same fashion the second (Y) only moves up and down.
 When both are connected to a pen, we get a combination of both movements.
-As long as X and Y swing at the same speed, the result is a diagonal line.
-Because when X goes right Y goes up and vice versa.
+As long as X and Y swing at the same speed (frequency), the result is a
+diagonal line. Because when X goes right Y goes up and vice versa.
 But if we start one pendulum at the center and the other
 at the upmost position we get a circle.
 In other words: we added an offset of 90 degrees to Y (or X).
 Our third pendulum W moves (wobbles) the paper in circulating manner around
 its center (but not rotating, so a dot in the left corner will always left).
 If both circular movements (of X, Y and the one of W) are concurrent -
-the pen just stays at one point over the paper and paint one dot.
+the pen just stays at one point over the paper and paints only a dot.
 If both are countercurrent - we get a circle.
 Interesting things start to happen, if we alter the speed of of X, Y and W.
 Than famous harmonic pattern appear.
 And for even more complex drawings I added R, which is not really
 a pendulum and not part of the original Harmonograph,
 but an additional rotary movement of the paper around its center.
-I added even 2 more pendula (E and F), which draw an epicycle around the
-point where the dot would be normally drawn.
+I added even 2 more pendula (E and F which are also lateral like X and Y),
+which draw an epicycle around the point where the dot would be normally drawn.
 
 The pendula out of metal do of course fizzle out over time,
 which you can see in the drawing, in a spiraling movement toward the center.
 We emulate this with two damping factors: one for amplitude and one for
-the frequency (speed). The radius / ampitude of endulum R is special and
+the frequency (speed). The radius or ampitude of Pendulum R is special and
 allows you to zoom in or out in case you wish to do so. Normally this is
 not necessary, since the program autoadjusts to the settings, so that the
-picture os always full visible and as big as possible.
+picture os always fully visible and as big as possible.
 
 
 =head1 GUI
 
-=for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/POD/GUI.png"    alt=""  width="85%" height="85%">
-</p>
-
-The general layout of the program has three parts,
-which flow from the position of the drawing board.
+The general layout of the program has three parts:
 
 =over 4
 
@@ -169,23 +164,29 @@ In the left upper corner is the drawing board - showing the result of the Harmon
 =item 2
 
 The whole right half of the window contains the settings, which guide the drawing operation.
-These are divided into four tabs - roughly devided in form (3) and decoration (last one).
+These are divided into six tabs, which will be explained in detail below.
 
 =item 3
 
-In the lower left corner are two rows of command buttons. All other
-commands are in the menu. The upper row is just for drawing and the lower
-for image mass production more under L</Commands>.
+In the lower left corner are two rows of buttons. The first row contains
+only the progress bar and the I<Draw> button for drawing a full picture.
+The progress bar remains white whily previe sketches are shown. But when
+a full picture is drawn, then it gets filled with colors that reflect
+the color flow used while drawing.
+
+The second row of buttons allow the mass production of graphic files
+without using the menu. That is explained in detail under L</Commands>.
 
 =back
 
 Please mind the tool tips - short help texts which appear if the mouse
-stands still over most widgets. Also helpful are messages in the
+stands still over a widgets. Also helpful are messages in the
 status bar at the bottom - on bottom left regarding current state of the image
 and bottom right about state of the settings. Settings are all the
-parameters of the image, that are dialed in via widget in the tabs.
-Configuration are the general settings of this program, which are mostly
-saved colors and paths were to store images and settings.
+parameters that guide the drawing. You change them via widgets controls
+on the right side. They can be saved and loaded from a file via the
+settings menu. Configuration are the general settings of this program,
+which are mostly saved colors and paths were to store images and settings.
 
 When browsing the main menu, help texts about the highlighted item
 also appears in the status bar. The Menu can be completely navigated with
@@ -196,11 +197,17 @@ also see which Alt + letter combinations trigger which button.
 
 =head2 Pendulum
 
-Each of the first two tabs contains the settings of two pendula.
-The first tab has the lateral pendula: X (left right movement) and
-Y (up and down). The second tab has Z (wobble - moving the center of the
-paper in rotating movement around the center of the space without rotating
-the paper) and R (actual rotation around center of the pater).
+=for HTML <p>
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/POD/Tab_Pendulum.png"    alt=""  width="85%" height="85%">
+</p>
+
+Each of the first three tabs contains the settings of two pendula.
+The first tab has the lateral or linear pendula: X (left right movement)
+and Y (up and down). The second
+
+The third tab has W (wobble - moving the center of
+the paper in rotating movement around the center of the space without
+rotating the paper) and R (actual rotation around center of the pater).
 Most settings can be changed with a combo-slider which allows input by
 typing, moving the slider or fine tuning the value by pushing the minus
 and plus buttons. The settings for each pendulum are identical and are as follow:
@@ -237,10 +244,10 @@ doesn't move enough. As with reqency, also the amplitude can be damped
 over time and this damping can accelerated.
 
 
-=head2 Mod Matrix
+=head2 Functions
 
 =for HTML <p>
-<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/POD/GUI3.png"    alt=""  width="85%" height="85%">
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/POD/Tab_Functions.png"    alt=""  width="85%" height="85%">
 </p>
 
 The third tab allows the deepest alterations to the drawing, which leaves
@@ -257,7 +264,7 @@ each cell of the matrix the variable and the function that computes
 on that variable. Please note the most beautiful examples were computed
 by changing the variable of just one cell of the rotation matrix.
 
-=head2 Pen Settings
+=head2 Visual Settings
 
 =for HTML <p>
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/POD/GUI2.png"   alt=""  width="85%" height="85%">
@@ -274,6 +281,10 @@ Zero mens here very thin = one half of an pixel - which is still  visible,
 but very airy.
 
 =head2 Colors
+
+=for HTML <p>
+<img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/POD/GUI2.png"   alt=""  width="85%" height="85%">
+</p>
 
 On the lower part of the pen settings tab are the are the options for
 colorization and this has in itself three parts.

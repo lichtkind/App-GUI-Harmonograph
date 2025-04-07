@@ -52,8 +52,8 @@ sub calculate_colors {
             );
         }
         $color_swap_time = int( $dots_per_gradient / $gradient_steps );
-        my $colors_needed = int( $dot_count / ($color_swap_time + 1) );
-        $colors_needed++ if $colors_needed * ($color_swap_time + 1) < $dot_count;
+        my $colors_needed = int( $dot_count / $color_swap_time   );
+        $colors_needed++ while $colors_needed * $color_swap_time < $dot_count;
         @colors = @c;
         while ($colors_needed > @colors){
             @c = reverse @c;
@@ -82,11 +82,12 @@ sub calculate_colors {
         );
         pop @c;
         $color_swap_time = int ($dots_per_gradient / $gradient_steps);
-        my $colors_needed = int($dot_count / ($color_swap_time + 1));
-        $colors_needed++ if $colors_needed * ($color_swap_time + 1) < $dot_count;
+        my $colors_needed = int($dot_count / $color_swap_time );
+        $colors_needed++ while $colors_needed * $color_swap_time < $dot_count;
         @colors = @c;
         push @colors, @c while $colors_needed > @colors;
     }
+say "colors " , int @colors, " t $color_swap_time per $dot_count max";
     return \@colors, $color_swap_time;
 }
 
@@ -95,7 +96,7 @@ sub compile {
     my $set = $state;
     my $Cr = $main_radius;
     my $t = Benchmark->new();
-    $board_size *= 2;
+    $board_size *= 3;
     my $dot_per_sec = ($set->{'visual'}{'dot_density'} || 1);
     my $dot_count = ((defined $sketch) ? 5 : $set->{'visual'}{'duration'}) * $dot_per_sec;
 
@@ -182,13 +183,6 @@ sub compile {
                       'F time' => '$tF', 'F freq.' => '$dtF', 'F radius' => '$rF',
                       'W time' => '$tW', 'W freq.' => '$dtW', 'W radius' => '$rW',
                       'R time' => '$tR', 'R freq.' => '$dtR', 'R radius' => '$rR');
-
- #  sinh =  0.5 exp $x - exp (- $x)
- #  cosh =  0.5 exp $x + exp (- $x)
- #  tanh = sinh / cosh  |
- #  coth = coth / sinh  |
- #  sech = 1 / cosh     |    1 /
- #  csch = 1 / sinh     |    1 /
 
     # compute coordinates
     my @compute_coor_code;
@@ -279,18 +273,19 @@ sub compile {
         push @code, '  if ($color_timer++ == $color_swap_time){', '    $color_timer = 1',
                     '    $dc->SetPen( Wx::Pen->new( shift @wx_colors, $pen_size, $pen_style) )';
         push @code, '    $progress_bar->add_percentage( ($i/ $dot_count*100), [(shift @colors)->values] )' unless defined $sketch;
-        push @code, '}';
+        push @code, '  }';
     }
     push @code, @compute_coor_code, @update_var_code,;
     push @code, ($set->{'visual'}{'connect_dots'}
-              ? ('if ($line_broke) {$line_broke = 0; ($x_old, $y_old) = ($x, $y) }',
-                 'if ($x < 0 or $x > $board_size or $y < 0 or $y > $board_size) {$line_broke++; next}',
+              ? ('  if ($line_broke) {$line_broke = 0; ($x_old, $y_old) = ($x, $y) }',
+                 '  if ($x < 0 or $x > $board_size or $y < 0 or $y > $board_size) {$line_broke++; next}',
                 '  $dc->DrawLine( $x_old, $y_old, $x, $y)' )
               : '  $dc->DrawPoint( $x, $y )');
     push @code, '}';
     push @code, '$progress_bar->add_percentage( 100, [$first_color->values] )' unless defined $sketch or $color_swap_time ;
 
-    my $code = join '', map {$_.";\n"} @code, '}'; # say $code;
+    my $code = join '', map {$_.";\n"} @code, '}'; #
+say $code;
     my $code_ref = eval $code;
     die "bug '$@' in drawing code: $code" if $@; #
     # say "comp: ",timestr( timediff( Benchmark->new(), $t) );

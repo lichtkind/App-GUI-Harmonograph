@@ -82,7 +82,7 @@ sub paint {
     my $code_ref = App::GUI::Harmonograph::Compute::Drawing::compile(
         $self->{'settings'}, $progress_bar, $Cr, $board_size, $self->{'flag'}{'sketch'}
     );
-    $code_ref->( $dc, $Cx, $Cy );
+    $code_ref->( $dc, $Cx, $Cy ) if ref $code_ref;
 
     delete $self->{'flag'};
     $dc;
