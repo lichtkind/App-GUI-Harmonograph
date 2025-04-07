@@ -12,8 +12,8 @@ my $TAU = 6.283185307;
 
 sub gradient_steps {
     my $dots_per_gradient = shift;
-    return ($dots_per_gradient > 500) ? 50 :
-           ($dots_per_gradient > 50)  ? 10 : $dots_per_gradient;
+    return ($dots_per_gradient > 500) ? 60 :
+           ($dots_per_gradient > 50)  ? 20 : $dots_per_gradient;
 }
 
 sub calculate_colors {
@@ -39,7 +39,8 @@ sub calculate_colors {
     }
 
     elsif ($set->{'color_flow_type'} eq 'alternate'){
-        my $dots_per_gradient = int ($dot_per_sec * 60 / $set->{'color_flow_speed'});
+        my $speed = $set->{'invert_speed'} ? (1/$set->{'color_flow_speed'}) : $set->{'color_flow_speed'};
+        my $dots_per_gradient = int ($dot_per_sec * 60 / $speed);
         my $gradient_steps = gradient_steps( $dots_per_gradient );
         my @color_objects = @colors;
         my @c = ($color_objects[0]);
@@ -62,7 +63,8 @@ sub calculate_colors {
     }
 
     elsif ($set->{'color_flow_type'} eq 'circular'){
-        my $dots_per_gradient = int ($dot_per_sec * 60 / $set->{'color_flow_speed'});
+        my $speed = $set->{'invert_speed'} ? (1/$set->{'color_flow_speed'}) : $set->{'color_flow_speed'};
+        my $dots_per_gradient = int ($dot_per_sec * 60 / $speed);
         my $gradient_steps = gradient_steps( $dots_per_gradient );
         my @color_objects = @colors;
         my @c = ($color_objects[0]);
@@ -87,7 +89,6 @@ sub calculate_colors {
         @colors = @c;
         push @colors, @c while $colors_needed > @colors;
     }
-say "colors " , int @colors, " t $color_swap_time per $dot_count max";
     return \@colors, $color_swap_time;
 }
 
