@@ -77,21 +77,21 @@ sub new {
     my $row1 = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $row1->AddSpacer( 10 );
     $row1->Add( $self->{'del'},  0, $button_attr,  5 );
-    $row1->AddSpacer( 10 );
+    $row1->AddSpacer( 15 );
     $row1->Add( $self->{'select'}, 0, $tb_attr, 5 );
     $row1->Add( $self->{'<'},      0, $tb_attr, 5 );
     $row1->Add( $self->{'>'},      0, $tb_attr, 5 );
-    $row1->AddSpacer( 5 );
+    $row1->AddSpacer( 10 );
     $row1->Add( $self->{'load'}, 0, $button_attr,  5 );
-    $row1->AddSpacer( 5 );
+    $row1->AddSpacer( 10 );
     $row1->Add( $self->{'new'},  0, $button_attr,  5 );
-    $row1->AddSpacer( 5 );
+    $row1->AddSpacer( 10 );
     $row1->Add( $self->{'save'}, 0, $button_attr,  5 );
     $row1->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $row2 = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
-    $row2->AddSpacer( 12 );
-    $row2->Add( $self->{'display'}[$_], 0, $all_attr, 5 ) for 0 .. $self->{'max_display_count'}-1;
+    $row2->AddSpacer( 14 );
+    $row2->Add( $self->{'display'}[$_], 0, $all_attr, 6 ) for 0 .. $self->{'max_display_count'}-1;
     $row2->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);

@@ -163,10 +163,10 @@ sub init {
     my ( $self ) = @_;
     $self->set_settings ({
         on => $self->{'initially_on'},
-        frequency => 1, freq_factor => 1, freq_damp => 0, freq_damp_type => '-',
-        freq_damp_acc => 0,freq_damp_acc_type => '+', invert_dir => 0, invert_freq => 0, neg_freq => 0,
+        frequency => 1, freq_factor => 1, freq_damp => 0, freq_damp_type => '*',
+        freq_damp_acc => 0,freq_damp_acc_type => '*', invert_dir => 0, invert_freq => 0, neg_freq => 0,
         offset => 0, radius => 1, radius_factor => 1, radius_damp => 0, radius_damp_acc => 0,
-        neg_radius => 0, radius_damp_type => '-', radius_damp_acc_type => '+' } );
+        neg_radius => 0, radius_damp_type => '*', radius_damp_acc_type => '*' } );
 }
 
 sub get_settings {

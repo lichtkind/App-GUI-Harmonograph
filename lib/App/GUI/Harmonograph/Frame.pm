@@ -54,8 +54,8 @@ sub new {
     $self->{'pendulum'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @{$self->{'pendulum_names'}};
     $self->{'tab'}{$_}->SetCallBack( sub { $self->sketch( ) } ) for @{$self->{'tab_names'}};
 
-    $self->{'progress'}         = App::GUI::Harmonograph::Widget::ProgressBar->new( $self, 465,  10, [20, 20, 110] );
-    $self->{'board'}            = App::GUI::Harmonograph::Frame::Panel::Board->new( $self , 600, 600 );
+    $self->{'progress_bar'}     = App::GUI::Harmonograph::Widget::ProgressBar->new( $self, 455,  10, [20, 20, 110] );
+    $self->{'board'}            = App::GUI::Harmonograph::Frame::Panel::Board->new( $self, 600, 600 );
     $self->{'dialog'}{'about'}  = App::GUI::Harmonograph::Dialog::About->new();
 
     my $btnw = 44; my $btnh     = 30;# button width and height
@@ -189,9 +189,9 @@ sub new {
     $self->{'tab'}{'epicycle'}->SetSizer( $epi_sizer );
 
     my $cmdi_sizer = Wx::BoxSizer->new( &Wx::wxHORIZONTAL );
-    my $image_lbl = Wx::StaticText->new( $self, -1, 'Image:' );
+    my $image_lbl = Wx::StaticText->new( $self, -1, 'Pen Color:' );
     $cmdi_sizer->Add( $image_lbl,     0, $all_attr, 15 );
-    $cmdi_sizer->Add( $self->{'progress'},         0, $vset_attr, 20 );
+    $cmdi_sizer->Add( $self->{'progress_bar'},         0, $vset_attr, 20 );
     $cmdi_sizer->AddSpacer(10);
     $cmdi_sizer->Add( $self->{'btn'}{'draw'},      0, $all_attr, 5 );
 
@@ -260,7 +260,7 @@ sub init {
     my ($self) = @_;
     $self->{'pendulum'}{$_}->init() for @{$self->{'pendulum_names'}};
     $self->{'tab'}{$_}->init() for @{$self->{'tab_names'}};
-    $self->{'progress'}->set_color( { red => 20, green => 20, blue => 110 } );
+    $self->{'progress_bar'}->set_color( { red => 20, green => 20, blue => 110 } );
     $self->sketch( );
     $self->SetStatusText( "all settings are set to default", 1);
     $self->set_settings_save(1);
@@ -284,14 +284,14 @@ sub draw {
     my ($self) = @_;
     $self->SetStatusText( "drawing .....", 0 );
     my @colors = $self->{'tab'}{'color'}->get_all_colors;
-    $self->{'progress'}->set_color( $colors[0]->values( ) );
+    $self->{'progress_bar'}->set_color( $colors[0]->values( ) );
     $self->{'board'}->draw( $self->get_settings );
     $self->SetStatusText( "done complete drawing", 0 );
 }
 sub sketch {
     my ($self) = @_;
     $self->SetStatusText( "sketching a preview .....", 0 );
-    $self->{'progress'}->reset();
+    $self->{'progress_bar'}->reset();
     $self->{'board'}->sketch( $self->get_settings );
     $self->SetStatusText( "done sketching a preview", 0 );
     if ($self->{'saved'}){
@@ -439,6 +439,7 @@ sub open_setting_file {
 
 sub write_settings_file {
     my ($self, $file)  = @_;
+    $file .= '.ini' unless lc substr ($file, -4) eq '.ini';
     my $ret = App::GUI::Harmonograph::Settings::write( $file, $self->get_settings );
     if ($ret){ $self->SetStatusText( $ret, 0 ) }
     else     {

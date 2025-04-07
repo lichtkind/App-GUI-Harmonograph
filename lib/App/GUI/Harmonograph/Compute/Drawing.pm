@@ -237,14 +237,14 @@ sub compile {
                            , '  $y = '.($set->{'y'}{'on'} ? '$rY * $termY' : '0');
     push @compute_coor_code, '  $x += $rE * $termE' if $set->{'e'}{'on'};
     push @compute_coor_code, '  $y += $rF * $termF' if $set->{'f'}{'on'};
-    push @compute_coor_code, '  $x += $rW * $termWX'
-                           , '  $y += $rW * $termWY' if $set->{'w'}{'on'};
     push @compute_coor_code, ' ($x, $y) = ($rR * (($x * $termR11) - ($y * $termR12))'
                                         .',$rR * (($x * $termR21) + ($y * $termR22)))' if $set->{'r'}{'on'};
+    push @compute_coor_code, '  $x -= $rW * $termWX'
+                           , '  $y -= $rW * $termWY' if $set->{'w'}{'on'};
     push @compute_coor_code, '  $x += $Cx', '  $y += $Cy';
 
 
-    my $pen_size = $set->{'visual'}{'line_thickness'};
+    my $pen_size = $set->{'visual'}{'line_thickness'} - .5;
     my $wxpen_style = { dotted => &Wx::wxPENSTYLE_DOT,        short_dash => &Wx::wxPENSTYLE_SHORT_DASH,
                         solid => &Wx::wxPENSTYLE_SOLID,       vertical => &Wx::wxPENSTYLE_VERTICAL_HATCH,
                         horizontal => &Wx::wxPENSTYLE_HORIZONTAL_HATCH, cross => &Wx::wxPENSTYLE_CROSS_HATCH,
@@ -285,8 +285,7 @@ sub compile {
     push @code, '}';
     push @code, '$progress_bar->add_percentage( 100, [$first_color->values] )' unless defined $sketch or $color_swap_time ;
 
-    my $code = join '', map {$_.";\n"} @code, '}'; #
-say $code;
+    my $code = join '', map {$_.";\n"} @code, '}'; # say $code;
     my $code_ref = eval $code;
     die "bug '$@' in drawing code: $code" if $@; #
     # say "comp: ",timestr( timediff( Benchmark->new(), $t) );

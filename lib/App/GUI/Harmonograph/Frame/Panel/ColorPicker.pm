@@ -64,14 +64,15 @@ sub new {
     my $sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $sizer->AddSpacer(  5 );
     $sizer->Add( $self->{'del'},  0, $button_attr,  10 );
-    $sizer->AddSpacer( 10 );
+    $sizer->AddSpacer( 15 );
     $sizer->Add( $self->{'select'}, 0, $tb_attr, 10 );
     $sizer->Add( $self->{'<'},      0, $tb_attr, 10 );
     $sizer->Add( $self->{'>'},      0, $tb_attr, 10 );
-    $sizer->AddSpacer( 10 );
+    $sizer->AddSpacer( 15 );
     $sizer->Add( $self->{'display'},  0, $tb_attr, 10);
-    $sizer->AddSpacer(  5 );
+    $sizer->AddSpacer( 10 );
     $sizer->Add( $self->{'load'}, 0, $button_attr,  10 );
+    $sizer->AddSpacer(  5 );
     $sizer->Add( $self->{'save'}, 0, $button_attr,  10 );
     $sizer->Add( 0, 0, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->SetSizer($sizer);

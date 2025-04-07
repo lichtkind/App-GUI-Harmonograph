@@ -16,7 +16,7 @@ use App::GUI::Harmonograph::Widget::PositionMarker;
 use Graphics::Toolkit::Color qw/color/;
 
 our $default_color_def = $App::GUI::Harmonograph::Frame::Panel::ColorSetPicker::default_color;
-my $default_settings = { 1=> 'blue', 2=> 'red', dynamic => 1, delta_S => 0, delta_L => 0 };
+my $default_settings = { 1=> 'blue', 2=> 'red', dynamic => 0, delta_S => 0, delta_L => 0 };
 
 sub new {
     my ( $class, $parent, $config ) = @_;
@@ -44,19 +44,21 @@ sub new {
     $self->{'label'}{'color_set_store'} = Wx::StaticText->new($self, -1, 'Color Set Store' );
     $self->{'label'}{'color_set_funct'} = Wx::StaticText->new($self, -1, 'Colors Set Function' );
     $self->{'label'}{'used_colors'}     = Wx::StaticText->new($self, -1, 'Currently Used Colors' );
-    $self->{'label'}{'selected_color'}  = Wx::StaticText->new($self, -1, 'Selected State Color' );
+    $self->{'label'}{'selected_color'}  = Wx::StaticText->new($self, -1, 'Selected Color' );
     $self->{'label'}{'color_store'}     = Wx::StaticText->new($self, -1, 'Color Store' );
 
-    $self->{'widget'}{'dynamic'} = Wx::ComboBox->new( $self, -1, 1, [-1,-1],[75, -1], [ 0.2, 0.25, 0.33, 0.4, 0.5, 0.66, 0.7, 0.83, 0.9, 1, 1.2, 1.5, 2, 2.5, 3, 4 ]);
+    $self->{'widget'}{'dynamic'} = Wx::ComboBox->new( $self, -1, 1, [-1,-1], [80, -1], [ -6, -5, -4, -3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6]);
     $self->{'widget'}{'delta_S'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [50,-1], &Wx::wxTE_RIGHT);
     $self->{'widget'}{'delta_L'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [50,-1], &Wx::wxTE_RIGHT);
 
-    $self->{'btn'}{'gray'}       = Wx::Button->new( $self, -1, 'Gray',       [-1,-1], [45, 17] );
-    $self->{'btn'}{'gradient'}   = Wx::Button->new( $self, -1, 'Gradient',   [-1,-1], [70, 17] );
-    $self->{'btn'}{'complement'} = Wx::Button->new( $self, -1, 'Complement', [-1,-1], [90, 17] );
-    $self->{'btn'}{'gray'}->SetToolTip("reset to default grey scale color pallet. Adheres to count of needed colors and current dynamic settings.");
-    $self->{'btn'}{'gradient'}->SetToolTip("create gradient between first and current color. Adheres to dynamic settings.");
-    $self->{'btn'}{'complement'}->SetToolTip("Create color set from first up to current color as complementary colors. Adheres to both delta values.");
+    $self->{'button'}{'gradient'}   = Wx::Button->new( $self, -1, 'Gradient',   [-1,-1], [70, 17] );
+    $self->{'button'}{'complement'} = Wx::Button->new( $self, -1, 'Complement', [-1,-1], [90, 17] );
+    $self->{'button'}{'left'} = Wx::Button->new( $self, -1, '<', [-1,-1], [30, 17] );
+    $self->{'button'}{'right'} = Wx::Button->new( $self, -1, '>', [-1,-1], [30, 17] );
+    $self->{'button'}{'left'}->SetToolTip("Move currently selected color to the left.");
+    $self->{'button'}{'right'}->SetToolTip("Move currently selected color to the left.");
+    $self->{'button'}{'gradient'}->SetToolTip("Create gradient between first and current color. Adheres to dynamic settings.");
+    $self->{'button'}{'complement'}->SetToolTip("Create color set from first up to current color as complementary colors. Adheres to both delta values.");
     $self->{'widget'}{'dynamic'}->SetToolTip("dynamic of gradient (1 = linear) and also of gray scale");
     $self->{'widget'}{'delta_S'}->SetToolTip("max. satuaration deviation when computing complement colors ( -100 .. 100)");
     $self->{'widget'}{'delta_L'}->SetToolTip("max. lightness deviation when computing complement colors ( -100 .. 100)");
@@ -72,15 +74,12 @@ sub new {
     Wx::Event::EVT_LEFT_DOWN( $self->{'color_marker'}[$_], sub { $self->set_current_color_nr( $_[0]->get_nr ) }) for 0 .. $self->{'color_count'}-1;
 
 
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'gray'}, sub {
-        $self->set_all_colors( color('white')->gradient( to => 'black', steps => $self->{'active_color_count'}, dynamic => $self->{'widget'}{'dynamic'}->GetValue) );
-    });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'gradient'}, sub {
+    Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'gradient'}, sub {
         my @c = $self->get_all_colors;
         my @new_colors = $c[0]->gradient( to => $c[ $self->{'current_color_nr'} ], in => 'RGB', steps => $self->{'current_color_nr'}+1, dynamic => $self->{'widget'}{'dynamic'}->GetValue);
         $self->set_all_colors( @new_colors );
     });
-    Wx::Event::EVT_BUTTON( $self, $self->{'btn'}{'complement'}, sub {
+    Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'complement'}, sub {
         my @c = $self->get_all_colors;
         my @new_colors = $c[ $self->{'current_color_nr'} ]->complement( steps => $self->{'current_color_nr'}+1,
                                                                      saturation_tilt => $self->{'widget'}{'delta_S'}->GetValue,
@@ -95,13 +94,15 @@ sub new {
 
     my $f_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $f_sizer->AddSpacer( 10 );
-    $f_sizer->Add( $self->{'btn'}{'gray'},       0, $all_attr, 5 );
-    $f_sizer->Add( $self->{'btn'}{'gradient'},   0, $all_attr, 5 );
-    $f_sizer->Add( $self->{'widget'}{'dynamic'}, 0, $all_attr, 5 );
+    $f_sizer->Add( $self->{'button'}{'gradient'},  0, $all_attr, 5 );
+    $f_sizer->Add( $self->{'widget'}{'dynamic'},   0, $all_attr, 5 );
     $f_sizer->AddSpacer( 20 );
-    $f_sizer->Add( $self->{'btn'}{'complement'}, 0, $all_attr, 5 );
-    $f_sizer->Add( $self->{'widget'}{'delta_S'}, 0, $all_attr, 5 );
-    $f_sizer->Add( $self->{'widget'}{'delta_L'}, 0, $all_attr, 5 );
+    $f_sizer->Add( $self->{'button'}{'complement'},0, $all_attr, 5 );
+    $f_sizer->Add( $self->{'widget'}{'delta_S'},   0, $all_attr, 5 );
+    $f_sizer->Add( $self->{'widget'}{'delta_L'},   0, $all_attr, 5 );
+    $f_sizer->AddSpacer( 30 );
+    $f_sizer->Add( $self->{'button'}{'left'},      0, $all_attr, 5 );
+    $f_sizer->Add( $self->{'button'}{'right'},     0, $all_attr, 5 );
     $f_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
 
     my $state_sizer = $self->{'state_sizer'} = Wx::BoxSizer->new(&Wx::wxHORIZONTAL); # $self->{'plate_sizer'}->Clear(1);

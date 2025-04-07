@@ -61,7 +61,7 @@ sub sketch {
 sub set_settings {
     my( $self, $settings ) = @_;
     return unless ref $settings eq 'HASH';
-    $self->GetParent->{'progress'}->reset;
+    $self->GetParent->{'progress_bar'}->reset;
     $self->{'settings'} = $settings;
     $self->{'flag'}{'new'} = 1;
 }
@@ -69,7 +69,7 @@ sub set_settings {
 
 sub paint {
     my( $self, $dc, $width, $height ) = @_;
-    my $progress_bar = $self->GetParent->{'progress'};
+    my $progress_bar = $self->GetParent->{'progress_bar'};
     $dc->SetBackground( Wx::Brush->new( Wx::Colour->new( 255, 255, 255 ), &Wx::wxBRUSHSTYLE_SOLID ) );
     $dc->Clear();
 

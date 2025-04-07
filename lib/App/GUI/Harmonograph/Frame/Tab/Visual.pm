@@ -9,7 +9,7 @@ use base qw/Wx::Panel/;
 use App::GUI::Harmonograph::Widget::SliderCombo;
 
 my $default_settings = {
-        draw => 'line', pen_style => 'solid', line_thickness => 0, duration=> 60, dot_density => 200,
+        draw => 'line', pen_style => 'solid', line_thickness => 1, duration=> 60, dot_density => 200,
         color_flow_type => 'no', color_flow_dynamic => 0, color_flow_speed => 4, invert_flow_speed => 0, colors_used => 2,
 };
 my @state_keys = keys %$default_settings;
@@ -35,7 +35,7 @@ sub new {
     $self->{'widget'}{'pen_style'} = Wx::ComboBox->new( $self, -1, 'solid', [-1,-1], [125, -1],
         [qw/dotted short_dash solid vertical horizontal cross diagonal bidiagonal/], &Wx::wxTE_READONLY );
     $self->{'widget'}{'pen_style'}->SetToolTip('which pattern is engraved in drawn line / dots');
-    $self->{'widget'}{'line_thickness'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 350, 'Thickness','dot size or thickness of drawn line in pixel',  0,  55,  0);
+    $self->{'widget'}{'line_thickness'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 355, 'Thickness','dot size or thickness of drawn line in pixel',  1,  55,  1);
     $self->{'widget'}{'duration_min'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 85, 'Minutes','', 0,  100,  10);
     $self->{'widget'}{'duration_s'}   = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 85, 'Seconds','', 0,  59,  10);
     $self->{'widget'}{'100dots_per_second'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 110, 'Coarse','how many dots is drawn in a second in batches of 50 ?',  0,  90,  10);
@@ -44,7 +44,7 @@ sub new {
     $self->{'widget'}{'color_flow_type'}->SetToolTip("type of color flow: - linear - from start to end color \n  - alter(nate) - linearly between start and end color \n   - cicular - around the rainbow from start color visiting end color");
     $self->{'label'}{'flow_type'}->SetToolTip("type of color flow: - linear - from start to end color \n  - alter(nate) - linearly between start and end color \n   - cicular - around the rainbow from start color visiting end color");
     $self->{'widget'}{'color_flow_dynamic'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 115, 'Dynamic', '0 = equally paced color change, larger = starting with slow color change becoming faster - or vice versa when dir activated', -12,  12,  0, .01);
-    $self->{'widget'}{'color_flow_speed'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 120, 'Speed','color changes per minute', 1, 120, 1);
+    $self->{'widget'}{'color_flow_speed'} = App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 116, 'Speed','color changes per minute', 1, 90, 1, .1);
     $self->{'widget'}{'invert_flow_speed'} = Wx::CheckBox->new( $self, -1, ' Invert');
     $self->{'widget'}{'invert_flow_speed'}->SetToolTip("invert value of color change speed by 1/x");
 
@@ -120,11 +120,11 @@ sub new {
     $sizer->Add( $line_sizer,                     0, $std_attr|&Wx::wxTOP,           10);
     $sizer->Add( $l2_sizer,                       0, $std_attr|&Wx::wxTOP,           10);
     $sizer->Add( Wx::StaticLine->new($self, -1),  0, $box_attr,                      10);
-    $sizer->Add( $self->{'label'}{'time'},        0, &Wx::wxALIGN_CENTER_HORIZONTAL,  0);
-    $sizer->Add( $time_sizer,                     0, $std_attr|&Wx::wxTOP,           10);
-    $sizer->Add( Wx::StaticLine->new($self, -1),  0, $box_attr,                      10);
     $sizer->Add( $self->{'label'}{'dense'},       0, &Wx::wxALIGN_CENTER_HORIZONTAL,  0);
     $sizer->Add( $dense_sizer,                    0, $std_attr|&Wx::wxTOP,           10);
+    $sizer->Add( Wx::StaticLine->new($self, -1),  0, $box_attr,                      10);
+    $sizer->Add( $self->{'label'}{'time'},        0, &Wx::wxALIGN_CENTER_HORIZONTAL,  0);
+    $sizer->Add( $time_sizer,                     0, $std_attr|&Wx::wxTOP,           10);
     $sizer->Add( Wx::StaticLine->new($self, -1),  0, $box_attr,                      10);
     $sizer->Add( $self->{'label'}{'flow'},        0, &Wx::wxALIGN_CENTER_HORIZONTAL,  0);
     $sizer->Add( $color_sizer,                    0, $std_attr|&Wx::wxTOP,           10);
