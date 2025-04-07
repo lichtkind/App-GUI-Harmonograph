@@ -26,7 +26,7 @@ sub new {
     $self->{'config'}     = $config;
     $self->{'color_count'} = 10;  # max pos
     $self->{'active_color_count'} = 2;  # nr of currently used
-    $self->{'current_color_nr'} = 1;
+    $self->{'current_color_nr'} = 0;
     $self->{'display_size'} = 33;
 
     $self->{'used_colors'}       = [ color('blue')->gradient( to => 'red', steps => $self->{'active_color_count'}) ];
@@ -87,6 +87,26 @@ sub new {
         push @new_colors, shift @new_colors;
         $self->set_all_colors( @new_colors );
     });
+    Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'left'}, sub {
+        my $pos = $self->get_current_color_nr;
+        my @colors = $self->get_all_colors;
+        my $selected = splice @colors, $pos, 1;
+        $pos--;
+        $pos = $self->{'color_count'} - 1 if $pos < 0;
+        splice @colors, $pos, 0, $selected;
+        $self->set_all_colors( @colors );
+        $self->set_current_color_nr( $pos );
+    });
+    Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'right'}, sub {
+        my $pos = $self->get_current_color_nr;
+        my @colors = $self->get_all_colors;
+        my $selected = splice @colors, $pos, 1;
+        $pos++;
+        $pos = 0 if $pos >= $self->{'color_count'};
+        splice @colors, $pos, 0, $selected;
+        $self->set_all_colors( @colors );
+        $self->set_current_color_nr( $pos );
+    });
 
     my $std_attr = &Wx::wxALIGN_LEFT | &Wx::wxGROW ;
     my $all_attr = $std_attr | &Wx::wxALL | &Wx::wxALIGN_CENTER_HORIZONTAL | &Wx::wxALIGN_CENTER_VERTICAL;
@@ -96,7 +116,7 @@ sub new {
     $f_sizer->AddSpacer( 10 );
     $f_sizer->Add( $self->{'button'}{'gradient'},  0, $all_attr, 5 );
     $f_sizer->Add( $self->{'widget'}{'dynamic'},   0, $all_attr, 5 );
-    $f_sizer->AddSpacer( 20 );
+    $f_sizer->AddSpacer( 30 );
     $f_sizer->Add( $self->{'button'}{'complement'},0, $all_attr, 5 );
     $f_sizer->Add( $self->{'widget'}{'delta_S'},   0, $all_attr, 5 );
     $f_sizer->Add( $self->{'widget'}{'delta_L'},   0, $all_attr, 5 );
@@ -162,6 +182,7 @@ sub set_active_color_count {
     $self->{'color_marker'}[ $self->{'current_color_nr'} ]->set_state('active');
 }
 
+sub get_current_color_nr { $_[0]->{'current_color_nr'} }
 sub set_current_color_nr {
     my ($self, $nr) = @_;
     $nr //= $self->{'current_color_nr'};
