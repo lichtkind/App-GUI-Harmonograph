@@ -39,7 +39,7 @@ sub calculate_colors {
     }
 
     elsif ($set->{'color_flow_type'} eq 'alternate'){
-        my $speed = $set->{'invert_speed'} ? (1/$set->{'color_flow_speed'}) : $set->{'color_flow_speed'};
+        my $speed = $set->{'invert_flow_speed'} ? ( 1 / $set->{'color_flow_speed'}) : $set->{'color_flow_speed'};
         my $dots_per_gradient = int ($dot_per_sec * 60 / $speed);
         my $gradient_steps = gradient_steps( $dots_per_gradient );
         my @color_objects = @colors;
@@ -63,7 +63,7 @@ sub calculate_colors {
     }
 
     elsif ($set->{'color_flow_type'} eq 'circular'){
-        my $speed = $set->{'invert_speed'} ? (1/$set->{'color_flow_speed'}) : $set->{'color_flow_speed'};
+        my $speed = $set->{'invert_flow_speed'} ? ( 1 / $set->{'color_flow_speed'}) : $set->{'color_flow_speed'};
         my $dots_per_gradient = int ($dot_per_sec * 60 / $speed);
         my $gradient_steps = gradient_steps( $dots_per_gradient );
         my @color_objects = @colors;
