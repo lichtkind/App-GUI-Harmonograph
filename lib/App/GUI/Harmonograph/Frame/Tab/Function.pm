@@ -1,7 +1,7 @@
 
 # panel behind modulation tab for changing base function of each pendulum
 
-package App::GUI::Harmonograph::Frame::Tab::Functions;
+package App::GUI::Harmonograph::Frame::Tab::Function;
 use v5.12;
 use utf8;
 use warnings;

@@ -8,7 +8,7 @@ use Wx::AUI;
 use App::GUI::Harmonograph::Dialog::About;
 use App::GUI::Harmonograph::Frame::Panel::Board;
 use App::GUI::Harmonograph::Frame::Panel::Pendulum;
-use App::GUI::Harmonograph::Frame::Tab::Functions;
+use App::GUI::Harmonograph::Frame::Tab::Function;
 use App::GUI::Harmonograph::Frame::Tab::Visual;
 use App::GUI::Harmonograph::Frame::Tab::Color;
 use App::GUI::Harmonograph::Widget::ProgressBar;
@@ -32,7 +32,7 @@ sub new {
     $self->{'tab'}{'linear'}    = Wx::Panel->new($self->{'tabs'});
     $self->{'tab'}{'circular'}  = Wx::Panel->new($self->{'tabs'});
     $self->{'tab'}{'epicycle'}  = Wx::Panel->new($self->{'tabs'});
-    $self->{'tab'}{'function'}  = App::GUI::Harmonograph::Frame::Tab::Functions->new( $self->{'tabs'} );
+    $self->{'tab'}{'function'}  = App::GUI::Harmonograph::Frame::Tab::Function->new( $self->{'tabs'} );
     $self->{'tab'}{'color'}     = App::GUI::Harmonograph::Frame::Tab::Color->new( $self->{'tabs'}, $self->{'config'} );
     $self->{'tab'}{'visual'}    = App::GUI::Harmonograph::Frame::Tab::Visual->new( $self->{'tabs'}, $self->{'tab'}{'color'} );
     $self->{'tabs'}->AddPage( $self->{'tab'}{'linear'},   'Linearl Pendulum');
