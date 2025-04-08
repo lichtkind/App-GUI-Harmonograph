@@ -177,6 +177,7 @@ sub SetCallBack {
 
 sub set_active_color_count {
     my ($self, $count) = @_;
+    return unless defined $count and $count > 1 and $count < 11;
     $self->{'active_color_count'} = $count;
     $self->{'color_marker'}[$_]->set_state('passive') for 0 .. $self->{'active_color_count'}-1;
     $self->{'color_marker'}[$_]->set_state('disabled') for $self->{'active_color_count'} .. $self->{'color_count'}-1;

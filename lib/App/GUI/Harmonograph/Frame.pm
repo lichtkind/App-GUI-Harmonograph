@@ -278,6 +278,7 @@ sub set_settings {
     return unless ref $settings eq 'HASH';
     $self->{'pendulum'}{$_}->set_settings( $settings->{$_} ) for @{$self->{'pendulum_names'}};
     $self->{'tab'}{$_}->set_settings( $settings->{$_} ) for @{$self->{'tab_names'}};
+    $self->{'tab'}{'color'}->set_active_color_count( $settings->{'visual'}{'colors_used'} );
 }
 
 sub draw {

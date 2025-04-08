@@ -77,9 +77,12 @@ sub new {
     my $base_attr = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW;
     my $box_attr = $base_attr | &Wx::wxTOP | &Wx::wxBOTTOM;
 
+    my $fd = 6;
+    $fd += 3 if lc $label eq 'f';
+    $fd-- if lc $label eq 'w';
     my $f_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
     $f_sizer->Add( $self->{'on'},        0, $base_attr, 0);
-    $f_sizer->Add( $main_label,          0, $base_attr|&Wx::wxTOP|&Wx::wxLEFT, 6);
+    $f_sizer->Add( $main_label,          0, $base_attr|&Wx::wxTOP|&Wx::wxLEFT, $fd);
     $f_sizer->Add( $self->{'frequency'}, 0, $base_attr|&Wx::wxLEFT, 5);
     $f_sizer->AddSpacer( 18 );
     $f_sizer->Add( $self->{'freq_factor'}, 0, $box_attr |&Wx::wxLEFT,  0);

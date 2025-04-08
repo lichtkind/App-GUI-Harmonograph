@@ -74,7 +74,7 @@ sub GetValue { $_[0]->{'value'} }
 
 sub SetValue {
     my ( $self, $value, $passive) = @_;
-    return if $self->{'value'} == $value or exists $self->{'no_recursive_events'};
+    return if not defined $value or $self->{'value'} == $value or exists $self->{'no_recursive_events'};
     $value = $self->{'value_delta'} * int( $value / $self->{'value_delta'}) if $self->{'value_delta'};
     $value = $self->{'min_value'} if int($value) < $self->{'min_value'};
     $value = $self->{'max_value'} if int($value) > $self->{'max_value'};
