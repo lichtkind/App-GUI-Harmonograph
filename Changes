@@ -5,11 +5,12 @@
     * * reworked visual settings tab with more options and better control
     * * reworked functions tab with more options
     * * same color selector tab as cellgraph, now 10 not 2 colors
+    * + move coloring order
     * + pen style option
+    * + dot randomisation
+    * + invert color change speed for extra slow change
     * + radius damping acceleration
     * + optional preventing damping into negative values for radius and freq
-    * + invert color change speed
-    * ~ adapt
     * ? more GUI documentation
     * + frequency damping acceleration settings (parallel radius settings)
 

@@ -24,9 +24,9 @@ sub new {
 
     $self->{'call_back'}  = sub {};
     $self->{'config'}     = $config;
-    $self->{'color_count'} = 10;  # max pos
-    $self->{'active_color_count'} = 2;  # nr of currently used
-    $self->{'current_color_nr'} = 0;
+    $self->{'color_count'} = 10;        # number of displayed colors
+    $self->{'active_color_count'} = 2;  # nr of currently used colors, overwritten on init
+    $self->{'current_color_nr'} = 0;    # index starts from 0
     $self->{'display_size'} = 33;
 
     $self->{'used_colors'}       = [ color('blue')->gradient( to => 'red', steps => $self->{'active_color_count'}) ];
@@ -51,8 +51,8 @@ sub new {
     $self->{'widget'}{'delta_S'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [50,-1], &Wx::wxTE_RIGHT);
     $self->{'widget'}{'delta_L'} = Wx::TextCtrl->new( $self, -1, 0, [-1,-1], [50,-1], &Wx::wxTE_RIGHT);
 
-    $self->{'button'}{'gradient'}   = Wx::Button->new( $self, -1, 'Gradient',   [-1,-1], [70, 17] );
-    $self->{'button'}{'complement'} = Wx::Button->new( $self, -1, 'Complement', [-1,-1], [90, 17] );
+    $self->{'button'}{'gradient'}   = Wx::Button->new( $self, -1, 'Gradient',   [-1,-1], [ 75, 17] );
+    $self->{'button'}{'complement'} = Wx::Button->new( $self, -1, 'Complement', [-1,-1], [100, 17] );
     $self->{'button'}{'left'} = Wx::Button->new( $self, -1, '<', [-1,-1], [30, 17] );
     $self->{'button'}{'right'} = Wx::Button->new( $self, -1, '>', [-1,-1], [30, 17] );
     $self->{'button'}{'left'}->SetToolTip("Move currently selected color to the left.");
@@ -116,11 +116,11 @@ sub new {
     $f_sizer->AddSpacer( 10 );
     $f_sizer->Add( $self->{'button'}{'gradient'},  0, $all_attr, 5 );
     $f_sizer->Add( $self->{'widget'}{'dynamic'},   0, $all_attr, 5 );
-    $f_sizer->AddSpacer( 30 );
+    $f_sizer->AddSpacer( 25 );
     $f_sizer->Add( $self->{'button'}{'complement'},0, $all_attr, 5 );
     $f_sizer->Add( $self->{'widget'}{'delta_S'},   0, $all_attr, 5 );
     $f_sizer->Add( $self->{'widget'}{'delta_L'},   0, $all_attr, 5 );
-    $f_sizer->AddSpacer( 30 );
+    $f_sizer->AddSpacer( 25 );
     $f_sizer->Add( $self->{'button'}{'left'},      0, $all_attr, 5 );
     $f_sizer->Add( $self->{'button'}{'right'},     0, $all_attr, 5 );
     $f_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
@@ -146,6 +146,7 @@ sub new {
     $sizer->AddSpacer( 10 );
     $sizer->Add( $self->{'label'}{'color_set_funct'}, 0, &Wx::wxALIGN_CENTER_HORIZONTAL,   0);
     $sizer->Add( $f_sizer,                            0, $all_attr,                       10);
+    $sizer->AddSpacer(  2 );
     $sizer->Add( Wx::StaticLine->new( $self, -1),     0, $all_attr,                        0);
     $sizer->AddSpacer( 10 );
     $sizer->Add( $self->{'label'}{'used_colors'},     0, &Wx::wxALIGN_CENTER_HORIZONTAL,   0);
@@ -155,7 +156,7 @@ sub new {
     $sizer->AddSpacer( 10 );
     $sizer->Add( $self->{'label'}{'selected_color'},  0, &Wx::wxALIGN_CENTER_HORIZONTAL,  10);
     $sizer->Add( $self->{'browser'},                  0, $next_attr, 10);
-    $sizer->Add( Wx::StaticLine->new( $self, -1),     0, $next_attr, 10);
+    $sizer->Add( Wx::StaticLine->new( $self, -1),     0, $next_attr,  8);
     $sizer->AddSpacer( 10 );
     $sizer->Add( $self->{'label'}{'color_store'},     0, &Wx::wxALIGN_CENTER_HORIZONTAL, 10);
     $sizer->Add( $self->{'picker'},                   0, $std_attr| &Wx::wxLEFT,         10);

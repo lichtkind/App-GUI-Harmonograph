@@ -238,9 +238,13 @@ sub compile {
     push @compute_coor_code, '  $x += $rE * $termE' if $set->{'e'}{'on'};
     push @compute_coor_code, '  $y += $rF * $termF' if $set->{'f'}{'on'};
     push @compute_coor_code, ' ($x, $y) = ($rR * (($x * $termR11) - ($y * $termR12))'
-                                        .',$rR * (($x * $termR21) + ($y * $termR22)))' if $set->{'r'}{'on'};
+                                        .',$rR * (($x * $termR21) + ($y * $termR22)))' if $set->{'r'}{'on'}
+                                                                        and $set->{'function'}{'first_rotary'} eq 'r';
     push @compute_coor_code, '  $x -= $rW * $termWX'
                            , '  $y -= $rW * $termWY' if $set->{'w'}{'on'};
+    push @compute_coor_code, ' ($x, $y) = ($rR * (($x * $termR11) - ($y * $termR12))'
+                                        .',$rR * (($x * $termR21) + ($y * $termR22)))' if $set->{'r'}{'on'}
+                                                                        and $set->{'function'}{'first_rotary'} eq 'w';
     push @compute_coor_code, '  $x += $Cx', '  $y += $Cy';
 
 
@@ -250,6 +254,7 @@ sub compile {
                         horizontal => &Wx::wxPENSTYLE_HORIZONTAL_HATCH, cross => &Wx::wxPENSTYLE_CROSS_HATCH,
                         diagonal => &Wx::wxPENSTYLE_BDIAGONAL_HATCH, bidiagonal => &Wx::wxPENSTYLE_CROSSDIAG_HATCH};
     my $pen_style = $wxpen_style->{ $set->{'visual'}{'pen_style'} };
+    my $pen_probability = $set->{'visual'}{'dot_probability'} /= 100;
 
     my @code = ('sub {','my ($dc, $Cx, $Cy) = @_');
     push @code, 'my $r'.uc($_).' = '.($set->{$_}{'radius'} * $set->{$_}{'radius_factor'}) for qw/x y e f w/;
@@ -269,18 +274,19 @@ sub compile {
                 'my $first_color = shift @colors';
     push @code, 'my $color_timer = 0' if $color_swap_time;
     push @code, 'for my $i (1 .. $dot_count){';
-    push @code, '  ($x_old, $y_old) = ($x, $y)' if $set->{'visual'}{'connect_dots'};
     if ($color_swap_time){
         push @code, '  if ($color_timer++ == $color_swap_time){', '    $color_timer = 1',
                     '    $dc->SetPen( Wx::Pen->new( shift @wx_colors, $pen_size, $pen_style) )';
         push @code, '    $progress_bar->add_percentage( ($i/ $dot_count*100), [(shift @colors)->values] )' unless defined $sketch;
         push @code, '  }';
     }
-    push @code, @compute_coor_code, @update_var_code,;
+    push @code, @compute_coor_code, @update_var_code;
+    push @code, '  next if rand(1) > $pen_probability' if $pen_probability < 1;
     push @code, ($set->{'visual'}{'connect_dots'}
               ? ('  if ($line_broke) {$line_broke = 0; ($x_old, $y_old) = ($x, $y) }',
                  '  if ($x < 0 or $x > $board_size or $y < 0 or $y > $board_size) {$line_broke++; next}',
-                '  $dc->DrawLine( $x_old, $y_old, $x, $y)' )
+                '  $dc->DrawLine( $x_old, $y_old, $x, $y)',
+                '  ($x_old, $y_old) = ($x, $y)' )
               : '  $dc->DrawPoint( $x, $y )');
     push @code, '}';
     push @code, '$progress_bar->add_percentage( 100, [$first_color->values] )' unless defined $sketch or $color_swap_time ;

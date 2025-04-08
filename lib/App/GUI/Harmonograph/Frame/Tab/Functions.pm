@@ -34,6 +34,7 @@ my $default_settings = {
     r12_function => 'sin', r12_operator => '=', r12_factor => '1', r12_variable => 'R time',
     r21_function => 'sin', r21_operator => '=', r21_factor => '1', r21_variable => 'R time',
     r22_function => 'cos', r22_operator => '=', r22_factor => '1', r22_variable => 'R time',
+    first_rotary => 'r'
 };
 
 sub new {
@@ -46,6 +47,9 @@ sub new {
     $self->{$_.'_factor'}   = Wx::ComboBox->new( $self, -1,  1, [-1,-1], [ 75, -1], [-1,1..17]       , &Wx::wxTE_READONLY) for @pendulum_names;
     $self->{$_.'_constant'} = Wx::ComboBox->new( $self, -1,  1, [-1,-1], [ 75, -1], [@const_names]   , &Wx::wxTE_READONLY) for @pendulum_names;
     $self->{$_.'_variable'} = Wx::ComboBox->new( $self, -1, '', [-1,-1], [105, -1], [@variable_names], &Wx::wxTE_READONLY) for @pendulum_names;
+    $self->{'order'} = Wx::RadioBox->new( $self, -1, 'Order of Rotary Pendula', [-1, -1], [165, -1], [' R > W ', ' W > R ']);
+    $self->{'order'}->SetToolTip('apply which pendulum first ?');
+
 
     $self->{'x_function'}->SetToolTip('function that computes pendulum X: sine, cosine, tangent, cotangent, secans, cosecans, hyperbolic functions');
     $self->{'y_function'}->SetToolTip('function that computes pendulum Y');
@@ -83,10 +87,12 @@ sub new {
     $self->{'r21_variable'}->SetToolTip('left lower variable in rotation matrix of pendulum R');
     $self->{'r22_variable'}->SetToolTip('left lower variable in rotation matrix of pendulum R');
 
+
     $self->{'callback'} = sub {};
     for my $val_type (qw/_function _operator _factor _constant _variable/){
         Wx::Event::EVT_COMBOBOX( $self, $self->{$_.$val_type}, sub { $self->{'callback'}->() }) for @pendulum_names;
     }
+    Wx::Event::EVT_RADIOBOX( $self, $self->{'order'},          sub { $self->{'callback'}->() });
 
     my $label = { x => 'X', y => 'Y', w => 'W', r => 'R', e => 'E', f => 'F' };
     $self->{'lbl'}{$_} = Wx::StaticText->new(  $self, -1, $label->{$_}.' :' ) for keys %$label;
@@ -94,6 +100,12 @@ sub new {
     my $std_attr  = &Wx::wxALIGN_LEFT | &Wx::wxALIGN_CENTER_VERTICAL | &Wx::wxGROW;
     my $box_attr  = $std_attr | &Wx::wxTOP | &Wx::wxBOTTOM;
     my $next_attr = &Wx::wxALIGN_LEFT|&Wx::wxGROW| &Wx::wxTOP;
+
+    my $order_sizer = Wx::BoxSizer->new(&Wx::wxHORIZONTAL);
+    $order_sizer->AddSpacer( 20 );
+    $order_sizer->Add( $self->{'order'},  0, $std_attr, 0);
+    $order_sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
+
 
     my $sizer = Wx::BoxSizer->new(&Wx::wxVERTICAL);
     for my $pendulum (@pendulum_names){
@@ -126,6 +138,8 @@ sub new {
     }
 
     $sizer->Insert( 10, Wx::StaticLine->new( $self, -1),  0, $next_attr, 15);
+    $sizer->Add( Wx::StaticLine->new( $self, -1),         0, $next_attr, 15);
+    $sizer->Add( $order_sizer,                            0, $next_attr, 12);
     $sizer->Add( 0, 1, &Wx::wxEXPAND | &Wx::wxGROW);
     $self->SetSizer( $sizer );
     $self->init;
@@ -150,6 +164,7 @@ sub set_settings {
             }
         }
     }
+    $self->{'order' }->SetSelection( $settings->{'first_rotary'} eq 'r' ? 0 : 1 );
     1;
 }
 sub get_settings {
@@ -159,6 +174,7 @@ sub get_settings {
         $settings->{ $_.$val_type } = $self->{$_.$val_type}->GetValue() for @pendulum_names;
     }
     $settings->{ $_.'_constant' } = $const{ $self->{$_.'_constant'}->GetValue } for @pendulum_names;
+    $settings->{'first_rotary'} = $self->{'order' }->GetSelection ? 'w' : 'r';
     $settings;
 }
 

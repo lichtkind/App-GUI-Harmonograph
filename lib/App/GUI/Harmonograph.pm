@@ -278,16 +278,17 @@ affect the radius / amplitude.
 <img src="https://raw.githubusercontent.com/lichtkind/App-GUI-Harmonograph/main/examples/POD/Tab_Functions.png"    alt=""  width="85%" height="85%">
 </p>
 
-This tab lets you meddle with the equations that compute the working
+This tab lets you meddle with the equations that compute the mechanics
 of a pendulum. Because all ten rows are built the same I will explain only
-one. For instance the X pendulum in the first row is computed
-C<x = radius * cos (time)>. The first selector allows you to swap out
-the function. Instead of cosine you could get sine, tangent, cotangent,
-secant, cosekcant and the hyperbolic twin of the already mentioned functions.
+one. For instance the X pendulum has only influence on the x coordinate
+of a dot, it is computed: C<x = radius * cos (time)>. The first selector
+allows you to swap out the cosine function. Instead you could get sine,
+tangent, cotangent, secant, cosekcant and the hyperbolic twin of the
+already mentioned functions.
 
 The second selector has five options: "= + - * /". If you choose the
 first (equal sign) your time variable will be just swapped out with another
-value. The other four option describe the operation that will be applied
+variable. The other four option describe the operation that will be applied
 upon you time value. So e.g. if you select plus the resulting formula
 will be C<x = radius * cos (time + (...))>. The allude to whatever you
 will choose with the next three selectors.
@@ -304,6 +305,11 @@ case. Even more special is "Pendulum" R - the rotation movement of the paper.
 This is computed by an ordinary 2 x 2 rotation matrix (we are in 2D).
 Each cell of this matrix has here its own row. Its R_11, R_12, R_21, R_22.
 But if you not sure just hover with the mouse and get the hints.
+
+The very last row is different and contains only one switch that will
+determine if W or R pendulum is applied first. Default and what is also
+more comprehensible is that R is apllied first. But the arstist in you
+might can choose here differently.
 
 =head2 Visual Settings
 
