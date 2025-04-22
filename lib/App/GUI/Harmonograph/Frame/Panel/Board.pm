@@ -45,7 +45,7 @@ sub new {
 }
 
 sub draw {
-    my( $self, $settings ) = @_;
+    my( $self, $settings, $progress_bar ) = @_;
     return unless $self->set_settings( $settings );
     $self->Refresh;
 }

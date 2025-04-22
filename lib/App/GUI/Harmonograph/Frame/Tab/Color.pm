@@ -19,12 +19,12 @@ our $default_color_def = $App::GUI::Harmonograph::Frame::Panel::ColorSetPicker::
 my $default_settings = { 1=> 'blue', 2=> 'red', dynamic => 0, delta_S => 0, delta_L => 0 };
 
 sub new {
-    my ( $class, $parent, $config ) = @_;
+    my ( $class, $parent, $config, $count ) = @_;
     my $self = $class->SUPER::new( $parent, -1);
 
     $self->{'call_back'}  = sub {};
     $self->{'config'}     = $config;
-    $self->{'color_count'} = 10;        # number of displayed colors
+    $self->{'color_count'} = $count;        # number of displayed colors
     $self->{'active_color_count'} = 2;  # nr of currently used colors, overwritten on init
     $self->{'current_color_nr'} = 0;    # index starts from 0
     $self->{'display_size'} = 33;
