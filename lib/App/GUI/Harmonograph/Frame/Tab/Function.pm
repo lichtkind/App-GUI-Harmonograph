@@ -7,7 +7,6 @@ use utf8;
 use warnings;
 use Wx;
 use base qw/Wx::Panel/;
-use App::GUI::Harmonograph::Widget::SliderCombo;
 
 my @function_names = (qw/sin cos tan cot sec csc sinh cosh tanh coth sech csch/);
 my @variable_names = ('X time',  'Y time', 'E time', 'F time', 'W time', 'R time',

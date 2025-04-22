@@ -6,8 +6,8 @@ use v5.12;
 use warnings;
 use Wx;
 use base qw/Wx::Panel/;
-use App::GUI::Harmonograph::Widget::SliderCombo;
-use App::GUI::Harmonograph::Widget::ColorDisplay;
+use App::GUI::Wx::Widget::Custom::SliderCombo;
+use App::GUI::Wx::Widget::Custom::ColorDisplay;
 use Graphics::Toolkit::Color qw/color/;
 
 my $RGB = Graphics::Toolkit::Color::Space::Hub::get_space('RGB');
@@ -25,12 +25,12 @@ sub new {
     my @rgb = $init_color->values('RGB');
     my @hsl = $init_color->values('HSL');
 
-    $self->{'widget'}{'red'}   =  App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 365, ' R  ', "red part of $type color",    0, 255,  $rgb[0]);
-    $self->{'widget'}{'green'} =  App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 365, ' G  ', "green part of $type color",  0, 255,  $rgb[1]);
-    $self->{'widget'}{'blue'}  =  App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 365, ' B  ', "blue part of $type color",   0, 255,  $rgb[2]);
-    $self->{'widget'}{'hue'}   =  App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 365, ' H  ', "hue of $type color",         0, 359,  $hsl[0]);
-    $self->{'widget'}{'sat'}   =  App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 365, ' S   ', "saturation of $type color", 0, 100,  $hsl[1]);
-    $self->{'widget'}{'light'} =  App::GUI::Harmonograph::Widget::SliderCombo->new( $self, 365, ' L   ', "lightness of $type color",  0, 100,  $hsl[2]);
+    $self->{'widget'}{'red'}   =  App::GUI::Wx::Widget::Custom::SliderCombo->new( $self, 365, ' R  ', "red part of $type color",    0, 255,  $rgb[0]);
+    $self->{'widget'}{'green'} =  App::GUI::Wx::Widget::Custom::SliderCombo->new( $self, 365, ' G  ', "green part of $type color",  0, 255,  $rgb[1]);
+    $self->{'widget'}{'blue'}  =  App::GUI::Wx::Widget::Custom::SliderCombo->new( $self, 365, ' B  ', "blue part of $type color",   0, 255,  $rgb[2]);
+    $self->{'widget'}{'hue'}   =  App::GUI::Wx::Widget::Custom::SliderCombo->new( $self, 365, ' H  ', "hue of $type color",         0, 359,  $hsl[0]);
+    $self->{'widget'}{'sat'}   =  App::GUI::Wx::Widget::Custom::SliderCombo->new( $self, 365, ' S   ', "saturation of $type color", 0, 100,  $hsl[1]);
+    $self->{'widget'}{'light'} =  App::GUI::Wx::Widget::Custom::SliderCombo->new( $self, 365, ' L   ', "lightness of $type color",  0, 100,  $hsl[2]);
     $self->{'button'}{'rnd_'.$_} = Wx::Button->new( $self, -1, '?',  [-1,-1], [30,25] ) for qw/red green blue hue sat light/;
     $self->{'button'}{'rnd_red'}->SetToolTip("randomize red value");
     $self->{'button'}{'rnd_green'}->SetToolTip("randomize green value");
