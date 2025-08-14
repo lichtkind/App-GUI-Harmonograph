@@ -57,6 +57,7 @@ sub add_percentage {
     return unless defined $percent and $percent <= 100 and $percent >= 0
         and $percent > $self->get_percentage and ref $color eq 'ARRAY' and @$color == 3;
     push @{$self->{'rainbow'}}, {color => $color, percent => $percent};
+    $self->paint;
 }
 
 sub get_percentage { (@{$_[0]->{'rainbow'}}) ? $_[0]->{'rainbow'}[-1]{'percent'} : 0 }

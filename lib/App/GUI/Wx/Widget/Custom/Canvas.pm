@@ -1,17 +1,17 @@
 
-# drawing board
+# area to draw on and safe it into files
 
 package App::GUI::Wx::Widget::Custom::Canvas;
 use v5.12;
 use warnings;
 use Wx;
 use base qw/Wx::Panel/;
-use App::GUI::Spirograph::Compute::Image;
+use App::GUI::Harmonograph::Compute::Drawing;
 
 sub new {
     my ( $class, $parent, $x, $y ) = @_;
     my $self = $class->SUPER::new( $parent, -1, [-1,-1], [$x, $y] );
-    $self->{'menu_size'} = 28;
+    $self->{'menu_size'} = 27;
     $self->{'size'}{'x'} = $x;
     $self->{'size'}{'y'} = $y;
     $self->{'center'}{'x'} = $x / 2;
@@ -44,30 +44,22 @@ sub new {
     #  Wx::Event::EVT_LEFT_DOWN( $self, sub { });
     #  Wx::Event::EVT_MOTION( $self, sub { });
     Wx::Event::EVT_LEFT_DOWN( $self, sub {
-        if (ref $self->{'tab'}{'constraint'}){
-            my $pos = $_[1]->GetLogicalPosition( $self->{'dc'} );
-            my $dx = ($pos->x / $self->{'center'}{'x'} ) - 1;
-            my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
-            $self->{'tab'}{'constraint'}->move_center_position( $dx, $dy, 0);
-        }
+        my $dx = ($pos->x / $self->{'center'}{'x'} ) - 1;
+        my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
     });
     Wx::Event::EVT_LEFT_DCLICK( $self, sub {
-        if (ref $self->{'tab'}{'constraint'}){
-            my $pos = $_[1]->GetLogicalPosition($self->{'dc'});
-            my $dx = ($pos->x / $self->{'center'}{'x'} ) - 1;
-            my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
-            $self->{'tab'}{'constraint'}->move_center_position( $dx, $dy, 1);
-        }
+        my $dx = ($pos->x / $self->{'center'}{'x'} ) - 1;
+        my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
     });
     Wx::Event::EVT_RIGHT_DOWN( $self, sub {
-        if (ref $self->{'tab'}{'constraint'}){
-            my $pos = $_[1]->GetLogicalPosition($self->{'dc'});
-            my $dx = ($pos->x / $self->{'center'}{'x'} ) - 1;
-            my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
-            $self->{'tab'}{'constraint'}->move_center_position( $dx, $dy, -1);
-        }
+        my $dx = ($pos->x / $self->{'center'}{'x'} ) - 1;
+        my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
     });
-    Wx::Event::EVT_MIDDLE_DOWN( $self, sub { $self->GetParent->draw });
+    Wx::Event::EVT_MIDDLE_DOWN( $self, sub {
+        my $dx = ($pos->x / $self->{'center'}{'x'} ) - 1;
+        my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
+
+    });
 
     return $self;
 }

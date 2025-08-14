@@ -6,7 +6,7 @@ use FindBin;
 
 package App::GUI::Harmonograph;
 our $NAME = __PACKAGE__;
-our $VERSION = '1.01';
+our $VERSION = '1.1';
 
 use base qw/Wx::App/;
 use App::GUI::Harmonograph::Frame;

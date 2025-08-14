@@ -52,7 +52,7 @@ sub new {
         $self->update_select();
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'save'}, sub {
-        $self->{'sets'}{ $self->current_set_name } = [map { $_->name ? $_->name : $_->rgb_hex } $parent->get_all_colors];
+        $self->{'sets'}{ $self->current_set_name } = [map { $_->name ? $_->name : $_->values( as => 'hex_string') } $parent->get_all_colors];
         $self->update_display();
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'new'}, sub {

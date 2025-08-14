@@ -5,13 +5,13 @@ use warnings;
 use utf8;
 use base qw/Wx::Frame/;
 use Wx::AUI;
+use App::GUI::Wx::Widget::Custom::ProgressBar;
 use App::GUI::Harmonograph::Dialog::About;
 use App::GUI::Harmonograph::Frame::Panel::Board;
 use App::GUI::Harmonograph::Frame::Panel::Pendulum;
 use App::GUI::Harmonograph::Frame::Tab::Function;
 use App::GUI::Harmonograph::Frame::Tab::Visual;
 use App::GUI::Harmonograph::Frame::Tab::Color;
-use App::GUI::Wx::Widget::Custom::ProgressBar;
 use App::GUI::Harmonograph::Settings; # file IO for parameters of image
 use App::GUI::Harmonograph::Config;   # file IO for program config: dirs, color set store
 
@@ -286,13 +286,14 @@ sub draw {
     my @colors = $self->{'tab'}{'color'}->get_all_colors;
     $self->{'progress_bar'}->set_start_color( $colors[0]->values( ) );
     $self->{'board'}->draw( $self->get_settings, $self->{'progress_bar'} );
+    #$self->{'progress_bar'}->paint;
     $self->SetStatusText( "done complete drawing", 0 );
 }
 sub sketch {
     my ($self) = @_;
     $self->SetStatusText( "sketching a preview .....", 0 );
     $self->{'progress_bar'}->reset();
-    $self->{'board'}->sketch( $self->get_settings );
+    $self->{'board'}->sketch( $self->get_settings, $self->{'progress_bar'} );
     $self->SetStatusText( "done sketching a preview", 0 );
     if ($self->{'saved'}){
         $self->inc_base_counter();
@@ -302,7 +303,7 @@ sub sketch {
 
 sub write_image {
     my ($self, $file)  = @_;
-    $self->{'board'}->save_file( $file );
+    $self->{'board'}->save_file( $file, $self->get_settings, $self->{'progress_bar'} );
     $file = App::GUI::Harmonograph::Settings::shrink_path( $file );
     $self->SetStatusText( "saved image under: $file", 0 );
     $self->set_settings_save(1);

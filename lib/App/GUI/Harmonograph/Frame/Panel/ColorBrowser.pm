@@ -50,8 +50,7 @@ sub new {
         my @rgb = ($self->{'widget'}{'red'}->GetValue,
                    $self->{'widget'}{'green'}->GetValue,
                    $self->{'widget'}{'blue'}->GetValue );
-        my @hsl = $HSL->deconvert( [$RGB->normalize( \@rgb )], 'RGB');
-        @hsl = $HSL->denormalize( \@hsl );
+        my @hsl = color( @rgb )->values('HSL');
         $self->{'widget'}{'hue'}->SetValue( $hsl[0], 1 );
         $self->{'widget'}{'sat'}->SetValue( $hsl[1], 1 );
         $self->{'widget'}{'light'}->SetValue( $hsl[2], 1 );
@@ -61,8 +60,7 @@ sub new {
         my @hsl = ($self->{'widget'}{'hue'}->GetValue,
                    $self->{'widget'}{'sat'}->GetValue,
                    $self->{'widget'}{'light'}->GetValue );
-        my @rgb = $HSL->convert( [$HSL->normalize( \@hsl )], 'RGB');
-        @rgb = $RGB->denormalize( \@rgb );
+        my @rgb = color( 'HSL', @hsl )->values('RGB');
         $self->{'widget'}{'red'}->SetValue( $rgb[0], 1 );
         $self->{'widget'}{'green'}->SetValue( $rgb[1], 1 );
         $self->{'widget'}{'blue'}->SetValue( $rgb[2], 1 );
@@ -98,16 +96,14 @@ sub get_data { {  red => $_[0]->{'widget'}{'red'}->GetValue,
                  blue => $_[0]->{'widget'}{'blue'}->GetValue, } }
 
 sub set_data {
-    my ( $self, $data, $silent ) = @_;
-    return unless ref $data eq 'HASH'
-        and exists $data->{'red'} and exists $data->{'green'} and exists $data->{'blue'};
+    my ( $self, $color, $silent ) = @_;
+    return unless ref $color eq 'HASH'
+        and exists $color->{'red'} and exists $color->{'green'} and exists $color->{'blue'};
 
-    $self->{'widget'}{'red'}->SetValue( $data->{'red'}, 1);
-    $self->{'widget'}{'green'}->SetValue( $data->{'green'}, 1);
-    $self->{'widget'}{'blue'}->SetValue( $data->{'blue'}, 1 );
-    my @rgb = @$data{qw/red green blue/};
-    my @hsl = $HSL->deconvert( [$RGB->normalize( \@rgb )], 'RGB');
-    @hsl = $HSL->denormalize( \@hsl );
+    $self->{'widget'}{'red'}->SetValue( $color->{'red'}, 1);
+    $self->{'widget'}{'green'}->SetValue( $color->{'green'}, 1);
+    $self->{'widget'}{'blue'}->SetValue( $color->{'blue'}, 1 );
+    my @hsl = color($color)->values('HSL');
     $self->{'widget'}{'hue'}->SetValue( $hsl[0], 1 );
     $self->{'widget'}{'sat'}->SetValue( $hsl[1], 1 );
     $self->{'widget'}{'light'}->SetValue( $hsl[2], 1 );
