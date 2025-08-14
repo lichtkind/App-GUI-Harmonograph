@@ -12,7 +12,6 @@ use_ok( 'App::GUI::Wx::Widget::Custom::ColorDisplay' );
 use_ok( 'App::GUI::Wx::Widget::Custom::Canvas' );
 use_ok( 'App::GUI::Wx::Widget::Custom::PositionMarker' );
 use_ok( 'App::GUI::Wx::Widget::Custom::ProgressBar' );
-use_ok( 'App::GUI::Harmonograph::Frame::Panel::Board' );
 use_ok( 'App::GUI::Harmonograph::Frame::Panel::ColorBrowser' );
 use_ok( 'App::GUI::Harmonograph::Frame::Panel::ColorPicker' );
 use_ok( 'App::GUI::Harmonograph::Frame::Panel::ColorSetPicker' );
