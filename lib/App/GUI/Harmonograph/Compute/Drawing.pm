@@ -31,7 +31,7 @@ sub calculate_colors {
             push @colors, $color_objects[$i]->gradient(
                     to => $color_objects[$i+1],
                     steps => gradient_steps( $dots_per_gradient ),
-                    dynamic => $set->{'color_flow_dynamic'},
+                    tilt => $set->{'color_flow_dynamic'},
             );
         }
         $color_swap_time = int( $dot_count / @colors );
@@ -49,7 +49,7 @@ sub calculate_colors {
             push @c, $color_objects[$i]->gradient(
                     to => $color_objects[$i+1],
                     steps => $gradient_steps,
-                    dynamic => $set->{'color_flow_dynamic'},
+                    tilt => $set->{'color_flow_dynamic'},
             );
         }
         $color_swap_time = int( $dots_per_gradient / $gradient_steps );
@@ -73,14 +73,14 @@ sub calculate_colors {
             push @c, $color_objects[$i]->gradient(
                     to => $color_objects[$i+1],
                     steps => $gradient_steps,
-                    dynamic => $set->{'color_flow_dynamic'},
+                    tilt => $set->{'color_flow_dynamic'},
             );
         }
         pop @c;
         push @c, $color_objects[-1]->gradient(
                 to => $color_objects[0],
                 steps => $gradient_steps,
-                dynamic => $set->{'color_flow_dynamic'},
+                tilt => $set->{'color_flow_dynamic'},
         );
         pop @c;
         $color_swap_time = int ($dots_per_gradient / $gradient_steps);

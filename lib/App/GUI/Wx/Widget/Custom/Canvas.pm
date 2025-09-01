@@ -44,20 +44,20 @@ sub new {
     #  Wx::Event::EVT_LEFT_DOWN( $self, sub { });
     #  Wx::Event::EVT_MOTION( $self, sub { });
     Wx::Event::EVT_LEFT_DOWN( $self, sub {
-        my $dx = ($pos->x / $self->{'center'}{'x'} ) - 1;
-        my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
+        #~ my $dx = ($pos->x / $self->{'center'}{'x'} ) - 1;
+        #~ my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
     });
     Wx::Event::EVT_LEFT_DCLICK( $self, sub {
-        my $dx = ($pos->x / $self->{'center'}{'x'} ) - 1;
-        my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
+        #~ my $dx = ($pos->x / $self->{'center'}{'x'} ) - 1;
+        #~ my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
     });
     Wx::Event::EVT_RIGHT_DOWN( $self, sub {
-        my $dx = ($pos->x / $self->{'center'}{'x'} ) - 1;
-        my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
+        #~ my $dx = ($pos->x / $self->{'center'}{'x'} ) - 1;
+        #~ my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
     });
     Wx::Event::EVT_MIDDLE_DOWN( $self, sub {
-        my $dx = ($pos->x / $self->{'center'}{'x'} ) - 1;
-        my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
+        #~ my $dx = ($pos->x / $self->{'center'}{'x'} ) - 1;
+        #~ my $dy = ($pos->y / $self->{'center'}{'y'} ) - 1;
 
     });
 

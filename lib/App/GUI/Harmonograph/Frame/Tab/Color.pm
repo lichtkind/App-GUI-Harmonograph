@@ -83,7 +83,6 @@ sub new {
         my @new_colors = $c[ $self->{'current_color_nr'} ]->complement( steps => $self->{'current_color_nr'}+1,
                                                                         target => { s => $self->{'widget'}{'delta_S'}->GetValue,
                                                                                     l => $self->{'widget'}{'delta_L'}->GetValue } );
-        push @new_colors, shift @new_colors;
         $self->set_all_colors( @new_colors );
     });
     Wx::Event::EVT_BUTTON( $self, $self->{'button'}{'left'}, sub {
