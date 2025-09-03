@@ -10,9 +10,6 @@ use App::GUI::Wx::Widget::Custom::SliderCombo;
 use App::GUI::Wx::Widget::Custom::ColorDisplay;
 use Graphics::Toolkit::Color qw/color/;
 
-my $RGB = Graphics::Toolkit::Color::Space::Hub::get_space('RGB');
-my $HSL = Graphics::Toolkit::Color::Space::Hub::get_space('HSL');
-
 sub new {
     my ( $class, $parent, $type, $init_color ) = @_;
     $init_color = color( $init_color );
