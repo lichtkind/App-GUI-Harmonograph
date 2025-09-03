@@ -1,11 +1,11 @@
 1.01 2025-09-03  lichtkind
 -------
-    * = minor fix release
+    * = minor fix release = 3 fixes
     * + added supergolden ration constant
     * ? POD fixes
     * & adapt to new GTC 1.9 API
     * / remove some dead code
-
+    * ! sketch drawing works now  every time on app start
 
 1.0  2025-04-08  lichtkind
 -------

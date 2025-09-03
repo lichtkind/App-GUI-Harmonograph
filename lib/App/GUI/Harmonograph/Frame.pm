@@ -235,7 +235,6 @@ sub new {
 
     $self->update_recent_settings_menu();
     $self->{'btn'}{'draw'}->SetFocus;
-#    $self->init;
     $self->sketch;
     $self;
 }
