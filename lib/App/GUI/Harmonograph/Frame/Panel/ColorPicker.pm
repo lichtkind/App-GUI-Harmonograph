@@ -1,5 +1,5 @@
 
-#
+# set of widgets to select the current color with 6 sliders
 
 package App::GUI::Harmonograph::Frame::Panel::ColorPicker;
 use v5.12;

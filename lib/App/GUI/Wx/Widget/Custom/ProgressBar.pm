@@ -1,5 +1,5 @@
 
-#
+# colored bar shows canvas status colors used in drawing
 
 package App::GUI::Wx::Widget::Custom::ProgressBar;
 use base qw/Wx::Panel/;

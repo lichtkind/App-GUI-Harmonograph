@@ -15,7 +15,7 @@ use App::GUI::Harmonograph::Frame::Panel::ColorSetPicker;
 use Graphics::Toolkit::Color qw/color/;
 
 our $default_color_def = $App::GUI::Harmonograph::Frame::Panel::ColorSetPicker::default_color;
-my $default_settings = { 1=> 'blue', 2=> 'red', tilt => 0, delta_S => 0, delta_L => 0 };
+my $default_settings = { 1 => 'blue', 2 => 'red', tilt => 0, delta_S => 0, delta_L => 0 };
 
 sub new {
     my ( $class, $parent, $config, $count ) = @_;

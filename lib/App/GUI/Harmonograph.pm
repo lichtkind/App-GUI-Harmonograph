@@ -1,10 +1,12 @@
+
+# app starter and main event lop
+
+package App::GUI::Harmonograph;
 use v5.12;
 use warnings;
 use Wx;
 use utf8;
 use FindBin;
-
-package App::GUI::Harmonograph;
 our $NAME = __PACKAGE__;
 our $VERSION = '1.01';
 

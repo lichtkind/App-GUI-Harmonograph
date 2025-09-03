@@ -12,7 +12,6 @@ use App::GUI::Harmonograph::Compute::Drawing;
 sub new {
     my ( $class, $parent, $x, $y ) = @_;
     my $self = $class->SUPER::new( $parent, -1, [-1,-1], [$x+5, $y+5] );
-say "new $self";
     $self->{'precision'} = 4;
     $self->{'menu_size'} = 27;
     $self->{'size'}{'x'} = $x;
@@ -20,10 +19,7 @@ say "new $self";
     $self->{'center'}{'x'} = $x / 2;
     $self->{'center'}{'y'} = $y / 2;
     $self->{'hard_radius'} = ($x > $y ? $self->{'center'}{'y'} : $self->{'center'}{'x'});
-    #$self->{'dc'} = Wx::PaintDC->new( $self );
-    $self->{'bmp'} = Wx::Bitmap->new( $self->{'size'}{'x'} , $self->{'size'}{'y'}, 24); # + 10
-    $self->{'dc'} = Wx::MemoryDC->new( );
-    $self->{'dc'}->SelectObject( $self->{'bmp'} );
+    $self->{'dc'} = Wx::PaintDC->new( $self );
 
     Wx::Event::EVT_PAINT( $self, sub {
         my( $self, $event ) = @_;
@@ -35,9 +31,7 @@ say "new $self";
                                    $self->paint( Wx::PaintDC->new( $self ), $self->{'size'} ), 0, 0);
         #my $bmp = Wx::Bitmap->new( $self->{'size'}{'x'} , $self->{'size'}{'y'}, 24); # + 10
         #my $dc = Wx::MemoryDC->new( );
-        #$dc->SelectObject( $bmp );
-
-say "event $self";
+        # $dc->SelectObject( $bmp );
         #~ my $dc = Wx::PaintDC->new( $self );
         #~ $self->paint( $dc, $self->{'size'} );
         #~ #$self->{'dc'}->DrawBitmap($bmp, 0, 0, 1);
@@ -56,17 +50,13 @@ say "event $self";
 
 sub draw {
     my( $self, $settings, $progress_bar ) = @_;
-say "draw 1";
     return unless ref $settings eq 'HASH' and ref $progress_bar;
-say "draw 2";
     $self->{'draw_args'} = {settings => $settings, progress_bar => $progress_bar, redraw => 1 };
     $self->Refresh;
 }
 sub sketch {
     my( $self, $settings, $progress_bar ) = @_;
-say "sketch 1";
     return unless ref $settings eq 'HASH' and ref $progress_bar;
-say "sketch 2";
     $self->{'draw_args'} = {settings => $settings, progress_bar => $progress_bar, redraw => 1, sketch => 1};
     $self->Refresh;
 }
@@ -89,7 +79,7 @@ sub paint {
     #~ $cr->($dc);
 
     my $code_ref = App::GUI::Harmonograph::Compute::Drawing::compile( $self->{'draw_args'}, $Cr );
-say     $code_ref;
+say "fresh drawing ", $code_ref;
     $code_ref->( $dc, $Cx, $Cy ) if ref $code_ref;
     delete $self->{'draw_args'};
     $dc;

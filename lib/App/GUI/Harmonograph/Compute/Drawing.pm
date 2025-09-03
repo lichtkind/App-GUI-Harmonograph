@@ -6,7 +6,7 @@ use v5.12;
 use warnings;
 use utf8;
 use Graphics::Toolkit::Color qw/color/;
-use Benchmark;
+# use Benchmark;
 
 my $TAU = 6.283185307;
 
@@ -300,20 +300,5 @@ sub compile {
     return $code_ref;
 }
 
-
-sub draw {
-    my ($args, $main_radius) = @_;
-    return unless ref $args eq 'HASH';
-    my $set          = $args->{'settings'};
-    my $progress_bar = $args->{'progress_bar'};
-    my $color = Wx::Colour->new(11,11,222);
-
-    my $code =
-    'sub {'. 'my $dc = shift;'.
-    '$dc->SetPen( Wx::Pen->new( $color, 2, &Wx::wxPENSTYLE_SOLID) );'.
-    '$dc->DrawLine( 1,1,111,111);'.'}';
-    return eval $code;
-    # say "eval $@";
-}
 
 1;
