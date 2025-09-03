@@ -33,7 +33,7 @@ __END__
 
 =head1 NAME
 
-App::GUI::Harmonograph - drawing by lateral and rotary pendula
+App::GUI::Harmonograph - drawing with 4 lateral and 2 rotary pendula
 
 =head1 SYNOPSIS
 

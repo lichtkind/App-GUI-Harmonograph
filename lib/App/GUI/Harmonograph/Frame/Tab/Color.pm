@@ -251,6 +251,4 @@ sub update_config {
     $self->{'config'}->set_value('color_set', $self->{'setpicker'}->get_config);
 }
 
-
-
 1;
