@@ -1,0 +1,15 @@
+ROADMAP:
+-------
+
+
+
+TODO's:
+-------
+
+test optics on windows
+better optics on mac
+
+
+? undo setting changes
+
+
