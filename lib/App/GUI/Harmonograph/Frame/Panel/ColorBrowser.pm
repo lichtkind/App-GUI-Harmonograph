@@ -96,9 +96,9 @@ sub set_data {
     return unless ref $data eq 'HASH'
         and exists $data->{'red'} and exists $data->{'green'} and exists $data->{'blue'};
 
-    $self->{'widget'}{'red'}->SetValue( $color->{'red'}, 1);
-    $self->{'widget'}{'green'}->SetValue( $color->{'green'}, 1);
-    $self->{'widget'}{'blue'}->SetValue( $color->{'blue'}, 1 );
+    $self->{'widget'}{'red'}->SetValue( $data->{'red'}, 1);
+    $self->{'widget'}{'green'}->SetValue( $data->{'green'}, 1);
+    $self->{'widget'}{'blue'}->SetValue( $data->{'blue'}, 1 );
     my @hsl = color( $data )->values('HSL');
     $self->{'widget'}{'hue'}->SetValue( $hsl[0], 1 );
     $self->{'widget'}{'sat'}->SetValue( $hsl[1], 1 );
