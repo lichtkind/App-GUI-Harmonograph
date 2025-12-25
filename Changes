@@ -1,3 +1,9 @@
+1.02 2025-09-03  lichtkind
+-------
+    * = minor fix release = 3 fixes
+    * ! painted dots obey thickness value
+    * ! every line thickness value has different effect now
+
 1.01 2025-09-03  lichtkind
 -------
     * = minor fix release = 3 fixes

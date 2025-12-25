@@ -8,7 +8,7 @@ use Wx;
 use utf8;
 use FindBin;
 our $NAME = __PACKAGE__;
-our $VERSION = '1.01';
+our $VERSION = '1.02';
 
 use base qw/Wx::App/;
 use App::GUI::Harmonograph::Frame;
