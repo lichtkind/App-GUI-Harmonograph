@@ -302,7 +302,9 @@ sub sketch {
 
 sub write_image {
     my ($self, $file)  = @_;
-    $self->{'board'}->save_file( $file, $self->get_settings, $self->{'progress_bar'} );
+    $self->{'board'}->save_file( $file, $self->{'config'}->get_value('file_base_ending'), 
+                                        $self->{'config'}->get_value('image_size'),
+                                 $self->get_settings, $self->{'progress_bar'}  );
     $file = App::GUI::Harmonograph::Settings::shrink_path( $file );
     $self->SetStatusText( "saved image under: $file", 0 );
     $self->set_settings_save(1);

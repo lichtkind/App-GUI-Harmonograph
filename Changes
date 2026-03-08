@@ -1,6 +1,9 @@
-1.04 2026-03-01  lichtkind
+1.1  2026-03-08  lichtkind
 -------
-    * = minor fix release = 3 fixes
+    * = major fix release = 2 fixes
+    * ! can write PNG and JPG files again
+    * ! can write SVG files again
+    * ! fixed line thickness adjustment for most thin lines
 
 1.03 2026-03-01  lichtkind
 -------

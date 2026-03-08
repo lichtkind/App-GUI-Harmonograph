@@ -251,7 +251,9 @@ sub compile {
     push @compute_coor_code, '  $x += $Cx', '  $y += $Cy';
 
 
-    my $pen_size = $set->{'visual'}{'line_thickness'} == 1 ? 0 : $set->{'visual'}{'line_thickness'};
+    my $pen_size = $set->{'visual'}{'line_thickness'};
+    $pen_size = 0 if $set->{'visual'}{'line_thickness'} == 1 and not $set->{'visual'}{'connect_dots'};
+
     my $wxpen_style = { dotted => &Wx::wxPENSTYLE_DOT,        short_dash => &Wx::wxPENSTYLE_SHORT_DASH,
                         solid => &Wx::wxPENSTYLE_SOLID,       vertical => &Wx::wxPENSTYLE_VERTICAL_HATCH,
                         horizontal => &Wx::wxPENSTYLE_HORIZONTAL_HATCH, cross => &Wx::wxPENSTYLE_CROSS_HATCH,
@@ -296,8 +298,9 @@ sub compile {
 
     my $code = join '', map {$_.";\n"} @code, '}'; # say $code;
     my $code_ref = eval $code;
-    die "bug '$@' in drawing code: $code" if $@;   # say "comp: ",timestr( timediff( Benchmark->new(), $t) );
-say "draw";
+    die "bug '$@' in drawing code: $code" if $@;   # say "comp: ",timestr( timediff( Benchmark->new(), $t) ); 
+    # say "$code";
+
     return $code_ref;
 }
 
