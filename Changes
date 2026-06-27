@@ -1,3 +1,10 @@
+1.2  2026-06-27  lichtkind
+-------
+    * = minor feature release = 2 fixes
+    + humanize dot position
+    + humanize frequency
+    ! removed old API call of GTC1
+
 1.1  2026-03-08  lichtkind
 -------
     * = major fix release = 2 fixes

@@ -304,5 +304,4 @@ sub compile {
     return $code_ref;
 }
 
-
 1;
